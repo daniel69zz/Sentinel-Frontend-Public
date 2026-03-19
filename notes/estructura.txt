@@ -1,0 +1,16 @@
+lib/
+├── main.dart              # Punto de entrada de la app
+├── app.dart               # Configuración global (tema, rutas)
+├── core/                  # Cosas que usa TODA la app
+│   ├── theme/             # Colores, fuentes, estilos
+│   ├── routes/            # Navegación entre pantallas
+│   └── constants/         # Números y textos fijos (ej: "110", "118")
+├── features/              # Cada funcionalidad de la app
+│   ├── auth/              # Login
+│   ├── home/              # Pantalla principal
+│   ├── emergency/         # Alerta de emergencia + botón SOS
+│   ├── education/         # Módulo educativo DSDR
+│   ├── directory/         # Directorio de centros de apoyo
+│   └── profile/           # Perfil y contactos de emergencia
+└── shared/
+    └── widgets/           # Componentes reutilizables

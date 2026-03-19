@@ -1,0 +1,27 @@
+{
+  "users": [
+    {
+      "id": "u001",
+      "name": "Ana Mamani",
+      "phone": "+591 71234567",
+      "password": "1234",
+      "city": "La Paz",
+      "createdAt": "2025-01-10",
+      "emergencyContacts": [
+        { "id": "c001", "name": "Mamá", "phone": "+591 79876543" },
+        { "id": "c002", "name": "Hermana", "phone": "+591 76543210" }
+      ]
+    },
+    {
+      "id": "u002",
+      "name": "Rosa Quispe",
+      "phone": "+591 78901234",
+      "password": "abcd",
+      "city": "El Alto",
+      "createdAt": "2025-02-14",
+      "emergencyContacts": [
+        { "id": "c003", "name": "Amiga", "phone": "+591 71111111" }
+      ]
+    }
+  ]
+}
