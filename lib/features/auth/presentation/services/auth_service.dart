@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/services/app_branding_service.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_exception.dart';
+import 'account_email_registry.dart';
 import 'auth_identity_mapper.dart';
 
 class UserModel {
@@ -83,12 +84,16 @@ class AuthService {
   static const _sessionKey = 'sentinel_session';
 
   final ApiClient _apiClient;
+  final AccountEmailRegistry _emailRegistry;
 
-  AuthService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+  AuthService({ApiClient? apiClient, AccountEmailRegistry? emailRegistry})
+    : _apiClient = apiClient ?? ApiClient(),
+      _emailRegistry = emailRegistry ?? AccountEmailRegistry();
 
   Future<void> _saveSession(UserModel user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_sessionKey, jsonEncode(user.toJson()));
+    await _emailRegistry.remember(user.email);
   }
 
   Future<void> logout() async {
@@ -111,6 +116,7 @@ class AuthService {
         await prefs.remove(_sessionKey);
         return null;
       }
+      await _emailRegistry.remember(user.email);
       return user;
     } catch (_) {
       await prefs.remove(_sessionKey);
@@ -118,22 +124,19 @@ class AuthService {
     }
   }
 
-  Future<AuthResult> login(String phone, String password) async {
-    final normalizedPhone = AuthIdentityMapper.normalizePhone(phone);
-    if (normalizedPhone.isEmpty) {
+  Future<AuthResult> login(String email, String password) async {
+    final normalizedEmail = AuthIdentityMapper.normalizeEmail(email);
+    if (!AuthIdentityMapper.isValidEmail(normalizedEmail)) {
       return const AuthResult(
         success: false,
-        message: 'Ingresa un numero valido.',
+        message: 'Ingresa un correo Gmail valido.',
       );
     }
 
     try {
       final response = await _apiClient.postJson(
         '/auth/login',
-        body: {
-          'email': AuthIdentityMapper.buildEmailFromPhone(normalizedPhone),
-          'password': password,
-        },
+        body: {'email': normalizedEmail, 'password': password},
       );
 
       final data = _extractDataMap(response);
@@ -153,7 +156,7 @@ class AuthService {
         authUser: authUser,
         profile: profile,
         session: session,
-        fallbackPhone: normalizedPhone,
+        fallbackPhone: '',
       );
 
       await _saveSession(user);
@@ -174,12 +177,50 @@ class AuthService {
   }
 
   Future<AuthResult> register(
-    String name,
+    String firstNames,
+    String lastNames,
+    String email,
     String phone,
     String password,
     String city,
     DateTime birthDate,
   ) async {
+    final normalizedFirstNames = firstNames
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .join(' ');
+    if (normalizedFirstNames.isEmpty) {
+      return const AuthResult(success: false, message: 'Ingresa tus nombres.');
+    }
+
+    final normalizedLastNames = lastNames
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .join(' ');
+    if (normalizedLastNames.isEmpty) {
+      return const AuthResult(
+        success: false,
+        message: 'Ingresa tus apellidos.',
+      );
+    }
+
+    final normalizedEmail = AuthIdentityMapper.normalizeEmail(email);
+    if (!AuthIdentityMapper.isValidEmail(normalizedEmail)) {
+      return const AuthResult(
+        success: false,
+        message: 'Ingresa un correo Gmail valido.',
+      );
+    }
+
+    if (await _emailRegistry.isKnown(normalizedEmail)) {
+      return const AuthResult(
+        success: false,
+        message: 'Ya existe una cuenta con ese correo Gmail.',
+      );
+    }
+
     final normalizedPhone = AuthIdentityMapper.normalizePhone(phone);
     if (normalizedPhone.isEmpty) {
       return const AuthResult(
@@ -188,13 +229,15 @@ class AuthService {
       );
     }
 
-    final email = AuthIdentityMapper.buildEmailFromPhone(normalizedPhone);
-    final nameParts = AuthIdentityMapper.splitFullName(name);
+    final nameParts = AuthIdentityMapper.buildNameParts(
+      firstNames: normalizedFirstNames,
+      lastNames: normalizedLastNames,
+    );
 
     try {
       final registerResponse = await _apiClient.postJson(
         '/auth/register',
-        body: {'email': email, 'password': password},
+        body: {'email': normalizedEmail, 'password': password},
       );
 
       final data = _extractDataMap(registerResponse);
@@ -220,7 +263,7 @@ class AuthService {
             'apellido_p': nameParts.lastName,
             'apellido_m': nameParts.middleLastName,
             'telefono': normalizedPhone,
-            'email': email,
+            'email': normalizedEmail,
             'fecha_nacimiento': AuthIdentityMapper.formatBirthDate(birthDate),
             'direccion_opcional': AuthIdentityMapper.buildAddressFromCity(city),
           },
@@ -343,12 +386,12 @@ class AuthService {
 
     if (lowerMessage.contains('invalid login credentials') ||
         lowerMessage.contains('credenciales invalidas')) {
-      return 'Numero o contrasena incorrectos.';
+      return 'Correo Gmail o contrasena incorrectos.';
     }
 
     if (lowerMessage.contains('user already registered') ||
         lowerMessage.contains('already registered')) {
-      return 'Ya existe una cuenta con ese numero.';
+      return 'Ya existe una cuenta con ese correo Gmail.';
     }
 
     if (lowerMessage.contains('email not confirmed')) {

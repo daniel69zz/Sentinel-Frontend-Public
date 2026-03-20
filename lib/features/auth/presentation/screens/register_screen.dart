@@ -4,6 +4,7 @@ import '../../../../core/routes/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import 'contacts_screen.dart';
+import '../services/auth_identity_mapper.dart';
 import '../services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -15,7 +16,9 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen>
     with SingleTickerProviderStateMixin {
-  final _nameController = TextEditingController();
+  final _firstNamesController = TextEditingController();
+  final _lastNamesController = TextEditingController();
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _birthDateController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -49,7 +52,9 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _firstNamesController.dispose();
+    _lastNamesController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
     _birthDateController.dispose();
     _passwordController.dispose();
@@ -70,7 +75,9 @@ class _RegisterScreenState extends State<RegisterScreen>
       helpText: 'Selecciona tu fecha de nacimiento',
     );
 
-    if (pickedDate == null || !mounted) return;
+    if (pickedDate == null || !mounted) {
+      return;
+    }
 
     setState(() {
       _selectedBirthDate = pickedDate;
@@ -86,53 +93,56 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     final result = await AuthService().register(
-      _nameController.text.trim(),
+      _firstNamesController.text.trim(),
+      _lastNamesController.text.trim(),
+      _emailController.text.trim(),
       _phoneController.text.trim(),
       _passwordController.text.trim(),
       _selectedCity,
       _selectedBirthDate!,
     );
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
+
     setState(() => _isLoading = false);
 
-    if (result.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.message),
-          backgroundColor: AppTheme.success,
-        ),
-      );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result.message),
+        backgroundColor: result.success ? AppTheme.success : AppTheme.error,
+      ),
+    );
 
-      final user = result.user;
-      if (user == null) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.home,
-          (route) => false,
-        );
-        return;
-      }
+    if (!result.success) {
+      return;
+    }
 
-      Navigator.pushAndRemoveUntil(
+    final user = result.user;
+    if (user == null) {
+      Navigator.pushNamedAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder: (_) => ContactsScreen(userId: user.id, isInitialSetup: true),
-        ),
+        AppRoutes.home,
         (route) => false,
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.message),
-          backgroundColor: AppTheme.error,
-        ),
-      );
+      return;
     }
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ContactsScreen(userId: user.id, isInitialSetup: true),
+      ),
+      (route) => false,
+    );
   }
 
   @override
@@ -140,7 +150,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -154,7 +163,6 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
             ),
           ),
-          // Decorative circles
           Positioned(
             top: -80,
             right: -60,
@@ -179,7 +187,6 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
             ),
           ),
-          // Content
           SafeArea(
             child: FadeTransition(
               opacity: _fadeIn,
@@ -193,7 +200,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const SizedBox(height: 40),
-                        // Botón volver
                         Align(
                           alignment: Alignment.centerLeft,
                           child: IconButton(
@@ -207,7 +213,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Logo
                         Container(
                           width: 68,
                           height: 68,
@@ -243,54 +248,92 @@ class _RegisterScreenState extends State<RegisterScreen>
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Completa los datos para registrarte',
+                          'Completa tus datos y usa un Gmail para recuperar acceso.',
                           style: AppTheme.bodyMedium.copyWith(fontSize: 14),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 36),
-
-                        // Nombre
                         TextFormField(
-                          controller: _nameController,
+                          controller: _firstNamesController,
                           keyboardType: TextInputType.name,
                           style: AppTheme.bodyLarge,
                           decoration: const InputDecoration(
-                            labelText: 'Nombre completo',
+                            labelText: 'Nombres',
                             prefixIcon: Icon(
                               Icons.person_outline,
                               color: AppTheme.textSecondary,
                             ),
                           ),
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return 'Ingresa tu nombre';
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Ingresa tus nombres';
                             }
-                            if (v.trim().length < 3) {
-                              return 'El nombre es muy corto';
+                            if (value.trim().length < 3) {
+                              return 'Los nombres son muy cortos';
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: 14),
-
-                        // Teléfono
+                        TextFormField(
+                          controller: _lastNamesController,
+                          keyboardType: TextInputType.name,
+                          style: AppTheme.bodyLarge,
+                          decoration: const InputDecoration(
+                            labelText: 'Apellidos',
+                            prefixIcon: Icon(
+                              Icons.badge_outlined,
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Ingresa tus apellidos';
+                            }
+                            if (value.trim().length < 3) {
+                              return 'Los apellidos son muy cortos';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
+                        TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          style: AppTheme.bodyLarge,
+                          decoration: const InputDecoration(
+                            labelText: 'Correo Gmail',
+                            prefixIcon: Icon(
+                              Icons.alternate_email_rounded,
+                              color: AppTheme.textSecondary,
+                            ),
+                            hintText: 'nombre@gmail.com',
+                          ),
+                          validator: (value) {
+                            if (!AuthIdentityMapper.isValidEmail(value ?? '')) {
+                              return 'Ingresa un correo Gmail valido';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
                         TextFormField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           style: AppTheme.bodyLarge,
                           decoration: const InputDecoration(
-                            labelText: 'Número de WhatsApp',
+                            labelText: 'Numero de WhatsApp',
                             prefixIcon: Icon(
                               Icons.phone_outlined,
                               color: AppTheme.textSecondary,
                             ),
                             hintText: '+591 7XXXXXXX',
                           ),
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return 'Ingresa tu número';
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Ingresa tu numero';
                             }
-                            final digits = v.replaceAll(RegExp(r'\D'), '');
+                            final digits = value.replaceAll(RegExp(r'\D'), '');
                             if (digits.length < 8) {
                               return 'Ingresa un numero valido';
                             }
@@ -298,7 +341,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                           },
                         ),
                         const SizedBox(height: 14),
-
                         TextFormField(
                           controller: _birthDateController,
                           readOnly: true,
@@ -312,7 +354,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                             ),
                             hintText: 'DD/MM/AAAA',
                           ),
-                          validator: (v) {
+                          validator: (value) {
                             if (_selectedBirthDate == null) {
                               return 'Selecciona tu fecha de nacimiento';
                             }
@@ -323,8 +365,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                           },
                         ),
                         const SizedBox(height: 14),
-
-                        // Ciudad
                         DropdownButtonFormField<String>(
                           initialValue: _selectedCity,
                           dropdownColor: AppTheme.cardBg,
@@ -346,18 +386,17 @@ class _RegisterScreenState extends State<RegisterScreen>
                               child: Text('El Alto'),
                             ),
                           ],
-                          onChanged: (v) =>
-                              setState(() => _selectedCity = v ?? 'La Paz'),
+                          onChanged: (value) {
+                            setState(() => _selectedCity = value ?? 'La Paz');
+                          },
                         ),
                         const SizedBox(height: 14),
-
-                        // Contraseña
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           style: AppTheme.bodyLarge,
                           decoration: InputDecoration(
-                            labelText: 'Contraseña',
+                            labelText: 'Contrasena',
                             prefixIcon: const Icon(
                               Icons.lock_outline,
                               color: AppTheme.textSecondary,
@@ -369,30 +408,30 @@ class _RegisterScreenState extends State<RegisterScreen>
                                     : Icons.visibility_outlined,
                                 color: AppTheme.textSecondary,
                               ),
-                              onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
-                              ),
+                              onPressed: () {
+                                setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                );
+                              },
                             ),
                           ),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) {
-                              return 'Ingresa una contraseña';
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Ingresa una contrasena';
                             }
-                            if (v.length < 8) {
+                            if (value.length < 8) {
                               return 'Minimo 8 caracteres';
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: 14),
-
-                        // Confirmar contraseña
                         TextFormField(
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirm,
                           style: AppTheme.bodyLarge,
                           decoration: InputDecoration(
-                            labelText: 'Confirmar contraseña',
+                            labelText: 'Confirmar contrasena',
                             prefixIcon: const Icon(
                               Icons.lock_outline,
                               color: AppTheme.textSecondary,
@@ -404,23 +443,24 @@ class _RegisterScreenState extends State<RegisterScreen>
                                     : Icons.visibility_outlined,
                                 color: AppTheme.textSecondary,
                               ),
-                              onPressed: () => setState(
-                                () => _obscureConfirm = !_obscureConfirm,
-                              ),
+                              onPressed: () {
+                                setState(
+                                  () => _obscureConfirm = !_obscureConfirm,
+                                );
+                              },
                             ),
                           ),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) {
-                              return 'Confirma tu contraseña';
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Confirma tu contrasena';
                             }
-                            if (v != _passwordController.text) {
-                              return 'Las contraseñas no coinciden';
+                            if (value != _passwordController.text) {
+                              return 'Las contrasenas no coinciden';
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: 32),
-
                         CustomButton(
                           text: 'Crear cuenta',
                           onPressed: _register,
@@ -434,7 +474,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         ),
                         const SizedBox(height: 32),
                         Text(
-                          'Al registrarte, aceptas nuestros Términos\nde Servicio y Política de Privacidad.',
+                          'Al registrarte, aceptas nuestros Terminos\nde Servicio y Politica de Privacidad.',
                           style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                           textAlign: TextAlign.center,
                         ),

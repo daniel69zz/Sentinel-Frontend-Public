@@ -161,7 +161,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               borderRadius: BorderRadius.circular(28),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.primary.withOpacity(0.35),
+                                  color: AppTheme.primary.withValues(
+                                    alpha: 0.35,
+                                  ),
                                   blurRadius: 20,
                                   offset: const Offset(0, 6),
                                 ),
@@ -185,8 +187,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
+                            _user?.email ?? '',
+                            style: AppTheme.bodyMedium.copyWith(fontSize: 12),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
                             _user?.phone ?? '',
                             style: AppTheme.bodyMedium.copyWith(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Text('Cuenta', style: AppTheme.titleLarge),
+                    const SizedBox(height: 12),
+                    CustomCard(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          _ProfileInfoRow(
+                            icon: Icons.alternate_email_rounded,
+                            label: 'Correo Gmail',
+                            value: _user?.email ?? 'Sin correo',
+                          ),
+                          const SizedBox(height: 12),
+                          _ProfileInfoRow(
+                            icon: Icons.phone_outlined,
+                            label: 'WhatsApp',
+                            value: _user?.phone ?? 'Sin numero',
                           ),
                         ],
                       ),
@@ -265,8 +293,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 6),
                     CustomCard(
                       padding: const EdgeInsets.all(14),
-                      backgroundColor: AppTheme.primary.withOpacity(0.08),
-                      borderColor: AppTheme.primary.withOpacity(0.25),
+                      backgroundColor: AppTheme.primary.withValues(alpha: 0.08),
+                      borderColor: AppTheme.primary.withValues(alpha: 0.25),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -354,8 +382,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         width: 40,
                                         height: 40,
                                         decoration: BoxDecoration(
-                                          color: AppTheme.primary.withOpacity(
-                                            0.15,
+                                          color: AppTheme.primary.withValues(
+                                            alpha: 0.15,
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             10,
@@ -485,13 +513,54 @@ class _BrandingPreviewBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.32),
+            color: color.withValues(alpha: 0.32),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Icon(icon, color: Colors.white, size: 28),
+    );
+  }
+}
+
+class _ProfileInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _ProfileInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: AppTheme.primaryLight, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: AppTheme.bodyMedium.copyWith(fontSize: 12)),
+              const SizedBox(height: 2),
+              Text(value, style: AppTheme.labelLarge),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -515,7 +584,7 @@ class _BrandingPresetCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: 18,
         backgroundColor: isSelected
-            ? preset.accentColor.withOpacity(0.18)
+            ? preset.accentColor.withValues(alpha: 0.18)
             : AppTheme.cardBg,
         borderColor: isSelected ? preset.accentColor : AppTheme.divider,
         padding: const EdgeInsets.all(14),
@@ -560,10 +629,10 @@ class _EmptyContactsBanner extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.primary.withOpacity(0.08),
+          color: AppTheme.primary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: AppTheme.primary.withOpacity(0.25),
+            color: AppTheme.primary.withValues(alpha: 0.25),
             width: 1,
           ),
         ),

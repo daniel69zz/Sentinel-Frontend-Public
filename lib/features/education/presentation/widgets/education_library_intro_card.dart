@@ -1,0 +1,160 @@
+import 'package:flutter/material.dart';
+
+import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/custom_card.dart';
+
+class EducationLibraryIntroCard extends StatelessWidget {
+  final int totalTopics;
+  final int visibleTopics;
+  final bool isFiltering;
+
+  const EducationLibraryIntroCard({
+    super.key,
+    required this.totalTopics,
+    required this.visibleTopics,
+    required this.isFiltering,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomCard(
+      padding: const EdgeInsets.all(0),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppTheme.primary.withValues(alpha: 0.26),
+              AppTheme.secondary,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: const [
+                _InfoChip(
+                  icon: Icons.play_circle_outline_rounded,
+                  label: 'Video arriba',
+                ),
+                _InfoChip(
+                  icon: Icons.auto_stories_rounded,
+                  label: 'Comic o imagen',
+                ),
+                _InfoChip(
+                  icon: Icons.article_outlined,
+                  label: 'Texto al final',
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Aprende por temas y entra al detalle de cada contenido.',
+              style: AppTheme.headlineMedium.copyWith(height: 1.2),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Cada tema abre su propia pantalla y recibe el contenido segun el boton que hayas elegido.',
+              style: AppTheme.bodyMedium.copyWith(
+                color: AppTheme.textPrimary.withValues(alpha: 0.80),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Expanded(
+                  child: _StatTile(
+                    value: '$visibleTopics',
+                    label: isFiltering ? 'Resultados' : 'Temas visibles',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _StatTile(
+                    value: '$totalTopics',
+                    label: 'Temas totales',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _InfoChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final String value;
+  final String label;
+
+  const _StatTile({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: AppTheme.headlineMedium.copyWith(color: Colors.white),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: AppTheme.bodyMedium.copyWith(
+              color: Colors.white.withValues(alpha: 0.75),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

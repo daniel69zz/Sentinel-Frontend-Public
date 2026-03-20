@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/custom_card.dart';
+import '../../data/education_topics_catalog.dart';
+import '../../domain/models/education_topic.dart';
+import '../widgets/education_empty_state.dart';
+import '../widgets/education_library_intro_card.dart';
+import '../widgets/education_topic_card.dart';
+import 'education_topic_detail_screen.dart';
 
 class EducationScreen extends StatefulWidget {
   final bool isEmbedded;
@@ -12,63 +18,31 @@ class EducationScreen extends StatefulWidget {
 }
 
 class _EducationScreenState extends State<EducationScreen> {
-  final List<_Topic> _topics = const [
-    _Topic(
-      icon: Icons.favorite_rounded,
-      color: Color(0xFFD63864),
-      title: 'Derechos Sexuales',
-      description:
-          'Conoce tus derechos sexuales fundamentales y cómo ejercerlos libremente.',
-      tag: 'Básico',
-    ),
-    _Topic(
-      icon: Icons.child_care_rounded,
-      color: Color(0xFF9C27B0),
-      title: 'Derechos Reproductivos',
-      description:
-          'Información sobre planificación familiar, anticoncepción y salud reproductiva.',
-      tag: 'Importante',
-    ),
-    _Topic(
-      icon: Icons.shield_rounded,
-      color: Color(0xFF2196F3),
-      title: 'Prevención de Violencia',
-      description:
-          'Aprende a identificar señales de violencia sexual y de género.',
-      tag: 'Seguridad',
-    ),
-    _Topic(
-      icon: Icons.medical_services_rounded,
-      color: Color(0xFF4CAF50),
-      title: 'Métodos Anticonceptivos',
-      description:
-          'Guía completa sobre tipos, eficacia y acceso a métodos anticonceptivos en Bolivia.',
-      tag: 'Salud',
-    ),
-    _Topic(
-      icon: Icons.warning_amber_rounded,
-      color: Color(0xFFF57C00),
-      title: '¿Qué hacer si estás en riesgo?',
-      description:
-          'Pasos a seguir si sientes que puedes ser víctima de un ataque o violencia.',
-      tag: 'Urgente',
-    ),
-    _Topic(
-      icon: Icons.healing_rounded,
-      color: Color(0xFF00BCD4),
-      title: 'Qué hacer después',
-      description:
-          'Apoyo, recursos y pasos legales tras una situación de violencia sexual.',
-      tag: 'Recuperación',
-    ),
-  ];
+  String _query = '';
+
+  List<EducationTopic> get _visibleTopics {
+    return EducationTopicsCatalog.topics
+        .where((topic) => topic.matchesQuery(_query))
+        .toList();
+  }
+
+  void _openTopic(EducationTopic topic) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => EducationTopicDetailScreen(topic: topic),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final visibleTopics = _visibleTopics;
+    final isFiltering = _query.trim().isNotEmpty;
+
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: widget.isEmbedded
-          ? AppBar(title: const Text('Educación DSDR'))
+          ? AppBar(title: const Text('Educacion DSDR'))
           : null,
       body: SafeArea(
         child: CustomScrollView(
@@ -80,23 +54,31 @@ class _EducationScreenState extends State<EducationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (!widget.isEmbedded) ...[
-                      Text('Educación', style: AppTheme.headlineLarge),
+                      Text('Educacion', style: AppTheme.headlineLarge),
                       const SizedBox(height: 6),
                       Text(
                         'Derechos Sexuales y Reproductivos',
                         style: AppTheme.bodyMedium,
                       ),
+                      const SizedBox(height: 20),
                     ],
+                    EducationLibraryIntroCard(
+                      totalTopics: EducationTopicsCatalog.topics.length,
+                      visibleTopics: visibleTopics.length,
+                      isFiltering: isFiltering,
+                    ),
                     const SizedBox(height: 20),
-                    // Search
                     Container(
                       decoration: BoxDecoration(
                         color: AppTheme.cardBg,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: AppTheme.divider),
                       ),
                       child: TextField(
                         style: AppTheme.bodyLarge,
+                        onChanged: (value) {
+                          setState(() => _query = value);
+                        },
                         decoration: InputDecoration(
                           hintText: 'Buscar tema...',
                           hintStyle: AppTheme.bodyMedium,
@@ -114,7 +96,17 @@ class _EducationScreenState extends State<EducationScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text('Temas disponibles', style: AppTheme.titleLarge),
+                    Text(
+                      isFiltering ? 'Resultados' : 'Temas disponibles',
+                      style: AppTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      isFiltering
+                          ? 'Selecciona el tema que quieras abrir.'
+                          : 'Cada tarjeta abre otra pantalla con video, comic y texto.',
+                      style: AppTheme.bodyMedium,
+                    ),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -122,117 +114,24 @@ class _EducationScreenState extends State<EducationScreen> {
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((_, i) {
-                  if (i >= _topics.length) return null;
-                  final t = _topics[i];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _TopicCard(topic: t),
-                  );
-                }, childCount: _topics.length),
-              ),
+              sliver: visibleTopics.isEmpty
+                  ? const SliverToBoxAdapter(child: EducationEmptyState())
+                  : SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final topic = visibleTopics[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: EducationTopicCard(
+                            topic: topic,
+                            onTap: () => _openTopic(topic),
+                          ),
+                        );
+                      }, childCount: visibleTopics.length),
+                    ),
             ),
           ],
         ),
       ),
     );
   }
-}
-
-class _TopicCard extends StatelessWidget {
-  final _Topic topic;
-
-  const _TopicCard({required this.topic});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomCard(
-      onTap: () {},
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: topic.color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(topic.icon, color: topic.color, size: 24),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(topic.title, style: AppTheme.labelLarge),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: topic.color.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        topic.tag,
-                        style: TextStyle(
-                          color: topic.color,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  topic.description,
-                  style: AppTheme.bodyMedium.copyWith(fontSize: 13),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Text(
-                      'Leer más',
-                      style: TextStyle(
-                        color: topic.color,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(Icons.arrow_forward, color: topic.color, size: 14),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Topic {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String description;
-  final String tag;
-
-  const _Topic({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.description,
-    required this.tag,
-  });
 }

@@ -205,6 +205,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               ),
             ),
             const SizedBox(height: 12),
+            Text('hola', style: AppTheme.bodyLarge),
+            const SizedBox(height: 12),
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,

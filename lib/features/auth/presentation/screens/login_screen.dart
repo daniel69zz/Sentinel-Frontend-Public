@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/services/app_branding_service.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/services/app_branding_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import 'contacts_screen.dart';
+import '../services/auth_identity_mapper.dart';
 import '../services/auth_service.dart';
 import '../services/contacts_service.dart';
 
@@ -17,10 +18,11 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final ContactsService _contactsService = ContactsService();
   final _formKey = GlobalKey<FormState>();
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   late AnimationController _animController;
@@ -44,60 +46,68 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     _animController.dispose();
     super.dispose();
   }
 
   Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     final result = await AuthService().login(
-      _phoneController.text.trim(),
+      _emailController.text.trim(),
       _passwordController.text.trim(),
     );
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
+
     setState(() => _isLoading = false);
 
-    if (result.success) {
-      final user = result.user;
-      if (user == null) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.home,
-          (route) => false,
-        );
-        return;
-      }
-
-      final hasContacts = await _contactsService.hasContacts(user.id);
-      if (!mounted) return;
-
-      if (hasContacts) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.home,
-          (route) => false,
-        );
-      } else {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                ContactsScreen(userId: user.id, isInitialSetup: true),
-          ),
-          (route) => false,
-        );
-      }
-    } else {
+    if (!result.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result.message),
           backgroundColor: AppTheme.error,
         ),
+      );
+      return;
+    }
+
+    final user = result.user;
+    if (user == null) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.home,
+        (route) => false,
+      );
+      return;
+    }
+
+    final hasContacts = await _contactsService.hasContacts(user.id);
+    if (!mounted) {
+      return;
+    }
+
+    if (hasContacts) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.home,
+        (route) => false,
+      );
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ContactsScreen(userId: user.id, isInitialSetup: true),
+        ),
+        (route) => false,
       );
     }
   }
@@ -109,7 +119,6 @@ class _LoginScreenState extends State<LoginScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -123,7 +132,6 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ),
-          // Decorative circles
           Positioned(
             top: -80,
             right: -60,
@@ -132,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen>
               height: 260,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.primary.withOpacity(0.12),
+                color: AppTheme.primary.withValues(alpha: 0.12),
               ),
             ),
           ),
@@ -144,11 +152,10 @@ class _LoginScreenState extends State<LoginScreen>
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.primary.withOpacity(0.07),
+                color: AppTheme.primary.withValues(alpha: 0.07),
               ),
             ),
           ),
-          // Content
           SafeArea(
             child: FadeTransition(
               opacity: _fadeIn,
@@ -162,7 +169,6 @@ class _LoginScreenState extends State<LoginScreen>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const SizedBox(height: 64),
-                        // Logo
                         Container(
                           width: 80,
                           height: 80,
@@ -175,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen>
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primary.withOpacity(0.4),
+                                color: AppTheme.primary.withValues(alpha: 0.4),
                                 blurRadius: 24,
                                 offset: const Offset(0, 8),
                               ),
@@ -214,30 +220,27 @@ class _LoginScreenState extends State<LoginScreen>
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'Ingresa tu número para continuar',
+                            'Ingresa tu Gmail para continuar',
                             style: AppTheme.bodyMedium,
                           ),
                         ),
                         const SizedBox(height: 28),
                         TextFormField(
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
                           style: AppTheme.bodyLarge,
                           decoration: const InputDecoration(
-                            labelText: 'Número de WhatsApp',
+                            labelText: 'Correo Gmail',
                             prefixIcon: Icon(
-                              Icons.phone_outlined,
+                              Icons.alternate_email_rounded,
                               color: AppTheme.textSecondary,
                             ),
-                            hintText: '+591 7XXXXXXX',
+                            hintText: 'nombre@gmail.com',
                           ),
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return 'Ingresa tu número';
-                            }
-                            final digits = v.replaceAll(RegExp(r'\D'), '');
-                            if (digits.length < 8) {
-                              return 'Ingresa un numero valido';
+                          validator: (value) {
+                            if (!AuthIdentityMapper.isValidEmail(value ?? '')) {
+                              return 'Ingresa un correo Gmail valido';
                             }
                             return null;
                           },
@@ -246,9 +249,10 @@ class _LoginScreenState extends State<LoginScreen>
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
+                          textInputAction: TextInputAction.done,
                           style: AppTheme.bodyLarge,
                           decoration: InputDecoration(
-                            labelText: 'Contraseña',
+                            labelText: 'Contrasena',
                             prefixIcon: const Icon(
                               Icons.lock_outline,
                               color: AppTheme.textSecondary,
@@ -260,16 +264,18 @@ class _LoginScreenState extends State<LoginScreen>
                                     : Icons.visibility_outlined,
                                 color: AppTheme.textSecondary,
                               ),
-                              onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
-                              ),
+                              onPressed: () {
+                                setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                );
+                              },
                             ),
                           ),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) {
-                              return 'Ingresa tu contraseña';
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Ingresa tu contrasena';
                             }
-                            if (v.length < 8) {
+                            if (value.length < 8) {
                               return 'Minimo 8 caracteres';
                             }
                             return null;
@@ -291,9 +297,14 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                         const SizedBox(height: 24),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.forgotPassword,
+                            );
+                          },
                           child: Text(
-                            '¿Olvidaste tu contraseña?',
+                            'Olvide mi contrasena',
                             style: AppTheme.bodyMedium.copyWith(
                               color: AppTheme.primaryLight,
                             ),
@@ -301,7 +312,7 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                         const SizedBox(height: 40),
                         Text(
-                          'Al continuar, aceptas nuestros Términos\nde Servicio y Política de Privacidad.',
+                          'Al continuar, aceptas nuestros Terminos\nde Servicio y Politica de Privacidad.',
                           style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                           textAlign: TextAlign.center,
                         ),
