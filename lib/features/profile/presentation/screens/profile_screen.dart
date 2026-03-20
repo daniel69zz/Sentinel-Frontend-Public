@@ -8,6 +8,10 @@ import '../../../../shared/widgets/custom_card.dart';
 import '../../../auth/presentation/screens/contacts_screen.dart';
 import '../../../auth/presentation/services/auth_service.dart';
 import '../../../auth/presentation/services/contacts_service.dart';
+import '../models/profile_avatar_option.dart';
+import '../widgets/profile_avatar_badge.dart';
+import 'profile_about_screen.dart';
+import 'profile_appearance_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isEmbedded;
@@ -22,43 +26,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ContactsService _contactsService = ContactsService();
   final AuthService _authService = AuthService();
   final AppBrandingService _brandingService = AppBrandingService.instance;
-  final TextEditingController _appNameController = TextEditingController();
 
   UserModel? _user;
   List<ContactModel> _contacts = [];
   bool _isLoading = true;
-  bool _isSavingBranding = false;
-  late String _selectedPresetId;
+  String _selectedAvatarId = ProfileAppearanceStore.avatarOptions.first.id;
 
   @override
   void initState() {
     super.initState();
-    _selectedPresetId = _brandingService.selectedPreset.id;
-    _appNameController.text = _brandingService.customAppName;
-    _appNameController.addListener(_refreshDraftPreview);
     _loadData();
-  }
-
-  @override
-  void dispose() {
-    _appNameController.removeListener(_refreshDraftPreview);
-    _appNameController.dispose();
-    super.dispose();
-  }
-
-  void _refreshDraftPreview() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
+
+    final avatarId = await ProfileAppearanceStore.loadAvatarOptionId();
     final user = await _authService.getSession();
     if (!mounted) return;
 
     if (user == null) {
       setState(() {
+        _selectedAvatarId = avatarId;
         _user = null;
         _contacts = [];
         _isLoading = false;
@@ -70,6 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
 
     setState(() {
+      _selectedAvatarId = avatarId;
       _user = user;
       _contacts = contacts;
       _isLoading = false;
@@ -82,7 +72,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context,
       MaterialPageRoute(builder: (_) => ContactsScreen(userId: _user!.id)),
     );
+    if (!mounted) return;
     _loadData();
+  }
+
+  Future<void> _goToAppearance() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ProfileAppearanceScreen()),
+    );
+    if (!mounted) return;
+    _loadData();
+  }
+
+  Future<void> _goToAbout() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ProfileAboutScreen()),
+    );
+    if (!mounted) return;
+    setState(() {});
   }
 
   Future<void> _logout() async {
@@ -95,37 +104,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _saveBranding() async {
-    setState(() => _isSavingBranding = true);
-    final warning = await _brandingService.saveBranding(
-      presetId: _selectedPresetId,
-      customAppName: _appNameController.text,
-    );
-    if (!mounted) return;
-
-    setState(() => _isSavingBranding = false);
-
-    final message = warning == null
-        ? 'Apariencia actualizada.'
-        : 'Apariencia guardada. $warning';
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  String _draftDisplayName(AppBrandingPreset preset) {
-    final customName = _appNameController.text.trim().replaceAll(
-      RegExp(r'\s+'),
-      ' ',
-    );
-    return customName.isEmpty ? preset.launcherName : customName;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final selectedPreset = AppBrandingService.presetById(_selectedPresetId);
-    final displayNamePreview = _draftDisplayName(selectedPreset);
+    final selectedAvatar = ProfileAppearanceStore.optionById(_selectedAvatarId);
+    final selectedPreset = _brandingService.selectedPreset;
 
     return Scaffold(
       backgroundColor: AppTheme.surface,
@@ -148,33 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Center(
                       child: Column(
                         children: [
-                          Container(
-                            width: 84,
-                            height: 84,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [
-                                  AppTheme.primary,
-                                  AppTheme.primaryLight,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(28),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.primary.withValues(
-                                    alpha: 0.35,
-                                  ),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 40,
-                            ),
-                          ),
+                          ProfileAvatarBadge(option: selectedAvatar),
                           const SizedBox(height: 14),
                           Text(
                             _user?.name ?? 'Usuaria',
@@ -220,130 +176,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    Text('Apariencia de la app', style: AppTheme.titleLarge),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Elige un icono genérico por defecto y define cómo quieres ver el nombre dentro de la app.',
-                      style: AppTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 14),
-                    CustomCard(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          _BrandingPreviewBadge(
-                            icon: selectedPreset.previewIcon,
-                            color: selectedPreset.accentColor,
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  displayNamePreview,
-                                  style: AppTheme.titleLarge,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Nombre del launcher: ${selectedPreset.launcherName}',
-                                  style: AppTheme.bodyMedium.copyWith(
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Preset activo: ${selectedPreset.title}',
-                                  style: AppTheme.bodyMedium.copyWith(
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: AppBrandingService.presets.map((preset) {
-                        return _BrandingPresetCard(
-                          preset: preset,
-                          isSelected: preset.id == _selectedPresetId,
-                          onTap: () {
-                            setState(() => _selectedPresetId = preset.id);
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _appNameController,
-                      maxLength: 24,
-                      decoration: InputDecoration(
-                        labelText: 'Nombre personalizado',
-                        hintText: selectedPreset.launcherName,
-                        helperText:
-                            'Déjalo vacío para usar el nombre del icono seleccionado.',
-                        prefixIcon: const Icon(Icons.draw_outlined),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    CustomCard(
-                      padding: const EdgeInsets.all(14),
-                      backgroundColor: AppTheme.primary.withValues(alpha: 0.08),
-                      borderColor: AppTheme.primary.withValues(alpha: 0.25),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.info_outline,
-                            color: AppTheme.primaryLight,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              _brandingService.supportsLauncherCustomization
-                                  ? 'En Android, el icono y el nombre del acceso directo siguen el preset genérico elegido. El nombre personalizado se verá dentro de la app.'
-                                  : 'En esta plataforma se guarda el nombre personalizado dentro de la app. El launcher depende del sistema operativo.',
-                              style: AppTheme.bodyMedium.copyWith(fontSize: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isSavingBranding ? null : _saveBranding,
-                        icon: _isSavingBranding
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Icon(Icons.palette_outlined, size: 18),
-                        label: Text(
-                          _isSavingBranding
-                              ? 'Guardando apariencia...'
-                              : 'Guardar apariencia',
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -381,6 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       Container(
                                         width: 40,
                                         height: 40,
+                                        alignment: Alignment.center,
                                         decoration: BoxDecoration(
                                           color: AppTheme.primary.withValues(
                                             alpha: 0.15,
@@ -445,31 +278,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             }).toList(),
                           ),
                     const SizedBox(height: 24),
-                    Text('Configuración', style: AppTheme.titleLarge),
+                    Text('Configuracion', style: AppTheme.titleLarge),
                     const SizedBox(height: 12),
                     _SettingTile(
-                      icon: Icons.notifications_outlined,
-                      title: 'Notificaciones',
-                      subtitle: 'Alertas y avisos',
-                      onTap: () {},
-                    ),
-                    _SettingTile(
-                      icon: Icons.lock_outline,
-                      title: 'Privacidad',
-                      subtitle: 'Datos y permisos',
-                      onTap: () {},
+                      icon: Icons.palette_outlined,
+                      title: 'Apariencia de la app',
+                      subtitle:
+                          '${selectedPreset.title} | icono ${selectedAvatar.title}',
+                      onTap: _goToAppearance,
                     ),
                     _SettingTile(
                       icon: Icons.language_outlined,
                       title: 'Idioma',
-                      subtitle: 'Español (Bolivia)',
+                      subtitle: 'Espanol (Bolivia)',
                       onTap: () {},
                     ),
                     _SettingTile(
                       icon: Icons.info_outline,
                       title: 'Acerca de ${_brandingService.displayName}',
-                      subtitle: 'Versión ${AppConstants.appVersion}',
-                      onTap: () {},
+                      subtitle: 'Version ${AppConstants.appVersion}',
+                      onTap: _goToAbout,
                     ),
                     const SizedBox(height: 20),
                     SizedBox(
@@ -477,7 +305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: OutlinedButton.icon(
                         onPressed: _logout,
                         icon: const Icon(Icons.logout, size: 18),
-                        label: const Text('Cerrar sesión'),
+                        label: const Text('Cerrar sesion'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.error,
                           side: const BorderSide(color: AppTheme.error),
@@ -493,33 +321,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-    );
-  }
-}
-
-class _BrandingPreviewBadge extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-
-  const _BrandingPreviewBadge({required this.icon, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 58,
-      height: 58,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.32),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Icon(icon, color: Colors.white, size: 28),
     );
   }
 }
@@ -543,6 +344,7 @@ class _ProfileInfoRow extends StatelessWidget {
         Container(
           width: 40,
           height: 40,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             color: AppTheme.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(12),
@@ -561,57 +363,6 @@ class _ProfileInfoRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _BrandingPresetCard extends StatelessWidget {
-  final AppBrandingPreset preset;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _BrandingPresetCard({
-    required this.preset,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 160,
-      child: CustomCard(
-        onTap: onTap,
-        borderRadius: 18,
-        backgroundColor: isSelected
-            ? preset.accentColor.withValues(alpha: 0.18)
-            : AppTheme.cardBg,
-        borderColor: isSelected ? preset.accentColor : AppTheme.divider,
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                _BrandingPreviewBadge(
-                  icon: preset.previewIcon,
-                  color: preset.accentColor,
-                ),
-                const Spacer(),
-                if (isSelected)
-                  Icon(Icons.check_circle, color: preset.accentColor, size: 20),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(preset.title, style: AppTheme.labelLarge),
-            const SizedBox(height: 4),
-            Text(
-              preset.description,
-              style: AppTheme.bodyMedium.copyWith(fontSize: 12),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -650,7 +401,7 @@ class _EmptyContactsBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    'Toca aquí para agregar uno',
+                    'Toca aqui para agregar uno',
                     style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                   ),
                 ],
@@ -683,32 +434,35 @@ class _SettingTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCard(
-      onTap: onTap,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Icon(icon, color: AppTheme.textSecondary, size: 22),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: AppTheme.labelLarge),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: AppTheme.bodyMedium.copyWith(fontSize: 12),
-                ),
-              ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: CustomCard(
+        onTap: onTap,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Icon(icon, color: AppTheme.textSecondary, size: 22),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: AppTheme.labelLarge),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTheme.bodyMedium.copyWith(fontSize: 12),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Icon(
-            Icons.arrow_forward_ios,
-            size: 14,
-            color: AppTheme.textSecondary,
-          ),
-        ],
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 14,
+              color: AppTheme.textSecondary,
+            ),
+          ],
+        ),
       ),
     );
   }

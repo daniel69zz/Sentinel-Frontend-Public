@@ -6,12 +6,9 @@ import '../../domain/models/education_pet_state.dart';
 import '../../domain/models/education_topic.dart';
 import '../services/education_pet_service.dart';
 import '../widgets/education_empty_state.dart';
-import '../widgets/education_games_cta_card.dart';
-import '../widgets/education_library_intro_card.dart';
-import '../widgets/education_learning_spotlight_card.dart';
-import '../widgets/education_pet_card.dart';
+import '../widgets/education_pet_hub_entry_card.dart';
 import '../widgets/education_topic_card.dart';
-import 'education_games_screen.dart';
+import 'education_companion_screen.dart';
 import 'education_topic_detail_screen.dart';
 
 class EducationScreen extends StatefulWidget {
@@ -28,7 +25,6 @@ class _EducationScreenState extends State<EducationScreen> {
   String _query = '';
   EducationPetState _petState = EducationPetState.initial();
   bool _isLoadingPet = true;
-  bool _isFeedingPet = false;
 
   @override
   void initState() {
@@ -63,42 +59,6 @@ class _EducationScreenState extends State<EducationScreen> {
     }
   }
 
-  Future<void> _feedPet() async {
-    if (_isFeedingPet || _isLoadingPet) {
-      return;
-    }
-
-    setState(() => _isFeedingPet = true);
-
-    try {
-      final result = await _petService.feedPet();
-
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _petState = result.state;
-        _isFeedingPet = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message)),
-      );
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-
-      setState(() => _isFeedingPet = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo actualizar la mascota localmente.'),
-        ),
-      );
-    }
-  }
-
   void _openTopic(EducationTopic topic) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -107,10 +67,10 @@ class _EducationScreenState extends State<EducationScreen> {
     );
   }
 
-  Future<void> _openGames() async {
+  Future<void> _openCompanion() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const EducationGamesScreen(),
+        builder: (_) => const EducationCompanionScreen(),
       ),
     );
 
@@ -149,22 +109,11 @@ class _EducationScreenState extends State<EducationScreen> {
                       ),
                       const SizedBox(height: 20),
                     ],
-                    EducationLibraryIntroCard(
-                      totalTopics: EducationTopicsCatalog.topics.length,
-                      visibleTopics: visibleTopics.length,
-                      isFiltering: isFiltering,
-                    ),
-                    const SizedBox(height: 20),
-                    const EducationLearningSpotlightCard(),
-                    const SizedBox(height: 16),
-                    EducationPetCard(
+                    EducationPetHubEntryCard(
                       petState: _petState,
                       isLoading: _isLoadingPet,
-                      isFeeding: _isFeedingPet,
-                      onFeed: _feedPet,
+                      onTap: _openCompanion,
                     ),
-                    const SizedBox(height: 12),
-                    EducationGamesCtaCard(onTap: _openGames),
                     const SizedBox(height: 24),
                     Container(
                       decoration: BoxDecoration(
@@ -202,7 +151,7 @@ class _EducationScreenState extends State<EducationScreen> {
                     Text(
                       isFiltering
                           ? 'Selecciona el tema que quieras abrir.'
-                          : 'Cada tarjeta abre otra pantalla con video, comic vertical y texto.',
+                          : 'Cada tarjeta abre otra pantalla con video, comic y texto.',
                       style: AppTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),

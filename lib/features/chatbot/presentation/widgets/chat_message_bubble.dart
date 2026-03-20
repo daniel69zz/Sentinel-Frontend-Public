@@ -6,41 +6,93 @@ class ChatMessageBubble extends StatelessWidget {
   final String text;
   final bool isUser;
   final bool isTyping;
-  final String assistantAvatarUrl;
 
   const ChatMessageBubble({
     super.key,
     required this.text,
     required this.isUser,
-    required this.assistantAvatarUrl,
     this.isTyping = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bubbleColor = isUser ? AppTheme.primary : AppTheme.cardBg;
-    final textColor = isUser ? Colors.white : AppTheme.textPrimary;
-    final label = isUser ? 'Tu' : 'Mascota de apoyo';
-    final bubble = ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 290),
+    if (isUser) {
+      return Align(
+        alignment: Alignment.centerRight,
+        child: _MessageCard(
+          label: 'Tu',
+          text: text,
+          isTyping: isTyping,
+          backgroundColor: AppTheme.primary,
+          borderColor: AppTheme.primaryLight,
+          textColor: Colors.white,
+          labelColor: Colors.white70,
+          maxWidth: 290,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 18),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          _VirtualPetAvatar(isTyping: isTyping),
+          const SizedBox(width: 10),
+          Flexible(
+            child: _MessageCard(
+              label: isTyping ? 'Tu mascota esta pensando...' : 'Mascota virtual',
+              text: text,
+              isTyping: isTyping,
+              backgroundColor: AppTheme.cardBg,
+              borderColor: AppTheme.divider,
+              textColor: AppTheme.textPrimary,
+              labelColor: AppTheme.textSecondary,
+              maxWidth: 280,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MessageCard extends StatelessWidget {
+  final String label;
+  final String text;
+  final bool isTyping;
+  final Color backgroundColor;
+  final Color borderColor;
+  final Color textColor;
+  final Color labelColor;
+  final double maxWidth;
+
+  const _MessageCard({
+    required this.label,
+    required this.text,
+    required this.isTyping,
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.textColor,
+    required this.labelColor,
+    required this.maxWidth,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: bubbleColor,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(18),
-            topRight: const Radius.circular(18),
-            bottomLeft: Radius.circular(isUser ? 18 : 6),
-            bottomRight: Radius.circular(isUser ? 6 : 18),
-          ),
-          border: Border.all(
-            color: isUser ? AppTheme.primaryLight : AppTheme.divider,
-          ),
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: borderColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.10),
-              blurRadius: 16,
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 14,
               offset: const Offset(0, 8),
             ),
           ],
@@ -51,7 +103,7 @@ class ChatMessageBubble extends StatelessWidget {
             Text(
               label,
               style: AppTheme.bodyMedium.copyWith(
-                color: isUser ? Colors.white70 : AppTheme.textSecondary,
+                color: labelColor,
                 fontSize: 12,
               ),
             ),
@@ -66,7 +118,7 @@ class ChatMessageBubble extends StatelessWidget {
                     height: 8,
                     margin: EdgeInsets.only(right: index == 2 ? 0 : 6),
                     decoration: BoxDecoration(
-                      color: textColor.withValues(alpha: 0.75),
+                      color: textColor.withValues(alpha: 0.70),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -85,63 +137,248 @@ class ChatMessageBubble extends StatelessWidget {
         ),
       ),
     );
+  }
+}
 
-    if (isUser) {
-      return Align(alignment: Alignment.centerRight, child: bubble);
-    }
+class _VirtualPetAvatar extends StatelessWidget {
+  final bool isTyping;
 
-    return Padding(
-      padding: const EdgeInsets.only(right: 28),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+  const _VirtualPetAvatar({required this.isTyping});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 74,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _AssistantAvatar(imageUrl: assistantAvatarUrl),
-          const SizedBox(width: 10),
-          Flexible(child: bubble),
+          Container(
+            width: 66,
+            height: 74,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFFFFD7E3), Color(0xFFF8B7CB)],
+              ),
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.secondary.withValues(alpha: 0.14),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                Positioned(
+                  top: 2,
+                  left: 10,
+                  child: _PetEar(
+                    angle: -0.45,
+                    color: const Color(0xFFF5AEC8),
+                    innerColor: const Color(0xFFFFE7EF),
+                  ),
+                ),
+                Positioned(
+                  top: 2,
+                  right: 10,
+                  child: _PetEar(
+                    angle: 0.45,
+                    color: const Color(0xFFF5AEC8),
+                    innerColor: const Color(0xFFFFE7EF),
+                  ),
+                ),
+                Positioned(
+                  top: 12,
+                  child: Container(
+                    width: 46,
+                    height: 46,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFFF4F8),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                const Positioned(
+                  top: 28,
+                  left: 20,
+                  child: _PetEye(),
+                ),
+                const Positioned(
+                  top: 28,
+                  right: 20,
+                  child: _PetEye(),
+                ),
+                Positioned(
+                  top: 38,
+                  left: 17,
+                  child: _PetCheek(color: AppTheme.primaryLight),
+                ),
+                Positioned(
+                  top: 38,
+                  right: 17,
+                  child: _PetCheek(color: AppTheme.primaryLight),
+                ),
+                const Positioned(
+                  top: 35,
+                  child: _PetMouth(),
+                ),
+                Positioned(
+                  bottom: 7,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      isTyping ? 'Pensando' : 'Aqui',
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: AppTheme.textPrimary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Compi',
+            style: AppTheme.bodyMedium.copyWith(
+              color: AppTheme.textPrimary,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _AssistantAvatar extends StatelessWidget {
-  final String imageUrl;
+class _PetEar extends StatelessWidget {
+  final double angle;
+  final Color color;
+  final Color innerColor;
 
-  const _AssistantAvatar({required this.imageUrl});
+  const _PetEar({
+    required this.angle,
+    required this.color,
+    required this.innerColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: angle,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 18,
+            height: 24,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(18),
+            ),
+          ),
+          Container(
+            width: 10,
+            height: 14,
+            decoration: BoxDecoration(
+              color: innerColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PetEye extends StatelessWidget {
+  const _PetEye();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 42,
-      height: 42,
+      width: 6,
+      height: 10,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.secondary.withValues(alpha: 0.16),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: ClipOval(
-        child: Image.network(
-          imageUrl,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: AppTheme.primaryLight,
-              alignment: Alignment.center,
-              child: const Icon(
-                Icons.pets_rounded,
-                color: AppTheme.textPrimary,
-                size: 22,
-              ),
-            );
-          },
-        ),
+        color: AppTheme.textPrimary,
+        borderRadius: BorderRadius.circular(8),
       ),
     );
   }
+}
+
+class _PetCheek extends StatelessWidget {
+  final Color color;
+
+  const _PetCheek({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.55),
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+}
+
+class _PetMouth extends StatelessWidget {
+  const _PetMouth();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 12,
+      height: 8,
+      child: CustomPaint(painter: _PetMouthPainter()),
+    );
+  }
+}
+
+class _PetMouthPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppTheme.textPrimary
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round;
+
+    final leftArc = Path()
+      ..moveTo(size.width / 2, size.height / 2)
+      ..quadraticBezierTo(1, size.height + 1, 1, 1);
+    final rightArc = Path()
+      ..moveTo(size.width / 2, size.height / 2)
+      ..quadraticBezierTo(
+        size.width - 1,
+        size.height + 1,
+        size.width - 1,
+        1,
+      );
+
+    canvas.drawPath(leftArc, paint);
+    canvas.drawPath(rightArc, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
