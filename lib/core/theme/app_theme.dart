@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // ── Palette ──────────────────────────────────────────────────────────────
-  static const Color primary = Color(0xFFD63864);     // vibrant rose-red
-  static const Color primaryDark = Color(0xFFAA1F48);
-  static const Color primaryLight = Color(0xFFFF6B95);
-  static const Color secondary = Color(0xFF2D2D4E);   // deep navy
-  static const Color accent = Color(0xFFFFC107);      // warm amber
-  static const Color surface = Color(0xFF1A1A2E);     // dark surface
-  static const Color cardBg = Color(0xFF22223B);
-  static const Color textPrimary = Color(0xFFF5F0F6);
-  static const Color textSecondary = Color(0xFFB0A9C0);
-  static const Color success = Color(0xFF4CAF50);
-  static const Color warning = Color(0xFFFF9800);
-  static const Color error = Color(0xFFF44336);
-  static const Color divider = Color(0xFF35355A);
+  // Base palette from the reference image.
+  static const Color baseCream = Color(0xFFFEEDDD);
+  static const Color peach = Color(0xFFFEC1B6);
+  static const Color blush = Color(0xFFF3A6BA);
+  static const Color rose = Color(0xFFDF678F);
+  static const Color lavender = Color(0xFF9391BC);
+  static const Color aqua = Color(0xFF7ABCC4);
 
-  // ── TextStyles ───────────────────────────────────────────────────────────
+  // Semantic colors used across the app.
+  static const Color primary = rose;
+  static const Color primaryDark = Color(0xFFC6567E);
+  static const Color primaryLight = blush;
+  static const Color secondary = lavender;
+  static const Color accent = aqua;
+  static const Color surface = Color(0xFF000000);
+  static const Color cardBg = Color(0xFF18111F);
+  static const Color textPrimary = baseCream;
+  static const Color textSecondary = Color(0xFFD3BDD0);
+  static const Color success = Color(0xFF5AAE95);
+  static const Color warning = Color(0xFFF0A15E);
+  static const Color error = Color(0xFFC75472);
+  static const Color divider = Color(0xFF3A2B40);
+
+  // Text styles
   static const TextStyle headlineLarge = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
@@ -58,25 +66,47 @@ class AppTheme {
     letterSpacing: 0.5,
   );
 
-  // ── Theme Data ───────────────────────────────────────────────────────────
+  // Theme data
   static ThemeData get dark {
+    const colorScheme = ColorScheme.dark(
+      primary: primary,
+      primaryContainer: primaryDark,
+      secondary: secondary,
+      secondaryContainer: primaryLight,
+      tertiary: accent,
+      surface: cardBg,
+      error: error,
+      onPrimary: Colors.white,
+      onPrimaryContainer: textPrimary,
+      onSecondary: Colors.white,
+      onSecondaryContainer: textPrimary,
+      onTertiary: Colors.white,
+      onSurface: textPrimary,
+      onError: Colors.white,
+    );
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
+      colorScheme: colorScheme,
       scaffoldBackgroundColor: surface,
-      colorScheme: const ColorScheme.dark(
-        primary: primary,
-        secondary: accent,
-        surface: cardBg,
-        onPrimary: Colors.white,
-        onSecondary: secondary,
-        onSurface: textPrimary,
-        error: error,
+      canvasColor: surface,
+      cardColor: cardBg,
+      dividerColor: divider,
+      textTheme: const TextTheme(
+        headlineLarge: headlineLarge,
+        headlineMedium: headlineMedium,
+        titleLarge: titleLarge,
+        bodyLarge: bodyLarge,
+        bodyMedium: bodyMedium,
+        labelLarge: labelLarge,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: surface,
+        foregroundColor: textPrimary,
         elevation: 0,
         centerTitle: true,
+        surfaceTintColor: Colors.transparent,
         titleTextStyle: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
@@ -135,7 +165,10 @@ class AppTheme {
         unselectedItemColor: textSecondary,
         elevation: 0,
         type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+        selectedLabelStyle: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
         unselectedLabelStyle: TextStyle(fontSize: 11),
       ),
     );

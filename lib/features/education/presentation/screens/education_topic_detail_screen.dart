@@ -55,13 +55,17 @@ class EducationTopicDetailScreen extends StatelessWidget {
                   const EducationSectionHeader(
                     title: 'Comic de ejemplo',
                     subtitle:
-                        'Aqui queda reservado un solo espacio grande para la imagen o comic principal del tema.',
+                        'El comic se muestra completo en vertical para leerlo bajando.',
                   ),
                   const SizedBox(height: 12),
-                  EducationStoryPanelCard(
-                    panel: topic.storyPanels.first,
-                    index: 0,
-                  ),
+                  for (var index = 0; index < topic.storyPanels.length; index++) ...[
+                    EducationStoryPanelCard(
+                      panel: topic.storyPanels[index],
+                      index: index,
+                    ),
+                    if (index != topic.storyPanels.length - 1)
+                      const SizedBox(height: 12),
+                  ],
                   const SizedBox(height: 24),
                   const EducationSectionHeader(
                     title: 'Informacion en texto',
