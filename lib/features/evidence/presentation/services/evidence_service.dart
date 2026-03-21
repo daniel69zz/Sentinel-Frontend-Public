@@ -657,6 +657,9 @@ class EvidenceService {
     if (data is Map) {
       return EvidenceRecord.fromBackendJson(Map<String, dynamic>.from(data));
     }
+    if (response['id'] != null) {
+      return EvidenceRecord.fromBackendJson(response);
+    }
     return null;
   }
 
@@ -792,7 +795,8 @@ class EvidenceService {
         qu: 'Incidente utaq evidencia identificadorninqa mana allin UUID formato niyuqchu.',
       );
     }
-    if (normalized.contains('incidente no encontrado')) {
+    if (normalized.contains('incidente no encontrado') ||
+        normalized.contains('incident not found')) {
       return _t(
         es: 'No se encontro el incidente seleccionado.',
         en: 'The selected incident was not found.',
@@ -800,7 +804,8 @@ class EvidenceService {
         qu: 'Akllasqa incidenteqa mana tarikurqanchu.',
       );
     }
-    if (normalized.contains('evidencia no encontrada')) {
+    if (normalized.contains('evidencia no encontrada') ||
+        normalized.contains('evidence not found')) {
       return _t(
         es: 'No se encontro la evidencia a actualizar.',
         en: 'The evidence to update was not found.',

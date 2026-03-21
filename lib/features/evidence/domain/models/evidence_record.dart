@@ -211,7 +211,10 @@ String _pickFileUrl(Map<String, dynamic> json) {
 
 String _pickFileName(Map<String, dynamic> json) {
   final directName = _readString(
-    json['file_name'] ?? json['filename'] ?? json['nombre_archivo'],
+    json['original_filename'] ??
+        json['file_name'] ??
+        json['filename'] ??
+        json['nombre_archivo'],
   );
   if (directName.trim().isNotEmpty) {
     return directName;

@@ -177,6 +177,22 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
     });
 
     if (result.success) {
+      final updatedEvidence =
+          result.evidence ??
+          evidence.copyWith(
+            incidentId: incidentId,
+            clearIncidentId: incidentId == null,
+          );
+      setState(() {
+        _allEvidences = [
+          for (final e in _allEvidences)
+            if (e.id == updatedEvidence.id) updatedEvidence else e,
+        ];
+        _incidentEvidences =
+            _allEvidences
+                .where((e) => e.incidentId == _incident.id)
+                .toList();
+      });
       await _loadIncidentData(refreshing: true);
     }
 
