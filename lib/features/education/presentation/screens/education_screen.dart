@@ -3,13 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../data/education_topics_catalog.dart';
-import '../../domain/models/education_pet_state.dart';
 import '../../domain/models/education_topic.dart';
-import '../services/education_pet_service.dart';
 import '../widgets/education_empty_state.dart';
-import '../widgets/education_pet_hub_entry_card.dart';
+import '../widgets/education_library_intro_card.dart';
 import '../widgets/education_topic_card.dart';
-import 'education_companion_screen.dart';
 import 'education_topic_detail_screen.dart';
 
 class EducationScreen extends StatefulWidget {
@@ -22,42 +19,12 @@ class EducationScreen extends StatefulWidget {
 }
 
 class _EducationScreenState extends State<EducationScreen> {
-  final EducationPetService _petService = EducationPetService();
   String _query = '';
-  EducationPetState _petState = EducationPetState.initial();
-  bool _isLoadingPet = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPetState();
-  }
 
   List<EducationTopic> get _visibleTopics {
     return EducationTopicsCatalog.topics
         .where((topic) => topic.matchesQuery(_query))
         .toList();
-  }
-
-  Future<void> _loadPetState() async {
-    try {
-      final petState = await _petService.loadPetState();
-
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _petState = petState;
-        _isLoadingPet = false;
-      });
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-
-      setState(() => _isLoadingPet = false);
-    }
   }
 
   void _openTopic(EducationTopic topic) {
@@ -66,20 +33,6 @@ class _EducationScreenState extends State<EducationScreen> {
         builder: (_) => EducationTopicDetailScreen(topic: topic),
       ),
     );
-  }
-
-  Future<void> _openCompanion() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const EducationCompanionScreen(),
-      ),
-    );
-
-    if (!mounted) {
-      return;
-    }
-
-    await _loadPetState();
   }
 
   @override
@@ -102,7 +55,10 @@ class _EducationScreenState extends State<EducationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (!widget.isEmbedded) ...[
-                      Text(context.tr('education.title'), style: AppTheme.headlineLarge),
+                      Text(
+                        context.tr('education.title'),
+                        style: AppTheme.headlineLarge,
+                      ),
                       const SizedBox(height: 6),
                       Text(
                         context.tr('education.subtitle'),
@@ -110,10 +66,10 @@ class _EducationScreenState extends State<EducationScreen> {
                       ),
                       const SizedBox(height: 20),
                     ],
-                    EducationPetHubEntryCard(
-                      petState: _petState,
-                      isLoading: _isLoadingPet,
-                      onTap: _openCompanion,
+                    EducationLibraryIntroCard(
+                      totalTopics: EducationTopicsCatalog.topics.length,
+                      visibleTopics: visibleTopics.length,
+                      isFiltering: isFiltering,
                     ),
                     const SizedBox(height: 24),
                     Container(

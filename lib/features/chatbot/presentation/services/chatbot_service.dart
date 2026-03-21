@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/localization/app_language_service.dart';
 
 class ChatbotTurn {
@@ -22,105 +21,151 @@ class ChatbotException implements Exception {
 }
 
 class ChatbotService {
+  static const String _ragApiBaseUrl = String.fromEnvironment(
+    'RAG_API_BASE_URL',
+    defaultValue: 'http://144.22.43.169:8000',
+  );
+
   final http.Client _client;
+  final String _conversationId;
 
-  ChatbotService({http.Client? client}) : _client = client ?? http.Client();
+  ChatbotService({http.Client? client, String? conversationId})
+    : _client = client ?? http.Client(),
+      _conversationId =
+          conversationId ?? 'chat_${DateTime.now().millisecondsSinceEpoch}';
 
-  bool get isConfigured => AppConstants.groqApiKey.trim().isNotEmpty;
+  bool get isConfigured => _ragApiBaseUrl.trim().isNotEmpty;
 
   Future<String> generateReply(
     List<ChatbotTurn> conversation, {
     AppLanguage? language,
   }) async {
-    final t = AppLanguageService.instance;
-    final selectedLanguage = language ?? t.language;
-    final apiKey = AppConstants.groqApiKey.trim();
-    if (apiKey.isEmpty) {
-      throw ChatbotException(t.tr('chatbot.errors.missing_key'));
+    final selectedLanguage = language ?? AppLanguageService.instance.language;
+    final question = _extractLatestQuestion(conversation);
+    if (question.isEmpty) {
+      throw ChatbotException(
+        _t(
+          es: 'Escribe un mensaje para consultar el chatbot.',
+          en: 'Write a message before asking the chatbot.',
+          ay: 'Chatbot jisktanatakixa maya mensaje qillqt\'am.',
+          qu: 'Chatbotta tapunaykipaq huk mensajeta qillqay.',
+        ),
+      );
     }
-
-    final payload = {
-      'model': AppConstants.groqChatModel,
-      'temperature': 0.4,
-      'top_p': 1,
-      'stream': false,
-      'max_completion_tokens': 300,
-      'messages': [
-        {
-          'role': 'system',
-          'content': _buildSystemPrompt(selectedLanguage.chatbotName),
-        },
-        ...conversation
-            .where((turn) => turn.content.trim().isNotEmpty)
-            .take(12)
-            .map((turn) => {'role': turn.role, 'content': turn.content.trim()}),
-      ],
-    };
 
     http.Response response;
     try {
       response = await _client
-          .post(
-            Uri.parse('${AppConstants.groqApiBaseUrl}/chat/completions'),
-            headers: {
-              'Authorization': 'Bearer $apiKey',
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode(payload),
+          .get(
+            _buildUri(
+              '/rag/query',
+              queryParameters: {
+                'question': _buildQuestion(selectedLanguage, question),
+                'conversation_id': _conversationId,
+              },
+            ),
+            headers: const {'Accept': 'application/json'},
           )
           .timeout(const Duration(seconds: 30));
     } catch (_) {
-      throw ChatbotException(t.tr('chatbot.errors.connect'));
+      throw ChatbotException(
+        _t(
+          es: 'No se pudo conectar con el chatbot de apoyo.',
+          en: 'Could not connect to the support chatbot.',
+          ay: 'Janiw yanapa chatbot ukar mantanjamakiti.',
+          qu: 'Yanapay chatbotman mana conectayta atikurqanchu.',
+        ),
+      );
     }
 
-    final responseMap = _decodeMap(response.body);
+    final responseMap = _decodeMap(response.bodyBytes);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw ChatbotException(
         _extractError(responseMap) ??
-            t.tr(
-              'chatbot.errors.api',
-              params: {'status': response.statusCode.toString()},
+            _t(
+              es:
+                  'El chatbot devolvio un error ${response.statusCode}. Intenta nuevamente.',
+              en:
+                  'The chatbot returned error ${response.statusCode}. Please try again.',
+              ay:
+                  'Chatbot ukax pantjawi ${response.statusCode} kutt\'ayawayi. Wasitat yant\'am.',
+              qu:
+                  'Chatbotqa pantay ${response.statusCode} kutichirqa. Wataqmanta yant\'ay.',
             ),
       );
     }
 
-    final choices = responseMap['choices'];
-    if (choices is! List || choices.isEmpty) {
-      throw ChatbotException(t.tr('chatbot.errors.unusable'));
+    if (responseMap['success'] == false) {
+      throw ChatbotException(
+        _extractError(responseMap) ??
+            _t(
+              es: 'El chatbot no pudo procesar tu consulta.',
+              en: 'The chatbot could not process your request.',
+              ay: 'Chatbot ukax janiw jiskt\'am lurkiti.',
+              qu: 'Chatbotqa tapuyniykita mana procesayta atikurqanchu.',
+            ),
+      );
     }
 
-    final firstChoice = choices.first;
-    if (firstChoice is! Map) {
-      throw ChatbotException(t.tr('chatbot.errors.unexpected_format'));
+    final data = _extractData(responseMap);
+    final answer = _extractAnswer(data);
+    if (answer.isEmpty) {
+      throw ChatbotException(
+        _t(
+          es: 'El chatbot no devolvio una respuesta util.',
+          en: 'The chatbot did not return a useful answer.',
+          ay: 'Chatbot ukax janiw askicha respuesta churkiti.',
+          qu: 'Chatbotqa mana allin kutichiyta quwarqanchu.',
+        ),
+      );
     }
 
-    final message = firstChoice['message'];
-    if (message is! Map) {
-      throw ChatbotException(t.tr('chatbot.errors.expected_message'));
-    }
-
-    final content = message['content'];
-    final parsedContent = _normalizeContent(content);
-    if (parsedContent.isEmpty) {
-      throw ChatbotException(t.tr('chatbot.errors.empty'));
-    }
-
-    return parsedContent;
+    return answer;
   }
 
-  String _buildSystemPrompt(String targetLanguage) {
-    return '''
-You are a support assistant for a personal safety app in Bolivia.
-Always answer in $targetLanguage with clear, empathetic and practical wording.
-Prioritize short and actionable guidance about safety, emotional support, reports and help routes.
-If the user describes immediate danger, suggest using the app SOS alert, moving to a safer place, and contacting emergency services or a trusted person.
-Do not invent addresses, phone numbers, institutions or unconfirmed facts.
-Do not say that you are a therapist, lawyer or police officer.
-Keep answers under 140 words unless the user asks for more detail.
-''';
+  Uri _buildUri(
+    String path, {
+    Map<String, String>? queryParameters,
+  }) {
+    final baseUri = Uri.parse(_ragApiBaseUrl);
+    final normalizedPath = path.startsWith('/') ? path : '/$path';
+    final basePath = baseUri.path.endsWith('/')
+        ? baseUri.path.substring(0, baseUri.path.length - 1)
+        : baseUri.path;
+    final resolvedPath = '$basePath$normalizedPath';
+
+    return baseUri.replace(
+      path: resolvedPath.isEmpty ? '/' : resolvedPath,
+      queryParameters: (queryParameters?.isEmpty ?? true)
+          ? null
+          : queryParameters,
+    );
   }
 
-  Map<String, dynamic> _decodeMap(String body) {
+  String _extractLatestQuestion(List<ChatbotTurn> conversation) {
+    for (final turn in conversation.reversed) {
+      if (turn.role == 'user' && turn.content.trim().isNotEmpty) {
+        return turn.content.trim();
+      }
+    }
+
+    return '';
+  }
+
+  String _buildQuestion(AppLanguage language, String question) {
+    if (language.code == 'es') {
+      return question;
+    }
+
+    return 'Responde en ${language.chatbotName}. Pregunta: $question';
+  }
+
+  Map<String, dynamic> _decodeMap(List<int> bodyBytes) {
+    if (bodyBytes.isEmpty) {
+      return <String, dynamic>{};
+    }
+
+    final body = utf8.decode(bodyBytes, allowMalformed: true);
     if (body.trim().isEmpty) {
       return <String, dynamic>{};
     }
@@ -140,7 +185,36 @@ Keep answers under 140 words unless the user asks for more detail.
     return <String, dynamic>{};
   }
 
+  Map<String, dynamic> _extractData(Map<String, dynamic> responseMap) {
+    final data = responseMap['data'];
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
+    if (data is Map) {
+      return data.map((key, value) => MapEntry(key.toString(), value));
+    }
+    return <String, dynamic>{};
+  }
+
   String? _extractError(Map<String, dynamic> responseMap) {
+    final detail = responseMap['detail'];
+    if (detail is String && detail.trim().isNotEmpty) {
+      return detail.trim();
+    }
+    if (detail is List) {
+      for (final item in detail) {
+        if (item is Map) {
+          final message = item['msg'];
+          if (message is String && message.trim().isNotEmpty) {
+            return message.trim();
+          }
+        }
+        if (item is String && item.trim().isNotEmpty) {
+          return item.trim();
+        }
+      }
+    }
+
     final error = responseMap['error'];
     if (error is Map<String, dynamic>) {
       final message = error['message'];
@@ -157,27 +231,26 @@ Keep answers under 140 words unless the user asks for more detail.
     return null;
   }
 
-  String _normalizeContent(dynamic content) {
-    if (content is String) {
-      return content.trim();
+  String _extractAnswer(Map<String, dynamic> data) {
+    final answer = data['answer'];
+    if (answer is String && answer.trim().isNotEmpty) {
+      return answer.trim();
     }
 
-    if (content is List) {
-      final buffer = StringBuffer();
-      for (final item in content) {
-        if (item is Map && item['type'] == 'text') {
-          final text = item['text'];
-          if (text is String && text.trim().isNotEmpty) {
-            if (buffer.isNotEmpty) {
-              buffer.writeln();
-            }
-            buffer.write(text.trim());
-          }
-        }
-      }
-      return buffer.toString().trim();
+    final message = data['message'];
+    if (message is String && message.trim().isNotEmpty) {
+      return message.trim();
     }
 
     return '';
+  }
+
+  String _t({
+    required String es,
+    required String en,
+    required String ay,
+    required String qu,
+  }) {
+    return AppLanguageService.instance.pick(es: es, en: en, ay: ay, qu: qu);
   }
 }

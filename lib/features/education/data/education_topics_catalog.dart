@@ -5,9 +5,6 @@ import '../domain/models/education_story_panel.dart';
 import '../domain/models/education_topic.dart';
 
 class EducationTopicsCatalog {
-  static const String sampleVideoUrl =
-      'https://samplelib.com/lib/preview/mp4/sample-5s.mp4';
-
   static List<EducationTopic> get topics {
     final l10n = AppLanguageService.instance;
     String t(String es, String en) => l10n.pick(es: es, en: en);
@@ -23,12 +20,6 @@ class EducationTopicsCatalog {
         'Learn about your fundamental sexual rights and how to exercise them freely.',
       ),
       tag: t('Basico', 'Basic'),
-      videoTitle: t('Video introductorio de ejemplo', 'Sample introduction video'),
-      videoDescription: t(
-        'Aqui despues podremos colocar un video corto para explicar este tema con ejemplos visuales.',
-        'Later we can place a short video here to explain this topic with visual examples.',
-      ),
-      videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
           eyebrow: 'Escena 01',
@@ -79,12 +70,6 @@ class EducationTopicsCatalog {
         'Information about family planning, contraception and reproductive health.',
       ),
       tag: t('Importante', 'Important'),
-      videoTitle: t('Video guia de ejemplo', 'Sample guide video'),
-      videoDescription: t(
-        'Este espacio puede mostrar una guia visual corta sobre decisiones reproductivas y acceso a informacion.',
-        'This space can show a short visual guide about reproductive decisions and access to information.',
-      ),
-      videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
           eyebrow: 'Escena 01',
@@ -134,12 +119,6 @@ class EducationTopicsCatalog {
         'Learn to identify signs of sexual and gender-based violence.',
       ),
       tag: t('Seguridad', 'Safety'),
-      videoTitle: t('Video preventivo de ejemplo', 'Sample prevention video'),
-      videoDescription: t(
-        'Aqui podemos incluir un video breve para reconocer alertas tempranas y acciones de autocuidado.',
-        'Here we can include a short video to recognize early warning signs and self-care actions.',
-      ),
-      videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
           eyebrow: 'Escena 01',
@@ -189,12 +168,6 @@ class EducationTopicsCatalog {
         'A complete guide to contraceptive types, effectiveness and access in Bolivia.',
       ),
       tag: t('Salud', 'Health'),
-      videoTitle: t('Video comparativo de ejemplo', 'Sample comparison video'),
-      videoDescription: t(
-        'Mas adelante este bloque puede mostrar una explicacion visual sobre tipos y uso correcto de metodos.',
-        'Later this block can show a visual explanation about method types and correct use.',
-      ),
-      videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
           eyebrow: 'Escena 01',
@@ -244,12 +217,6 @@ class EducationTopicsCatalog {
         'Steps to follow if you feel you could become a victim of an attack or violence.',
       ),
       tag: t('Urgente', 'Urgent'),
-      videoTitle: t('Video de respuesta rapida', 'Quick response video'),
-      videoDescription: t(
-        'Este ejemplo muestra donde ira un recurso visual con pasos inmediatos y faciles de recordar.',
-        'This example shows where a visual resource with immediate and easy-to-remember steps will go.',
-      ),
-      videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
           eyebrow: 'Escena 01',
@@ -298,15 +265,6 @@ class EducationTopicsCatalog {
         'Support, resources and legal steps after a situation of sexual violence.',
       ),
       tag: t('Recuperacion', 'Recovery'),
-      videoTitle: t(
-        'Video de acompanamiento de ejemplo',
-        'Sample support video',
-      ),
-      videoDescription: t(
-        'Aqui ira un contenido visual enfocado en apoyo emocional, opciones disponibles y siguientes pasos.',
-        'A visual resource focused on emotional support, available options and next steps will go here.',
-      ),
-      videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
           eyebrow: 'Escena 01',

@@ -87,10 +87,6 @@ class EducationTopicCard extends StatelessWidget {
               runSpacing: 8,
               children: [
                 _ContentChip(
-                  icon: Icons.play_circle_fill_rounded,
-                  label: context.tr('education.detail.video_chip'),
-                ),
-                _ContentChip(
                   icon: Icons.auto_stories_rounded,
                   label: context.tr('education.detail.comic_chip'),
                 ),

@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppLanguage {
   spanish(
@@ -10,24 +9,6 @@ enum AppLanguage {
     labelKey: 'languages.spanish',
     materialLocale: Locale('es', 'BO'),
     chatbotName: 'Spanish',
-  ),
-  english(
-    code: 'en',
-    labelKey: 'languages.english',
-    materialLocale: Locale('en'),
-    chatbotName: 'English',
-  ),
-  aymara(
-    code: 'ay',
-    labelKey: 'languages.aymara',
-    materialLocale: Locale('es', 'BO'),
-    chatbotName: 'Aymara',
-  ),
-  quechua(
-    code: 'qu',
-    labelKey: 'languages.quechua',
-    materialLocale: Locale('es', 'BO'),
-    chatbotName: 'Quechua',
   );
 
   final String code;
@@ -42,24 +23,15 @@ enum AppLanguage {
     required this.chatbotName,
   });
 
-  static AppLanguage fromCode(String? value) {
-    return AppLanguage.values.firstWhere(
-      (language) => language.code == value,
-      orElse: () => AppLanguage.spanish,
-    );
-  }
+  static AppLanguage fromCode(String? value) => AppLanguage.spanish;
 }
 
 class AppLanguageService extends ChangeNotifier {
   AppLanguageService._();
 
   static final AppLanguageService instance = AppLanguageService._();
-  static const String _preferenceKey = 'app_language_code';
   static const String _assetPathPrefix = 'assets/i18n';
-  static const List<Locale> supportedMaterialLocales = [
-    Locale('es', 'BO'),
-    Locale('en'),
-  ];
+  static const List<Locale> supportedMaterialLocales = [Locale('es', 'BO')];
 
   AppLanguage _language = AppLanguage.spanish;
   Map<String, dynamic> _translations = <String, dynamic>{};
@@ -69,27 +41,12 @@ class AppLanguageService extends ChangeNotifier {
   Locale get materialLocale => _language.materialLocale;
 
   Future<void> initialize() async {
-    _fallbackTranslations = await _loadTranslations(AppLanguage.spanish);
-
-    final prefs = await SharedPreferences.getInstance();
-    final storedCode = prefs.getString(_preferenceKey);
-    _language = AppLanguage.fromCode(storedCode);
+    _language = AppLanguage.spanish;
     _translations = await _loadTranslations(_language);
+    _fallbackTranslations = _translations;
   }
 
-  Future<void> setLanguage(AppLanguage language) async {
-    if (_language == language && _translations.isNotEmpty) {
-      return;
-    }
-
-    _language = language;
-    _translations = await _loadTranslations(language);
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_preferenceKey, language.code);
-
-    notifyListeners();
-  }
+  Future<void> setLanguage(AppLanguage language) async {}
 
   String languageLabel(AppLanguage language) {
     return tr(language.labelKey);
@@ -101,16 +58,7 @@ class AppLanguageService extends ChangeNotifier {
     String? ay,
     String? qu,
   }) {
-    switch (_language) {
-      case AppLanguage.english:
-        return en ?? es;
-      case AppLanguage.aymara:
-        return ay ?? es;
-      case AppLanguage.quechua:
-        return qu ?? es;
-      case AppLanguage.spanish:
-        return es;
-    }
+    return es;
   }
 
   String tr(
@@ -147,9 +95,7 @@ class AppLanguageService extends ChangeNotifier {
       // Fall back to the bundled Spanish copy.
     }
 
-    return language == AppLanguage.spanish
-        ? <String, dynamic>{}
-        : _fallbackTranslations;
+    return _fallbackTranslations;
   }
 
   dynamic _lookupValue(Map<String, dynamic> source, String key) {

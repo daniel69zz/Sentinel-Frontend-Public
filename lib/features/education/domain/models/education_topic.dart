@@ -9,9 +9,6 @@ class EducationTopic {
   final String title;
   final String description;
   final String tag;
-  final String videoTitle;
-  final String videoDescription;
-  final String videoUrl;
   final List<EducationStoryPanel> storyPanels;
   final List<String> textBlocks;
 
@@ -22,12 +19,13 @@ class EducationTopic {
     required this.title,
     required this.description,
     required this.tag,
-    required this.videoTitle,
-    required this.videoDescription,
-    required this.videoUrl,
     required this.storyPanels,
     required this.textBlocks,
   });
+
+  String get videoTitle => title;
+
+  String get videoDescription => description;
 
   bool matchesQuery(String query) {
     final normalizedQuery = query.trim().toLowerCase();

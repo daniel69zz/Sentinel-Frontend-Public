@@ -21,13 +21,10 @@ class EducationLibraryIntroCard extends StatelessWidget {
       padding: const EdgeInsets.all(0),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              AppTheme.primary.withValues(alpha: 0.26),
-              AppTheme.secondary,
-            ],
+            colors: [AppTheme.cardBg, AppTheme.mocha],
           ),
           borderRadius: BorderRadius.circular(16),
         ),
@@ -40,27 +37,27 @@ class EducationLibraryIntroCard extends StatelessWidget {
               runSpacing: 8,
               children: const [
                 _InfoChip(
-                  icon: Icons.play_circle_outline_rounded,
-                  label: 'Video arriba',
+                  icon: Icons.menu_book_rounded,
+                  label: 'Temas claros',
                 ),
                 _InfoChip(
                   icon: Icons.auto_stories_rounded,
-                  label: 'Comic o imagen',
+                  label: 'Guia visual',
                 ),
                 _InfoChip(
                   icon: Icons.article_outlined,
-                  label: 'Texto al final',
+                  label: 'Texto final',
                 ),
               ],
             ),
             const SizedBox(height: 16),
             Text(
-              'Aprende por temas y entra al detalle de cada contenido.',
+              'Aprende por temas con una vista mas directa y ligera.',
               style: AppTheme.headlineMedium.copyWith(height: 1.2),
             ),
             const SizedBox(height: 8),
             Text(
-              'Cada tema abre su propia pantalla y recibe el contenido segun el boton que hayas elegido.',
+              'Cada tema abre una pantalla con explicacion visual y bloques de lectura faciles de seguir.',
               style: AppTheme.bodyMedium.copyWith(
                 color: AppTheme.textPrimary.withValues(alpha: 0.80),
               ),
@@ -101,9 +98,9 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
+        color: Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -135,7 +132,7 @@ class _StatTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
+        color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),

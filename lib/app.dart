@@ -17,10 +17,7 @@ class SentinelApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([
-        AppBrandingService.instance,
-        AppLanguageService.instance,
-      ]),
+      animation: AppBrandingService.instance,
       builder: (context, _) {
         return MaterialApp(
           title: AppBrandingService.instance.displayName,

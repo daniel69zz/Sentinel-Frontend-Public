@@ -3,28 +3,28 @@ import 'package:flutter/material.dart';
 import 'app_design_theme.dart';
 
 class AppTheme {
-  static const Color espresso = Color(0xFF3E2723);
-  static const Color espressoDeep = Color(0xFF241816);
-  static const Color mocha = Color(0xFF5A3A34);
-  static const Color peony = Color(0xFFF4C9D6);
-  static const Color peonySoft = Color(0xFFF9E2EA);
-  static const Color roseDust = Color(0xFFE5AEBE);
-  static const Color blush = Color(0xFFD28A9E);
-  static const Color icedMint = Color(0xFFB7E4D8);
+  static const Color espresso = Color(0xFF121212);
+  static const Color espressoDeep = Color(0xFF000000);
+  static const Color mocha = Color(0xFF1C1C1C);
+  static const Color peony = Color(0xFFF3F3F3);
+  static const Color peonySoft = Color(0xFFFFFFFF);
+  static const Color roseDust = Color(0xFF8E8E8E);
+  static const Color blush = Color(0xFFFF6B6B);
+  static const Color icedMint = Color(0xFF73D0A2);
 
   static const Color primary = peony;
   static const Color primaryDark = mocha;
   static const Color primaryLight = peonySoft;
-  static const Color secondary = roseDust;
+  static const Color secondary = Color(0xFF343434);
   static const Color accent = blush;
   static const Color surface = espressoDeep;
   static const Color cardBg = espresso;
   static const Color textPrimary = peonySoft;
-  static const Color textSecondary = Color(0xFFD8B3BD);
-  static const Color success = Color(0xFFE7B4BF);
-  static const Color warning = Color(0xFFD8A678);
-  static const Color error = Color(0xFFD67688);
-  static const Color divider = Color(0xFF8F6C67);
+  static const Color textSecondary = Color(0xFFB7B7B7);
+  static const Color success = Color(0xFF73D0A2);
+  static const Color warning = Color(0xFFE5B46E);
+  static const Color error = Color(0xFFFF6B6B);
+  static const Color divider = Color(0xFF2D2D2D);
 
   static const TextStyle headlineLarge = TextStyle(
     fontSize: 32,
@@ -79,15 +79,15 @@ class AppTheme {
       primary: primary,
       primaryContainer: primaryDark,
       secondary: secondary,
-      secondaryContainer: primaryLight,
+      secondaryContainer: primaryDark,
       tertiary: accent,
       surface: cardBg,
       error: error,
       onPrimary: espressoDeep,
       onPrimaryContainer: textPrimary,
-      onSecondary: espressoDeep,
-      onSecondaryContainer: espressoDeep,
-      onTertiary: espressoDeep,
+      onSecondary: textPrimary,
+      onSecondaryContainer: textPrimary,
+      onTertiary: textPrimary,
       onSurface: textPrimary,
       onError: textPrimary,
     );
@@ -100,7 +100,6 @@ class AppTheme {
       canvasColor: surface,
       cardColor: cardBg,
       dividerColor: divider,
-      splashFactory: InkSparkle.splashFactory,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
@@ -137,7 +136,7 @@ class AppTheme {
         color: cardBg,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(20),
           side: BorderSide(color: divider.withValues(alpha: 0.72), width: 1),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
@@ -152,7 +151,7 @@ class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: AppDesignTheme.filledButtonStyle(
           fillColor: secondary,
-          foregroundColor: espressoDeep,
+          foregroundColor: textPrimary,
           shadowColor: secondary,
         ),
       ),
@@ -183,7 +182,7 @@ class AppTheme {
         backgroundColor: primary,
         foregroundColor: espressoDeep,
         shape: StadiumBorder(),
-        elevation: 12,
+        elevation: 0,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -193,16 +192,16 @@ class AppTheme {
           vertical: 16,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: divider.withValues(alpha: 0.8)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: divider.withValues(alpha: 0.8)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: primary, width: 1.8),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: primary, width: 1.5),
         ),
         labelStyle: const TextStyle(
           color: textSecondary,
@@ -220,8 +219,8 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: cardBg,
         disabledColor: divider,
-        selectedColor: primary.withValues(alpha: 0.22),
-        secondarySelectedColor: secondary.withValues(alpha: 0.22),
+        selectedColor: primary.withValues(alpha: 0.14),
+        secondarySelectedColor: secondary.withValues(alpha: 0.16),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         labelStyle: bodyMedium.copyWith(
           color: textPrimary,
@@ -232,7 +231,7 @@ class AppTheme {
           fontWeight: FontWeight.w700,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: divider),
         ),
         side: const BorderSide(color: divider),
@@ -241,19 +240,19 @@ class AppTheme {
         backgroundColor: cardBg,
         contentTextStyle: bodyLarge,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: cardBg,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
       ),
       dividerTheme: const DividerThemeData(color: divider, thickness: 1),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: cardBg,
-        indicatorColor: primary.withValues(alpha: 0.20),
+        indicatorColor: primary.withValues(alpha: 0.10),
         elevation: 0,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           return labelLarge.copyWith(
@@ -266,7 +265,7 @@ class AppTheme {
         iconTheme: WidgetStateProperty.resolveWith((states) {
           return IconThemeData(
             color: states.contains(WidgetState.selected)
-                ? primaryLight
+                ? textPrimary
                 : textSecondary,
             size: 22,
           );
@@ -274,7 +273,7 @@ class AppTheme {
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: cardBg,
-        selectedItemColor: primaryLight,
+        selectedItemColor: textPrimary,
         unselectedItemColor: textSecondary,
         elevation: 0,
         type: BottomNavigationBarType.fixed,

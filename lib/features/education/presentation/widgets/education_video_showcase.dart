@@ -18,6 +18,7 @@ class EducationVideoShowcase extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomCard(
+      backgroundColor: Colors.black,
       padding: const EdgeInsets.all(0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

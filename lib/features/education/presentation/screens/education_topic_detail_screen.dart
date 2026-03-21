@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -8,25 +7,11 @@ import '../widgets/education_section_header.dart';
 import '../widgets/education_story_panel_card.dart';
 import '../widgets/education_text_block_card.dart';
 import '../widgets/education_topic_banner.dart';
-import '../widgets/education_video_showcase.dart';
 
 class EducationTopicDetailScreen extends StatelessWidget {
   final EducationTopic topic;
 
   const EducationTopicDetailScreen({super.key, required this.topic});
-
-  Future<void> _openVideoExample(BuildContext context) async {
-    final uri = Uri.parse(topic.videoUrl);
-    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-
-    if (opened || !context.mounted) {
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.tr('education.detail.open_video_error'))),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,16 +26,6 @@ class EducationTopicDetailScreen extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   EducationTopicBanner(topic: topic),
-                  const SizedBox(height: 24),
-                  EducationSectionHeader(
-                    title: context.tr('education.detail.video_title'),
-                    subtitle: context.tr('education.detail.video_subtitle'),
-                  ),
-                  const SizedBox(height: 12),
-                  EducationVideoShowcase(
-                    topic: topic,
-                    onOpenVideo: () => _openVideoExample(context),
-                  ),
                   const SizedBox(height: 24),
                   EducationSectionHeader(
                     title: context.tr('education.detail.comic_title'),

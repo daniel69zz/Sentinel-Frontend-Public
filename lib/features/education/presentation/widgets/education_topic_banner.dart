@@ -74,10 +74,6 @@ class EducationTopicBanner extends StatelessWidget {
               runSpacing: 8,
               children: [
                 _MiniPill(
-                  icon: Icons.play_circle_outline_rounded,
-                  label: context.tr('education.detail.video_chip'),
-                ),
-                _MiniPill(
                   icon: Icons.auto_stories_rounded,
                   label: context.tr('education.detail.image_chip'),
                 ),

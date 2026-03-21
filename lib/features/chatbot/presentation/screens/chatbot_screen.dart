@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_language_service.dart';
@@ -168,17 +166,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Container(
                   decoration: BoxDecoration(
+                    color: AppTheme.cardBg,
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
                       color: AppTheme.divider.withValues(alpha: 0.70),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.secondary.withValues(alpha: 0.08),
-                        blurRadius: 24,
-                        offset: const Offset(0, 14),
-                      ),
-                    ],
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(30),
@@ -277,121 +269,29 @@ class _ChatStageBackground extends StatelessWidget {
     return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFFFCF8),
-            Color(0xFFFFEDF2),
-            Color(0xFFEAF7F8),
-          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppTheme.cardBg, AppTheme.surface],
         ),
       ),
       child: Stack(
         children: [
-          Positioned(
-            top: -24,
-            right: -12,
-            child: _GlowOrb(
-              size: 150,
-              color: AppTheme.primaryLight.withValues(alpha: 0.42),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              height: 1,
+              margin: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+              color: AppTheme.divider.withValues(alpha: 0.55),
             ),
           ),
-          Positioned(
-            bottom: 70,
-            left: -30,
-            child: _GlowOrb(
-              size: 128,
-              color: const Color(0x99B5DEE3),
-            ),
-          ),
-          Positioned(
-            top: 96,
-            left: 36,
-            child: _RingOrb(
-              size: 54,
-              color: AppTheme.secondary.withValues(alpha: 0.28),
-            ),
-          ),
-          Positioned(
-            top: 54,
-            right: 48,
-            child: _RingOrb(
-              size: 28,
-              color: AppTheme.primary.withValues(alpha: 0.22),
-            ),
-          ),
-          Positioned(
-            bottom: 140,
-            right: 30,
-            child: _RingOrb(
+          Center(
+            child: Icon(
+              Icons.chat_bubble_outline_rounded,
+              color: AppTheme.divider.withValues(alpha: 0.24),
               size: 72,
-              color: AppTheme.secondary.withValues(alpha: 0.22),
-            ),
-          ),
-          Positioned(
-            top: 26,
-            left: 18,
-            child: Transform.rotate(
-              angle: -math.pi / 18,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.80),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: AppTheme.divider.withValues(alpha: 0.80),
-                  ),
-                ),
-                child: Text(
-                  context.tr('chatbot.support_pet_note'),
-                  style: AppTheme.bodyMedium.copyWith(
-                    color: AppTheme.textPrimary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _GlowOrb extends StatelessWidget {
-  final double size;
-  final Color color;
-
-  const _GlowOrb({required this.size, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-    );
-  }
-}
-
-class _RingOrb extends StatelessWidget {
-  final double size;
-  final Color color;
-
-  const _RingOrb({required this.size, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: color, width: 1.3),
       ),
     );
   }

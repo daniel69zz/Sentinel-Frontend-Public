@@ -27,7 +27,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ContactsService _contactsService = ContactsService();
   final AuthService _authService = AuthService();
   final AppBrandingService _brandingService = AppBrandingService.instance;
-  final AppLanguageService _languageService = AppLanguageService.instance;
 
   UserModel? _user;
   List<ContactModel> _contacts = [];
@@ -96,51 +95,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {});
   }
 
-  Future<void> _pickLanguage() async {
-    final selected = await showModalBottomSheet<AppLanguage>(
-      context: context,
-      backgroundColor: AppTheme.cardBg,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        final currentLanguage = _languageService.language;
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(context.tr('languages.title'), style: AppTheme.titleLarge),
-                const SizedBox(height: 6),
-                Text(
-                  context.tr('languages.subtitle'),
-                  style: AppTheme.bodyMedium,
-                ),
-                const SizedBox(height: 16),
-                for (final language in AppLanguage.values)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _LanguageTile(
-                      label: _languageService.languageLabel(language),
-                      isSelected: currentLanguage == language,
-                      onTap: () => Navigator.pop(context, language),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    if (selected == null) return;
-    await _languageService.setLanguage(selected);
-    if (!mounted) return;
-    setState(() {});
-  }
-
   Future<void> _logout() async {
     await _authService.logout();
     if (!mounted) return;
@@ -155,7 +109,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final selectedAvatar = ProfileAppearanceStore.optionById(_selectedAvatarId);
     final selectedPreset = _brandingService.selectedPreset;
-    final currentLanguage = _languageService.language;
 
     return Scaffold(
       backgroundColor: AppTheme.surface,
@@ -174,7 +127,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     const SizedBox(height: 24),
                     if (!widget.isEmbedded) ...[
-                      Text(context.tr('profile.title'), style: AppTheme.headlineLarge),
+                      Text(
+                        context.tr('profile.title'),
+                        style: AppTheme.headlineLarge,
+                      ),
                       const SizedBox(height: 20),
                     ],
                     Center(
@@ -205,7 +161,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    Text(context.tr('profile.account_title'), style: AppTheme.titleLarge),
+                    Text(
+                      context.tr('profile.account_title'),
+                      style: AppTheme.titleLarge,
+                    ),
                     const SizedBox(height: 12),
                     CustomCard(
                       padding: const EdgeInsets.all(16),
@@ -274,7 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                         child: const Icon(
                                           Icons.person_outline,
-                                          color: AppTheme.primary,
+                                          color: AppTheme.surface,
                                           size: 20,
                                         ),
                                       ),
@@ -291,11 +250,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             const SizedBox(height: 2),
                                             Text(
                                               contact.relation,
-                                              style: AppTheme.bodyMedium
-                                                  .copyWith(
-                                                    fontSize: 11,
-                                                    color: AppTheme.primary,
-                                                  ),
+                                              style: AppTheme.bodyMedium.copyWith(
+                                                fontSize: 11,
+                                                color: AppTheme.primary,
+                                              ),
                                             ),
                                             const SizedBox(height: 1),
                                             Text(
@@ -344,7 +302,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             }).toList(),
                           ),
                     const SizedBox(height: 24),
-                    Text(context.tr('profile.settings_title'), style: AppTheme.titleLarge),
+                    Text(
+                      context.tr('profile.settings_title'),
+                      style: AppTheme.titleLarge,
+                    ),
                     const SizedBox(height: 12),
                     _SettingTile(
                       icon: Icons.palette_outlined,
@@ -352,12 +313,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       subtitle:
                           '${selectedPreset.localizedTitle} | icono ${selectedAvatar.localizedTitle}',
                       onTap: _goToAppearance,
-                    ),
-                    _SettingTile(
-                      icon: Icons.language_outlined,
-                      title: context.tr('profile.language_title'),
-                      subtitle: _languageService.languageLabel(currentLanguage),
-                      onTap: _pickLanguage,
                     ),
                     _SettingTile(
                       icon: Icons.info_outline,
@@ -421,7 +376,7 @@ class _ProfileInfoRow extends StatelessWidget {
             color: AppTheme.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: AppTheme.primaryLight, size: 18),
+          child: Icon(icon, color: AppTheme.surface, size: 18),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -484,46 +439,6 @@ class _EmptyContactsBanner extends StatelessWidget {
               size: 14,
               color: AppTheme.primary,
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LanguageTile extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _LanguageTile({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.primary.withValues(alpha: 0.14)
-              : AppTheme.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected ? AppTheme.primary : AppTheme.divider,
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(child: Text(label, style: AppTheme.labelLarge)),
-            if (isSelected)
-              const Icon(Icons.check_circle, color: AppTheme.primary, size: 20),
           ],
         ),
       ),

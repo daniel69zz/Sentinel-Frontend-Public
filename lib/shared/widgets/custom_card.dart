@@ -40,7 +40,7 @@ class CustomCard extends StatelessWidget {
       borderRadius: borderRadius,
       amplitude: floatAmplitude,
       phase: floatPhase,
-      showShadow: true,
+      showShadow: hasShadow,
       child: child,
     );
   }
