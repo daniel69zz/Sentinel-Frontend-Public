@@ -43,13 +43,9 @@ class EducationPetHubEntryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
+              SizedBox(
                 width: 52,
                 height: 52,
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(16),
-                ),
                 child: const MascotImage(
                   width: 36,
                   height: 36,

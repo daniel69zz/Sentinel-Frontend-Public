@@ -22,6 +22,7 @@ class _EducationCompanionScreenState extends State<EducationCompanionScreen> {
   EducationPetState _petState = EducationPetState.initial();
   bool _isLoadingPet = true;
   bool _isFeedingPet = false;
+  bool _isPlayingWithPet = false;
 
   @override
   void initState() {
@@ -69,9 +70,9 @@ class _EducationCompanionScreenState extends State<EducationCompanionScreen> {
         _isFeedingPet = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result.message)));
     } catch (_) {
       if (!mounted) {
         return;
@@ -91,11 +92,46 @@ class _EducationCompanionScreenState extends State<EducationCompanionScreen> {
     }
   }
 
+  Future<void> _playWithPet() async {
+    if (_isPlayingWithPet || _isLoadingPet) {
+      return;
+    }
+
+    setState(() => _isPlayingWithPet = true);
+
+    // Pequeña animación de juego con la mascota
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('¡Tu mascota está feliz! 🎉'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+
+    setState(() => _isPlayingWithPet = false);
+  }
+
+  Future<void> _cleanPet() async {
+    if (_isLoadingPet) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('¡Tu mascota ahora está limpia y reluciente! ✨'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
   Future<void> _openGames() async {
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const EducationGamesScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const EducationGamesScreen()),
     );
 
     if (!mounted) {
@@ -109,7 +145,10 @@ class _EducationCompanionScreenState extends State<EducationCompanionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.surface,
-      appBar: AppBar(title: Text(context.tr('education.companion.title'))),
+      appBar: AppBar(
+        title: Text(context.tr('education.companion.title')),
+        elevation: 0,
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
@@ -119,6 +158,8 @@ class _EducationCompanionScreenState extends State<EducationCompanionScreen> {
               isLoading: _isLoadingPet,
               isFeeding: _isFeedingPet,
               onFeed: _feedPet,
+              onPlay: _playWithPet,
+              onClean: _cleanPet,
             ),
             const SizedBox(height: 12),
             EducationGamesCtaCard(onTap: _openGames),

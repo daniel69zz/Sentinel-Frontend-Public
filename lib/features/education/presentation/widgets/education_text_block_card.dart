@@ -32,7 +32,7 @@ class EducationTextBlockCard extends StatelessWidget {
         children: [
           _MascotSpeechBubble(color: color, paragraphs: paragraphs),
           const SizedBox(height: 18),
-          _CenteredMascotSpeaker(color: color),
+          _CenteredMascotSpeaker(),
         ],
       ),
     );
@@ -111,50 +111,16 @@ class _MascotSpeechBubble extends StatelessWidget {
 }
 
 class _CenteredMascotSpeaker extends StatelessWidget {
-  final Color color;
-
-  const _CenteredMascotSpeaker({required this.color});
+  const _CenteredMascotSpeaker();
 
   @override
   Widget build(BuildContext context) {
-    final glow = Color.lerp(color, AppTheme.primaryLight, 0.34) ?? color;
-
-    return Container(
+    return SizedBox(
       width: 150,
       height: 164,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            color.withValues(alpha: 0.88),
-            color.withValues(alpha: 0.38),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(34),
-        border: Border.all(color: color.withValues(alpha: 0.28)),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.18),
-            blurRadius: 22,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Positioned(
-            top: 24,
-            child: Container(
-              width: 92,
-              height: 92,
-              decoration: BoxDecoration(
-                color: glow.withValues(alpha: 0.14),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
           const Positioned.fill(
             child: MascotImage(
               width: 118,

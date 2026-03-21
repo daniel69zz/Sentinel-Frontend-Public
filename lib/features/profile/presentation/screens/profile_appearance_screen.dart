@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/services/app_branding_service.dart';
+import '../../../../core/services/app_theme_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
 import '../models/profile_avatar_option.dart';
@@ -166,9 +167,22 @@ class _ProfileAppearanceScreenState extends State<ProfileAppearanceScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                context.tr('profile.appearance.launcher_title'),
+                context.tr('profile.appearance.theme_title'),
                 style: AppTheme.titleLarge,
               ),
+              const SizedBox(height: 8),
+              Text(
+                context.tr('profile.appearance.theme_subtitle'),
+                style: AppTheme.bodyMedium,
+              ),
+              const SizedBox(height: 14),
+              _ThemeToggleCard(
+                currentTheme: AppThemeService.instance.currentTheme,
+                onChanged: (theme) {
+                  AppThemeService.instance.setTheme(theme);
+                },
+              ),
+              const SizedBox(height: 24),
               const SizedBox(height: 8),
               Text(
                 context.tr('profile.appearance.launcher_subtitle'),
@@ -389,6 +403,94 @@ class _BrandingPresetCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ThemeToggleCard extends StatelessWidget {
+  final AppThemeMode currentTheme;
+  final ValueChanged<AppThemeMode> onChanged;
+
+  const _ThemeToggleCard({
+    required this.currentTheme,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => onChanged(AppThemeMode.light),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: currentTheme == AppThemeMode.light
+                          ? AppTheme.primary.withValues(alpha: 0.18)
+                          : AppTheme.surface.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: currentTheme == AppThemeMode.light
+                            ? AppTheme.primary
+                            : AppTheme.divider,
+                        width: currentTheme == AppThemeMode.light ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.light_mode_rounded, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          context.tr('profile.appearance.light_theme'),
+                          style: AppTheme.labelLarge.copyWith(fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => onChanged(AppThemeMode.dark),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: currentTheme == AppThemeMode.dark
+                          ? AppTheme.primary.withValues(alpha: 0.18)
+                          : AppTheme.surface.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: currentTheme == AppThemeMode.dark
+                            ? AppTheme.primary
+                            : AppTheme.divider,
+                        width: currentTheme == AppThemeMode.dark ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.dark_mode_rounded, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          context.tr('profile.appearance.dark_theme'),
+                          style: AppTheme.labelLarge.copyWith(fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

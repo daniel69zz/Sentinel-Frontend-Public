@@ -42,6 +42,7 @@ class AppConstants {
   static const String keyUserPhone = 'user_phone';
   static const String keyBrandingPreset = 'branding_preset';
   static const String keyCustomAppName = 'custom_app_name';
+  static const String keyAppTheme = 'app_theme_mode';
 
   // Durations
   static const Duration splashDuration = Duration(seconds: 2);

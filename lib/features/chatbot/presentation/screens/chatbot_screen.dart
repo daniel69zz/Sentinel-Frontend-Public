@@ -291,19 +291,11 @@ class _ChatStageBackground extends StatelessWidget {
               opacity: 0.22,
               child: Padding(
                 padding: const EdgeInsets.only(top: 28),
-                child: Container(
+                child: const MascotImage(
                   width: 96,
                   height: 96,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryLight.withValues(alpha: 0.10),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const MascotImage(
-                    width: 72,
-                    height: 72,
-                    padding: EdgeInsets.all(12),
-                    semanticsLabel: 'Mascota de apoyo',
-                  ),
+                  padding: EdgeInsets.all(12),
+                  semanticsLabel: 'Mascota de apoyo',
                 ),
               ),
             ),

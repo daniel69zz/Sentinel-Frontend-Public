@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/services/app_branding_service.dart';
+import 'core/services/app_theme_service.dart';
 import 'core/localization/app_language_service.dart';
 import 'core/theme/app_design_theme.dart';
 import 'core/theme/app_theme.dart';
@@ -19,28 +20,33 @@ class SentinelApp extends StatelessWidget {
     return AnimatedBuilder(
       animation: AppBrandingService.instance,
       builder: (context, _) {
-        return MaterialApp(
-          title: AppBrandingService.instance.displayName,
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.dark,
-          scaffoldMessengerKey: _scaffoldMessengerKey,
-          locale: AppLanguageService.instance.materialLocale,
-          supportedLocales: AppLanguageService.supportedMaterialLocales,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          builder: (context, child) {
-            return EmergencyAlertRecoveryScope(
+        return AnimatedBuilder(
+          animation: AppThemeService.instance,
+          builder: (context, _) {
+            return MaterialApp(
+              title: AppBrandingService.instance.displayName,
+              debugShowCheckedModeBanner: false,
+              theme: AppThemeService.instance.currentThemeData,
               scaffoldMessengerKey: _scaffoldMessengerKey,
-              child: AppDesignMotion(
-                child: child ?? const SizedBox.shrink(),
-              ),
+              locale: AppLanguageService.instance.materialLocale,
+              supportedLocales: AppLanguageService.supportedMaterialLocales,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              builder: (context, child) {
+                return EmergencyAlertRecoveryScope(
+                  scaffoldMessengerKey: _scaffoldMessengerKey,
+                  child: AppDesignMotion(
+                    child: child ?? const SizedBox.shrink(),
+                  ),
+                );
+              },
+              home: const SessionGateScreen(),
+              onGenerateRoute: AppRoutes.onGenerateRoute,
             );
           },
-          home: const SessionGateScreen(),
-          onGenerateRoute: AppRoutes.onGenerateRoute,
         );
       },
     );

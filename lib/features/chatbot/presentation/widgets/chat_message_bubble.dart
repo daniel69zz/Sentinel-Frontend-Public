@@ -22,10 +22,7 @@ class ChatMessageBubble extends StatelessWidget {
       return Align(
         alignment: Alignment.centerRight,
         child: _MessageCard(
-          label: AppLanguageService.instance.pick(
-            es: 'Tu',
-            en: 'You',
-          ),
+          label: AppLanguageService.instance.pick(es: 'Tu', en: 'You'),
           text: text,
           isTyping: isTyping,
           backgroundColor: AppTheme.primary,
@@ -44,7 +41,7 @@ class ChatMessageBubble extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 4),
-            child: _AssistantAvatar(isTyping: isTyping),
+            child: _AssistantAvatar(),
           ),
           _MessageCard(
             label: isTyping
@@ -147,9 +144,7 @@ class _MessageCard extends StatelessWidget {
 }
 
 class _AssistantAvatar extends StatelessWidget {
-  final bool isTyping;
-
-  const _AssistantAvatar({required this.isTyping});
+  const _AssistantAvatar();
 
   @override
   Widget build(BuildContext context) {
@@ -158,19 +153,9 @@ class _AssistantAvatar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
+          SizedBox(
             width: 62,
             height: 62,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: isTyping
-                    ? AppTheme.primary.withValues(alpha: 0.28)
-                    : AppTheme.divider,
-              ),
-            ),
             child: const MascotImage(
               width: 42,
               height: 42,
@@ -180,10 +165,7 @@ class _AssistantAvatar extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            AppLanguageService.instance.pick(
-              es: 'Ayuda',
-              en: 'Help',
-            ),
+            AppLanguageService.instance.pick(es: 'Ayuda', en: 'Help'),
             style: AppTheme.bodyMedium.copyWith(
               color: AppTheme.textPrimary,
               fontSize: 11,

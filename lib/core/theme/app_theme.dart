@@ -25,6 +25,14 @@ class AppTheme {
   static const Color warning = Color(0xFFF0B36A);
   static const Color error = Color(0xFFFF5E7F);
   static const Color divider = Color(0xFF593041);
+
+  // Light theme colors
+  static const Color lightSurface = Color(0xFFF5EFE8);        // Beige claro
+  static const Color lightCardBg = Color(0xFFFBF8F4);         // Beige muy suave
+  static const Color lightTextPrimary = Color(0xFF3D2B28);    // Marrón oscuro
+  static const Color lightTextSecondary = Color(0xFF8B6F66);  // Marrón gris
+  static const Color lightDivider = Color(0xFFE8D5D0);        // Beige pálido
+
   static const LinearGradient berryBackdropGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -281,6 +289,270 @@ class AppTheme {
         backgroundColor: cardBg,
         selectedItemColor: primaryLight,
         unselectedItemColor: textSecondary,
+        elevation: 0,
+        type: BottomNavigationBarType.fixed,
+        selectedLabelStyle: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.35,
+        ),
+      ),
+    );
+  }
+
+  static ThemeData get light {
+    const colorScheme = ColorScheme.light(
+      primary: primary,
+      primaryContainer: primaryLight,
+      secondary: secondary,
+      secondaryContainer: lightDivider,
+      tertiary: accent,
+      surface: lightSurface,
+      error: error,
+      onPrimary: lightTextPrimary,
+      onPrimaryContainer: lightTextPrimary,
+      onSecondary: lightTextPrimary,
+      onSecondaryContainer: lightTextPrimary,
+      onTertiary: lightTextPrimary,
+      onSurface: lightTextPrimary,
+      onError: lightTextPrimary,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: lightSurface,
+      canvasColor: lightSurface,
+      cardColor: lightCardBg,
+      dividerColor: lightDivider,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+        },
+      ),
+      textTheme: const TextTheme(
+        headlineLarge: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.w800,
+          color: lightTextPrimary,
+          letterSpacing: -1.2,
+          height: 1.02,
+        ),
+        headlineMedium: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+          color: lightTextPrimary,
+          letterSpacing: -0.8,
+          height: 1.08,
+        ),
+        titleLarge: TextStyle(
+          fontSize: 19,
+          fontWeight: FontWeight.w700,
+          color: lightTextPrimary,
+          letterSpacing: 0.15,
+          height: 1.12,
+        ),
+        bodyLarge: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: lightTextPrimary,
+          letterSpacing: 0.18,
+          height: 1.6,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 13.5,
+          fontWeight: FontWeight.w500,
+          color: lightTextSecondary,
+          letterSpacing: 0.22,
+          height: 1.55,
+        ),
+        labelLarge: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+          color: lightTextPrimary,
+          letterSpacing: 0.9,
+          height: 1.0,
+        ),
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: lightTextPrimary,
+        elevation: 0,
+        centerTitle: true,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        titleTextStyle: TextStyle(
+          fontSize: 19,
+          fontWeight: FontWeight.w800,
+          color: lightTextPrimary,
+          letterSpacing: 0.35,
+        ),
+        iconTheme: IconThemeData(color: lightTextPrimary, size: 22),
+      ),
+      cardTheme: CardThemeData(
+        color: lightCardBg,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: lightDivider.withValues(alpha: 0.72), width: 1),
+        ),
+        margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: AppDesignTheme.elevatedButtonStyle(
+          fillColor: primary,
+          foregroundColor: lightSurface,
+          shadowColor: primary,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: AppDesignTheme.filledButtonStyle(
+          fillColor: accent,
+          foregroundColor: lightSurface,
+          shadowColor: accent,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: AppDesignTheme.outlinedButtonStyle(
+          fillColor: lightDivider,
+          foregroundColor: primary,
+          borderColor: primary.withValues(alpha: 0.38),
+          shadowColor: primary,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: AppDesignTheme.textButtonStyle(
+          fillColor: lightDivider,
+          foregroundColor: primary,
+          shadowColor: primary,
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: AppDesignTheme.iconButtonStyle(
+          fillColor: lightDivider,
+          foregroundColor: lightTextPrimary,
+          borderColor: primary.withValues(alpha: 0.18),
+          shadowColor: primary,
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: accent,
+        foregroundColor: lightSurface,
+        shape: StadiumBorder(),
+        elevation: 14,
+        highlightElevation: 18,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: lightCardBg,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 16,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: lightDivider.withValues(alpha: 0.8)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: lightDivider.withValues(alpha: 0.8)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: primary, width: 1.5),
+        ),
+        labelStyle: const TextStyle(
+          color: lightTextSecondary,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.3,
+        ),
+        hintStyle: const TextStyle(
+          color: lightTextSecondary,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.25,
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: lightCardBg,
+        disabledColor: lightDivider,
+        selectedColor: primary.withValues(alpha: 0.14),
+        secondarySelectedColor: secondary.withValues(alpha: 0.16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        labelStyle: const TextStyle(
+          fontSize: 13.5,
+          fontWeight: FontWeight.w500,
+          color: lightTextPrimary,
+          letterSpacing: 0.22,
+          height: 1.55,
+        ),
+        secondaryLabelStyle: const TextStyle(
+          fontSize: 13.5,
+          fontWeight: FontWeight.w500,
+          color: lightTextPrimary,
+          letterSpacing: 0.22,
+          height: 1.55,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: lightDivider),
+        ),
+        side: const BorderSide(color: lightDivider),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: lightCardBg,
+        contentTextStyle: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: lightTextPrimary,
+          letterSpacing: 0.18,
+          height: 1.6,
+        ),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: lightCardBg,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(color: lightDivider, thickness: 1),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: lightCardBg,
+        indicatorColor: primary.withValues(alpha: 0.16),
+        elevation: 0,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          return const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+            color: primary,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          return const IconThemeData(
+            color: primary,
+            size: 22,
+          );
+        }),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: lightCardBg,
+        selectedItemColor: primary,
+        unselectedItemColor: lightTextSecondary,
         elevation: 0,
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: TextStyle(

@@ -79,7 +79,7 @@ class EducationTopicBanner extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _MascotBadge(color: topic.color),
+                _MascotBadge(),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Padding(
@@ -144,50 +144,16 @@ class EducationTopicBanner extends StatelessWidget {
 }
 
 class _MascotBadge extends StatelessWidget {
-  final Color color;
-
-  const _MascotBadge({required this.color});
+  const _MascotBadge();
 
   @override
   Widget build(BuildContext context) {
-    final glow = Color.lerp(color, AppTheme.primaryLight, 0.34) ?? color;
-
-    return Container(
+    return SizedBox(
       width: 94,
       height: 112,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            color.withValues(alpha: 0.88),
-            color.withValues(alpha: 0.42),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: color.withValues(alpha: 0.28)),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.22),
-            blurRadius: 18,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Positioned(
-            top: 16,
-            child: Container(
-              width: 62,
-              height: 62,
-              decoration: BoxDecoration(
-                color: glow.withValues(alpha: 0.14),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
           const Positioned.fill(
             child: MascotImage(
               width: 84,
@@ -196,10 +162,14 @@ class _MascotBadge extends StatelessWidget {
               semanticsLabel: 'Mascota educativa',
             ),
           ),
-          Positioned(
+          const Positioned(
             top: 16,
             right: 12,
-            child: Icon(Icons.auto_awesome_rounded, color: glow, size: 17),
+            child: Icon(
+              Icons.auto_awesome_rounded,
+              color: AppTheme.primaryLight,
+              size: 17,
+            ),
           ),
         ],
       ),
