@@ -28,16 +28,7 @@ class EducationVideoShowcase extends StatelessWidget {
             child: AspectRatio(
               aspectRatio: 16 / 9,
               child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      topic.color.withValues(alpha: 0.96),
-                      AppTheme.secondary,
-                    ],
-                  ),
-                ),
+                decoration: const BoxDecoration(color: Colors.black),
                 child: Stack(
                   children: [
                     Positioned(
