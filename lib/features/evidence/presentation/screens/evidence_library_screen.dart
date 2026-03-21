@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../domain/models/evidence_record.dart';
@@ -25,6 +26,20 @@ class _EvidenceLibraryScreenState extends State<EvidenceLibraryScreen> {
   bool _isRefreshing = false;
   String? _statusMessage;
   bool _isShowingCache = false;
+
+  String _t({
+    required String es,
+    required String en,
+    required String ay,
+    required String qu,
+  }) {
+    return AppLanguageService.instance.pick(
+      es: es,
+      en: en,
+      ay: ay,
+      qu: qu,
+    );
+  }
 
   int get _associatedCount =>
       _evidences.where((evidence) => evidence.isAssociated).length;
@@ -68,7 +83,12 @@ class _EvidenceLibraryScreenState extends State<EvidenceLibraryScreen> {
         createdEvidence,
         ..._evidences.where((item) => item.id != createdEvidence.id),
       ];
-      _statusMessage = 'La nueva evidencia ya aparece en tu bandeja.';
+      _statusMessage = _t(
+        es: 'La nueva evidencia ya aparece en tu bandeja.',
+        en: 'The new evidence already appears in your inbox.',
+        ay: 'Machaq evidenciax bandejaman uñstxiwa.',
+        qu: 'Musuq evidenciaqa bandejaykipi rikurimun.',
+      );
       _isShowingCache = false;
     });
   }
@@ -89,7 +109,16 @@ class _EvidenceLibraryScreenState extends State<EvidenceLibraryScreen> {
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: widget.isEmbedded
-          ? AppBar(title: const Text('Evidencias'))
+          ? AppBar(
+              title: Text(
+                _t(
+                  es: 'Evidencias',
+                  en: 'Evidence',
+                  ay: 'Evidencias',
+                  qu: 'Evidencias',
+                ),
+              ),
+            )
           : null,
       body: _isLoading
           ? const Center(
@@ -105,10 +134,27 @@ class _EvidenceLibraryScreenState extends State<EvidenceLibraryScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
                   children: [
                     if (!widget.isEmbedded) ...[
-                      Text('Evidencias', style: AppTheme.headlineLarge),
+                      Text(
+                        _t(
+                          es: 'Evidencias',
+                          en: 'Evidence',
+                          ay: 'Evidencias',
+                          qu: 'Evidencias',
+                        ),
+                        style: AppTheme.headlineLarge,
+                      ),
                       const SizedBox(height: 6),
                       Text(
-                        'Revisa, crea y organiza tus archivos sin depender de un incidente. Luego podras asociarlos cuando lo necesites.',
+                        _t(
+                          es:
+                              'Revisa, crea y organiza tus archivos sin depender de un incidente. Luego podras asociarlos cuando lo necesites.',
+                          en:
+                              'Review, create and organize your files without depending on an incident. You can link them later when needed.',
+                          ay:
+                              'Archivonakama uñakipa, lura ukat wakicht\'am janiw incidenter atiniskasa. Qhipat munasax mayachasmawa.',
+                          qu:
+                              'Archivoykikunata qhawariy, ruway hinaspa allichay mana incidenteman hapisqachu. Qhipaman munaspayki tinkichiyta atinki.',
+                        ),
                         style: AppTheme.bodyMedium,
                       ),
                       const SizedBox(height: 20),
@@ -117,7 +163,12 @@ class _EvidenceLibraryScreenState extends State<EvidenceLibraryScreen> {
                       children: [
                         Expanded(
                           child: SummaryMetricCard(
-                            label: 'Total',
+                            label: _t(
+                              es: 'Total',
+                              en: 'Total',
+                              ay: 'Total',
+                              qu: 'Total',
+                            ),
                             value: _evidences.length.toString(),
                             color: AppTheme.primaryLight,
                             icon: Icons.folder_copy_rounded,
@@ -126,7 +177,12 @@ class _EvidenceLibraryScreenState extends State<EvidenceLibraryScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: SummaryMetricCard(
-                            label: 'Asociadas',
+                            label: _t(
+                              es: 'Asociadas',
+                              en: 'Linked',
+                              ay: 'Mayachatani',
+                              qu: 'Tinkisqakuna',
+                            ),
                             value: _associatedCount.toString(),
                             color: AppTheme.success,
                             icon: Icons.link_rounded,
@@ -135,7 +191,12 @@ class _EvidenceLibraryScreenState extends State<EvidenceLibraryScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: SummaryMetricCard(
-                            label: 'Sin incidente',
+                            label: _t(
+                              es: 'Sin incidente',
+                              en: 'No incident',
+                              ay: 'Jan incidenteni',
+                              qu: 'Mana incidenteyuq',
+                            ),
                             value: _unassociatedCount.toString(),
                             color: AppTheme.warning,
                             icon: Icons.layers_clear_rounded,
@@ -157,10 +218,27 @@ class _EvidenceLibraryScreenState extends State<EvidenceLibraryScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Tu bandeja', style: AppTheme.titleLarge),
+                              Text(
+                                _t(
+                                  es: 'Tu bandeja',
+                                  en: 'Your inbox',
+                                  ay: 'Bandejam',
+                                  qu: 'Bandejayki',
+                                ),
+                                style: AppTheme.titleLarge,
+                              ),
                               const SizedBox(height: 4),
                               Text(
-                                'GET /evidences trae evidencias asociadas y no asociadas en el orden del backend.',
+                                _t(
+                                  es:
+                                      'GET /evidences trae evidencias asociadas y no asociadas en el orden del backend.',
+                                  en:
+                                      'GET /evidences returns linked and unlinked evidence in backend order.',
+                                  ay:
+                                      'GET /evidences ukax mayachata ukat jan mayachata evidencianak backend ordenar apani.',
+                                  qu:
+                                      'GET /evidences nisqaqa tinkisqa mana tinkisqa evidenciakunata backend nisqapa ordenninpi kutichin.',
+                                ),
                                 style: AppTheme.bodyMedium.copyWith(
                                   fontSize: 12,
                                 ),
@@ -181,7 +259,12 @@ class _EvidenceLibraryScreenState extends State<EvidenceLibraryScreen> {
                             ),
                           ),
                         CustomButton(
-                          text: 'Nueva evidencia',
+                          text: _t(
+                            es: 'Nueva evidencia',
+                            en: 'New evidence',
+                            ay: 'Machaq evidencia',
+                            qu: 'Musuq evidencia',
+                          ),
                           icon: Icons.add_rounded,
                           fullWidth: false,
                           height: 44,
@@ -193,11 +276,29 @@ class _EvidenceLibraryScreenState extends State<EvidenceLibraryScreen> {
                     if (_evidences.isEmpty)
                       EmptyStateCard(
                         icon: Icons.perm_media_outlined,
-                        title: 'Aun no hay evidencias',
-                        subtitle:
-                            'Ahora puedes subir archivos sin asociarlos a un incidente. Empieza creando tu primera evidencia.',
+                        title: _t(
+                          es: 'Aun no hay evidencias',
+                          en: 'There is no evidence yet',
+                          ay: 'Janiw evidencianakax utjkiti',
+                          qu: 'Manaraq evidenciakuna kanchu',
+                        ),
+                        subtitle: _t(
+                          es:
+                              'Ahora puedes subir archivos sin asociarlos a un incidente. Empieza creando tu primera evidencia.',
+                          en:
+                              'You can now upload files without linking them to an incident. Start by creating your first evidence item.',
+                          ay:
+                              'Jichhax archivonak incidenter jan mayachasaw apkatasma. Nayriri evidenciam lurañamp qallta.',
+                          qu:
+                              'Kunanqa archivokunata incidenteman mana tinkichispayki wichariyta atinki. Ñawpaq evidenciaykita ruwaspa qallariy.',
+                        ),
                         action: CustomButton(
-                          text: 'Crear evidencia',
+                          text: _t(
+                            es: 'Crear evidencia',
+                            en: 'Create evidence',
+                            ay: 'Evidencia lura',
+                            qu: 'Evidencia ruway',
+                          ),
                           icon: Icons.upload_file_rounded,
                           onPressed: _openCreateScreen,
                         ),

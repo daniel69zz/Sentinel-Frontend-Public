@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
@@ -85,17 +86,23 @@ class _ContactsScreenState extends State<ContactsScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: AppTheme.cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Eliminar contacto', style: AppTheme.titleLarge),
+        title: Text(
+          context.tr('auth.contacts.delete_title'),
+          style: AppTheme.titleLarge,
+        ),
         content: Text(
-          '¿Segura que quieres eliminar a ${contact.name}?',
+          context.tr(
+            'auth.contacts.delete_message',
+            params: {'name': contact.name},
+          ),
           style: AppTheme.bodyMedium,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(color: AppTheme.textSecondary),
+            child: Text(
+              context.tr('common.cancel'),
+              style: const TextStyle(color: AppTheme.textSecondary),
             ),
           ),
           TextButton(
@@ -104,9 +111,9 @@ class _ContactsScreenState extends State<ContactsScreen> {
               await _service.deleteContact(widget.userId, contact.id);
               await _loadContacts();
             },
-            child: const Text(
-              'Eliminar',
-              style: TextStyle(color: AppTheme.error),
+            child: Text(
+              context.tr('auth.contacts.delete_action'),
+              style: const TextStyle(color: AppTheme.error),
             ),
           ),
         ],
@@ -132,8 +139,8 @@ class _ContactsScreenState extends State<ContactsScreen> {
           automaticallyImplyLeading: !_isBlockingSetup,
           title: Text(
             widget.isInitialSetup
-                ? 'Tu primer contacto de emergencia'
-                : 'Contactos de emergencia',
+                ? context.tr('auth.contacts.first_contact_title')
+                : context.tr('auth.contacts.title'),
           ),
           actions: [
             IconButton(
@@ -154,7 +161,8 @@ class _ContactsScreenState extends State<ContactsScreen> {
             : ListView.separated(
                 padding: const EdgeInsets.all(20),
                 itemCount: _contacts.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 10),
                 itemBuilder: (_, i) => _ContactCard(
                   contact: _contacts[i],
                   onEdit: () => _openForm(contact: _contacts[i]),
@@ -199,7 +207,7 @@ class _ContactCard extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.15),
+              color: AppTheme.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.person, color: AppTheme.primary, size: 22),
@@ -212,7 +220,7 @@ class _ContactCard extends StatelessWidget {
                 Text(contact.name, style: AppTheme.labelLarge),
                 const SizedBox(height: 2),
                 Text(
-                  contact.relation,
+                  _relationLabel(context, contact.relation),
                   style: AppTheme.bodyMedium.copyWith(
                     fontSize: 11,
                     color: AppTheme.primary,
@@ -223,6 +231,16 @@ class _ContactCard extends StatelessWidget {
                   contact.phone,
                   style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                 ),
+                if ((contact.email ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 1),
+                  Text(
+                    contact.email!,
+                    style: AppTheme.bodyMedium.copyWith(
+                      fontSize: 12,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -266,6 +284,7 @@ class _ContactForm extends StatefulWidget {
 class _ContactFormState extends State<_ContactForm> {
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
+  late final TextEditingController _emailController;
   late String _selectedRelation;
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -287,6 +306,7 @@ class _ContactFormState extends State<_ContactForm> {
     super.initState();
     _nameController = TextEditingController(text: widget.contact?.name ?? '');
     _phoneController = TextEditingController(text: widget.contact?.phone ?? '');
+    _emailController = TextEditingController(text: widget.contact?.email ?? '');
     _selectedRelation = widget.contact?.relation ?? 'Mama';
   }
 
@@ -294,6 +314,7 @@ class _ContactFormState extends State<_ContactForm> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -308,6 +329,7 @@ class _ContactFormState extends State<_ContactForm> {
         id: widget.contact!.id,
         name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
+        email: _normalizeEmail(_emailController.text),
         relation: _selectedRelation,
       );
       success = await widget.service.updateContact(widget.userId, updated);
@@ -317,6 +339,7 @@ class _ContactFormState extends State<_ContactForm> {
         _nameController.text.trim(),
         _phoneController.text.trim(),
         _selectedRelation,
+        _normalizeEmail(_emailController.text),
       );
     }
 
@@ -332,8 +355,8 @@ class _ContactFormState extends State<_ContactForm> {
       SnackBar(
         content: Text(
           _isEditing
-              ? 'Error al actualizar el contacto'
-              : 'Ese numero ya esta registrado',
+              ? context.tr('auth.contacts.update_error')
+              : context.tr('auth.contacts.duplicate_error'),
         ),
         backgroundColor: AppTheme.error,
       ),
@@ -369,28 +392,34 @@ class _ContactFormState extends State<_ContactForm> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  _isEditing ? 'Editar contacto' : 'Nuevo contacto',
+                  _isEditing
+                      ? context.tr('auth.contacts.edit_title')
+                      : context.tr('auth.contacts.new_title'),
                   style: AppTheme.headlineMedium,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Este contacto recibira la alerta de emergencia',
+                  context.tr(
+                    'auth.contacts.form_subtitle',
+                    fallback:
+                        'Este contacto recibira alertas por WhatsApp/SMS y puede tener correo de emergencia.',
+                  ),
                   style: AppTheme.bodyMedium,
                 ),
                 const SizedBox(height: 24),
                 TextFormField(
                   controller: _nameController,
                   style: AppTheme.bodyLarge,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre',
-                    prefixIcon: Icon(
+                  decoration: InputDecoration(
+                    labelText: context.tr('auth.contacts.name_label'),
+                    prefixIcon: const Icon(
                       Icons.person_outline,
                       color: AppTheme.textSecondary,
                     ),
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) {
-                      return 'Ingresa un nombre';
+                      return context.tr('auth.contacts.name_required');
                     }
                     return null;
                   },
@@ -400,33 +429,69 @@ class _ContactFormState extends State<_ContactForm> {
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   style: AppTheme.bodyLarge,
-                  decoration: const InputDecoration(
-                    labelText: 'Numero de WhatsApp',
-                    prefixIcon: Icon(
+                  decoration: InputDecoration(
+                    labelText: context.tr(
+                      'auth.contacts.phone_label',
+                      fallback: 'Numero de celular',
+                    ),
+                    prefixIcon: const Icon(
                       Icons.phone_outlined,
                       color: AppTheme.textSecondary,
                     ),
-                    hintText: '+591 7XXXXXXX',
+                    hintText: context.tr('auth.contacts.phone_hint'),
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) {
-                      return 'Ingresa un numero';
+                      return context.tr('auth.contacts.phone_required');
                     }
                     final digits = v.replaceAll(RegExp(r'\D'), '');
                     if (digits.length < 8) {
-                      return 'Ingresa un numero valido';
+                      return context.tr('auth.contacts.phone_invalid');
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  style: AppTheme.bodyLarge,
+                  decoration: InputDecoration(
+                    labelText: context.tr(
+                      'auth.contacts.email_label',
+                      fallback: 'Correo de emergencia',
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.alternate_email_rounded,
+                      color: AppTheme.textSecondary,
+                    ),
+                    hintText: context.tr(
+                      'auth.contacts.email_hint',
+                      fallback: 'contacto@correo.com',
+                    ),
+                  ),
+                  validator: (value) {
+                    final normalizedEmail = _normalizeEmail(value);
+                    if ((value ?? '').trim().isEmpty) {
+                      return null;
+                    }
+                    if (normalizedEmail == null) {
+                      return context.tr(
+                        'auth.contacts.email_invalid',
+                        fallback: 'Ingresa un correo valido',
+                      );
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 14),
                 DropdownButtonFormField<String>(
-                  value: _selectedRelation,
+                  initialValue: _selectedRelation,
                   dropdownColor: AppTheme.cardBg,
                   style: AppTheme.bodyLarge,
-                  decoration: const InputDecoration(
-                    labelText: 'Relacion',
-                    prefixIcon: Icon(
+                  decoration: InputDecoration(
+                    labelText: context.tr('auth.contacts.relation_label'),
+                    prefixIcon: const Icon(
                       Icons.people_outline,
                       color: AppTheme.textSecondary,
                     ),
@@ -434,7 +499,7 @@ class _ContactFormState extends State<_ContactForm> {
                   items: _relations.map((relation) {
                     return DropdownMenuItem(
                       value: relation,
-                      child: Text(relation),
+                      child: Text(_relationLabel(context, relation)),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -443,13 +508,15 @@ class _ContactFormState extends State<_ContactForm> {
                 ),
                 const SizedBox(height: 28),
                 CustomButton(
-                  text: _isEditing ? 'Guardar cambios' : 'Agregar contacto',
+                  text: _isEditing
+                      ? context.tr('auth.contacts.save_changes')
+                      : context.tr('auth.contacts.add_contact'),
                   onPressed: _save,
                   isLoading: _isLoading,
                 ),
                 const SizedBox(height: 12),
                 CustomButton(
-                  text: 'Cancelar',
+                  text: context.tr('common.cancel'),
                   variant: ButtonVariant.outline,
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -460,6 +527,37 @@ class _ContactFormState extends State<_ContactForm> {
         );
       },
     );
+  }
+}
+
+String? _normalizeEmail(String? value) {
+  final trimmed = (value ?? '').trim().toLowerCase();
+  if (trimmed.isEmpty) {
+    return null;
+  }
+
+  final isValid = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(trimmed);
+  return isValid ? trimmed : null;
+}
+
+String _relationLabel(BuildContext context, String relation) {
+  switch (relation) {
+    case 'Mama':
+      return context.tr('auth.contacts.relation_mother');
+    case 'Papa':
+      return context.tr('auth.contacts.relation_father');
+    case 'Hermana':
+      return context.tr('auth.contacts.relation_sister');
+    case 'Hermano':
+      return context.tr('auth.contacts.relation_brother');
+    case 'Amiga':
+      return context.tr('auth.contacts.relation_friend');
+    case 'Pareja':
+      return context.tr('auth.contacts.relation_partner');
+    case 'Otro':
+      return context.tr('auth.contacts.relation_other');
+    default:
+      return relation;
   }
 }
 
@@ -481,7 +579,7 @@ class _EmptyState extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.1),
+                color: AppTheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -491,18 +589,21 @@ class _EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            Text('Sin contactos aun', style: AppTheme.titleLarge),
+            Text(
+              context.tr('auth.contacts.empty_title'),
+              style: AppTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             Text(
               isInitialSetup
-                  ? 'Antes de entrar a la app, agrega al menos un contacto de confianza para tus alertas de emergencia.'
-                  : 'Agrega contactos de confianza que recibiran tu alerta de emergencia.',
+                  ? context.tr('auth.contacts.empty_setup')
+                  : context.tr('auth.contacts.empty_subtitle'),
               style: AppTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
             CustomButton(
-              text: 'Agregar primer contacto',
+              text: context.tr('auth.contacts.add_first'),
               onPressed: onAdd,
               fullWidth: false,
             ),

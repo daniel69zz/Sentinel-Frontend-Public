@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../data/education_topics_catalog.dart';
 import '../../domain/models/education_pet_state.dart';
@@ -89,7 +90,7 @@ class _EducationScreenState extends State<EducationScreen> {
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: widget.isEmbedded
-          ? AppBar(title: const Text('Educacion DSDR'))
+          ? AppBar(title: Text(context.tr('education.title_embedded')))
           : null,
       body: SafeArea(
         child: CustomScrollView(
@@ -101,10 +102,10 @@ class _EducationScreenState extends State<EducationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (!widget.isEmbedded) ...[
-                      Text('Educacion', style: AppTheme.headlineLarge),
+                      Text(context.tr('education.title'), style: AppTheme.headlineLarge),
                       const SizedBox(height: 6),
                       Text(
-                        'Derechos Sexuales y Reproductivos',
+                        context.tr('education.subtitle'),
                         style: AppTheme.bodyMedium,
                       ),
                       const SizedBox(height: 20),
@@ -127,7 +128,7 @@ class _EducationScreenState extends State<EducationScreen> {
                           setState(() => _query = value);
                         },
                         decoration: InputDecoration(
-                          hintText: 'Buscar tema...',
+                          hintText: context.tr('education.search_hint'),
                           hintStyle: AppTheme.bodyMedium,
                           prefixIcon: const Icon(
                             Icons.search,
@@ -144,14 +145,16 @@ class _EducationScreenState extends State<EducationScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      isFiltering ? 'Resultados' : 'Temas disponibles',
+                      isFiltering
+                          ? context.tr('education.results_title')
+                          : context.tr('education.topics_title'),
                       style: AppTheme.titleLarge,
                     ),
                     const SizedBox(height: 6),
                     Text(
                       isFiltering
-                          ? 'Selecciona el tema que quieras abrir.'
-                          : 'Cada tarjeta abre otra pantalla con video, comic y texto.',
+                          ? context.tr('education.results_subtitle')
+                          : context.tr('education.topics_subtitle'),
                       style: AppTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),

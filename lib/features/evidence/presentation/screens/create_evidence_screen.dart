@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../domain/models/evidence_record.dart';
@@ -30,6 +31,20 @@ class _CreateEvidenceScreenState extends State<CreateEvidenceScreen> {
   DateTime? _takenAt;
   bool _isPrivate = true;
   bool _isSubmitting = false;
+
+  String _t({
+    required String es,
+    required String en,
+    required String ay,
+    required String qu,
+  }) {
+    return AppLanguageService.instance.pick(
+      es: es,
+      en: en,
+      ay: ay,
+      qu: qu,
+    );
+  }
 
   @override
   void dispose() {
@@ -67,7 +82,14 @@ class _CreateEvidenceScreenState extends State<CreateEvidenceScreen> {
 
     final selected = result.files.first;
     if (selected.path == null || selected.path!.trim().isEmpty) {
-      _showSnackBar('No se pudo acceder al archivo seleccionado.');
+      _showSnackBar(
+        _t(
+          es: 'No se pudo acceder al archivo seleccionado.',
+          en: 'The selected file could not be accessed.',
+          ay: 'Ajllita archivor janiw mantañjamakiti.',
+          qu: 'Akllasqa archivoman mana yaykuyta atikurqanchu.',
+        ),
+      );
       return;
     }
 
@@ -114,7 +136,14 @@ class _CreateEvidenceScreenState extends State<CreateEvidenceScreen> {
 
   Future<void> _submit() async {
     if (_selectedFilePath == null || _selectedFilePath!.trim().isEmpty) {
-      _showSnackBar('Selecciona un archivo antes de continuar.');
+      _showSnackBar(
+        _t(
+          es: 'Selecciona un archivo antes de continuar.',
+          en: 'Select a file before continuing.',
+          ay: 'Sarantañkamax maya archivo ajllim.',
+          qu: 'Qatipananpaq huk archivota akllay.',
+        ),
+      );
       return;
     }
 
@@ -155,7 +184,16 @@ class _CreateEvidenceScreenState extends State<CreateEvidenceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.surface,
-      appBar: AppBar(title: const Text('Nueva evidencia')),
+      appBar: AppBar(
+        title: Text(
+          _t(
+            es: 'Nueva evidencia',
+            en: 'New evidence',
+            ay: 'Machaq evidencia',
+            qu: 'Musuq evidencia',
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -163,12 +201,26 @@ class _CreateEvidenceScreenState extends State<CreateEvidenceScreen> {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
             children: [
               Text(
-                'Sube una evidencia independiente',
+                _t(
+                  es: 'Sube una evidencia independiente',
+                  en: 'Upload standalone evidence',
+                  ay: 'Sapaki evidencia apkata',
+                  qu: 'Sapallan evidencia wichariy',
+                ),
                 style: AppTheme.headlineMedium,
               ),
               const SizedBox(height: 8),
               Text(
-                'Este flujo ya no obliga a elegir un incidente. Puedes registrar el archivo ahora y asociarlo despues.',
+                _t(
+                  es:
+                      'Este flujo ya no obliga a elegir un incidente. Puedes registrar el archivo ahora y asociarlo despues.',
+                  en:
+                      'This flow no longer forces you to choose an incident. You can register the file now and link it later.',
+                  ay:
+                      'Aka thakhix janiw incident ajlliñ maykiti. Jichhax archivo qillqantasmawa ukat qhipat mayachasmawa.',
+                  qu:
+                      'Kay puriynaqa manan incidenteta akllanapaq obliganchu. Kunanqa archivota qillqayta atinki, qhipaman tinkichiyta atinki.',
+                ),
                 style: AppTheme.bodyMedium,
               ),
               const SizedBox(height: 20),
@@ -197,14 +249,29 @@ class _CreateEvidenceScreenState extends State<CreateEvidenceScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        _selectedFileName ?? 'Selecciona un archivo',
+                        _selectedFileName ??
+                            _t(
+                              es: 'Selecciona un archivo',
+                              en: 'Select a file',
+                              ay: 'Maya archivo ajllim',
+                              qu: 'Huk archivota akllay',
+                            ),
                         style: AppTheme.titleLarge,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 6),
                       Text(
                         _selectedFileName == null
-                            ? 'Imagen, video, audio o documento de hasta 20 MB.'
+                            ? _t(
+                                es:
+                                    'Imagen, video, audio o documento de hasta 20 MB.',
+                                en:
+                                    'Image, video, audio or document up to 20 MB.',
+                                ay:
+                                    'Imagen, video, audio jan ukax documento 20 MB ukjakama.',
+                                qu:
+                                    'Imagen, video, audio utaq documento 20 MB kama.',
+                              )
                             : '${formatEvidenceSize(_selectedFileSize)} - ${p.extension(_selectedFileName!).replaceFirst('.', '').toUpperCase()}',
                         style: AppTheme.bodyMedium,
                         textAlign: TextAlign.center,
@@ -217,27 +284,86 @@ class _CreateEvidenceScreenState extends State<CreateEvidenceScreen> {
               DropdownButtonFormField<String>(
                 key: ValueKey(_selectedType),
                 initialValue: _selectedType,
-                items: const [
+                items: [
                   DropdownMenuItem(
                     value: 'auto',
-                    child: Text('Tipo automatico'),
+                    child: Text(
+                      _t(
+                        es: 'Tipo automatico',
+                        en: 'Automatic type',
+                        ay: 'Automatico kasta',
+                        qu: 'Automatico kasta',
+                      ),
+                    ),
                   ),
-                  DropdownMenuItem(value: 'imagen', child: Text('Imagen')),
-                  DropdownMenuItem(value: 'video', child: Text('Video')),
-                  DropdownMenuItem(value: 'audio', child: Text('Audio')),
+                  DropdownMenuItem(
+                    value: 'imagen',
+                    child: Text(
+                      _t(
+                        es: 'Imagen',
+                        en: 'Image',
+                        ay: 'Imagen',
+                        qu: 'Imagen',
+                      ),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'video',
+                    child: Text(
+                      _t(
+                        es: 'Video',
+                        en: 'Video',
+                        ay: 'Video',
+                        qu: 'Video',
+                      ),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'audio',
+                    child: Text(
+                      _t(
+                        es: 'Audio',
+                        en: 'Audio',
+                        ay: 'Audio',
+                        qu: 'Audio',
+                      ),
+                    ),
+                  ),
                   DropdownMenuItem(
                     value: 'documento',
-                    child: Text('Documento'),
+                    child: Text(
+                      _t(
+                        es: 'Documento',
+                        en: 'Document',
+                        ay: 'Documento',
+                        qu: 'Documento',
+                      ),
+                    ),
                   ),
-                  DropdownMenuItem(value: 'texto', child: Text('Texto')),
+                  DropdownMenuItem(
+                    value: 'texto',
+                    child: Text(
+                      _t(
+                        es: 'Texto',
+                        en: 'Text',
+                        ay: 'Texto',
+                        qu: 'Texto',
+                      ),
+                    ),
+                  ),
                 ],
                 onChanged: _isSubmitting
                     ? null
                     : (value) {
                         setState(() => _selectedType = value ?? 'auto');
                       },
-                decoration: const InputDecoration(
-                  labelText: 'Tipo de evidencia',
+                decoration: InputDecoration(
+                  labelText: _t(
+                    es: 'Tipo de evidencia',
+                    en: 'Evidence type',
+                    ay: 'Evidencia kasta',
+                    qu: 'Evidencia kasta',
+                  ),
                   prefixIcon: Icon(Icons.category_outlined),
                 ),
               ),
@@ -245,8 +371,13 @@ class _CreateEvidenceScreenState extends State<CreateEvidenceScreen> {
               TextFormField(
                 controller: _titleController,
                 maxLength: 80,
-                decoration: const InputDecoration(
-                  labelText: 'Titulo (opcional)',
+                decoration: InputDecoration(
+                  labelText: _t(
+                    es: 'Titulo (opcional)',
+                    en: 'Title (optional)',
+                    ay: 'Titulo (opcional)',
+                    qu: 'Titulo (opcional)',
+                  ),
                   prefixIcon: Icon(Icons.title_rounded),
                 ),
               ),
@@ -255,8 +386,13 @@ class _CreateEvidenceScreenState extends State<CreateEvidenceScreen> {
                 controller: _descriptionController,
                 minLines: 4,
                 maxLines: 6,
-                decoration: const InputDecoration(
-                  labelText: 'Descripcion o contexto (opcional)',
+                decoration: InputDecoration(
+                  labelText: _t(
+                    es: 'Descripcion o contexto (opcional)',
+                    en: 'Description or context (optional)',
+                    ay: 'Descripcion jan ukax contexto (opcional)',
+                    qu: 'Descripcion utaq contexto (opcional)',
+                  ),
                   alignLabelWithHint: true,
                   prefixIcon: Padding(
                     padding: EdgeInsets.only(bottom: 72),
@@ -269,13 +405,23 @@ class _CreateEvidenceScreenState extends State<CreateEvidenceScreen> {
                 onTap: _isSubmitting ? null : _pickTakenAt,
                 borderRadius: BorderRadius.circular(12),
                 child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Fecha de captura (opcional)',
+                  decoration: InputDecoration(
+                    labelText: _t(
+                      es: 'Fecha de captura (opcional)',
+                      en: 'Capture date (optional)',
+                      ay: 'Katuqawi uru (opcional)',
+                      qu: 'Hapiy p\'unchaw (opcional)',
+                    ),
                     prefixIcon: Icon(Icons.event_outlined),
                   ),
                   child: Text(
                     _takenAt == null
-                        ? 'Elegir fecha y hora'
+                        ? _t(
+                            es: 'Elegir fecha y hora',
+                            en: 'Choose date and time',
+                            ay: 'Uru ukat hora ajllim',
+                            qu: 'P\'unchawta horatawan akllay',
+                          )
                         : formatEvidenceDate(_takenAt!.toIso8601String()),
                     style: _takenAt == null
                         ? AppTheme.bodyMedium
@@ -291,20 +437,49 @@ class _CreateEvidenceScreenState extends State<CreateEvidenceScreen> {
                     : (value) {
                         setState(() => _isPrivate = value);
                       },
-                title: const Text('Marcar como privada'),
-                subtitle: const Text(
-                  'Mantiene la evidencia identificada como informacion sensible.',
+                title: Text(
+                  _t(
+                    es: 'Marcar como privada',
+                    en: 'Mark as private',
+                    ay: 'Privada sasaw chimpt\'am',
+                    qu: 'Privada nispa akllay',
+                  ),
+                ),
+                subtitle: Text(
+                  _t(
+                    es:
+                        'Mantiene la evidencia identificada como informacion sensible.',
+                    en:
+                        'Keeps the evidence identified as sensitive information.',
+                    ay:
+                        'Evidenciax sensible informacionjam uñt\'ayatawa qhipara.',
+                    qu:
+                        'Evidenciaqa sensible informacion hina reqsisqa kachkan.',
+                  ),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 4),
               ),
               const SizedBox(height: 18),
-              const StatusBanner(
-                message:
-                    'La asociacion con incidentes se gestiona despues desde el detalle de la evidencia o desde el modulo de Incidentes.',
+              StatusBanner(
+                message: _t(
+                  es:
+                      'La asociacion con incidentes se gestiona despues desde el detalle de la evidencia o desde el modulo de Incidentes.',
+                  en:
+                      'Association with incidents is managed later from the evidence detail or the Incidents module.',
+                  ay:
+                      'Incidentenakamp mayachawix qhipat evidencia detalle ukat jan ukax Incidentes modulo tuqit apnaqatawa.',
+                  qu:
+                      'Incidentekunawan asociacionqa qhipaman evidencia detallenninmanta utaq Incidentes modulo manta apanakun.',
+                ),
               ),
               const SizedBox(height: 24),
               CustomButton(
-                text: 'Guardar evidencia',
+                text: _t(
+                  es: 'Guardar evidencia',
+                  en: 'Save evidence',
+                  ay: 'Evidencia ima',
+                  qu: 'Evidencia waqaychay',
+                ),
                 icon: Icons.save_outlined,
                 isLoading: _isSubmitting,
                 onPressed: _submit,

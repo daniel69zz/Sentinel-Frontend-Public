@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/localization/app_language_service.dart';
 
 class ChatbotTurn {
   final String role;
@@ -21,28 +22,21 @@ class ChatbotException implements Exception {
 }
 
 class ChatbotService {
-  static const String _systemPrompt = '''
-Eres una asistente de apoyo para una app de seguridad personal en Bolivia.
-Responde siempre en espanol claro, empatico y practico.
-Prioriza orientacion breve y accionable sobre seguridad, apoyo emocional, denuncias y rutas de ayuda.
-Si la persona describe peligro inmediato, sugiere usar la alerta SOS de la app, buscar un lugar seguro y contactar emergencias o alguien de confianza.
-No inventes direcciones, telefonos, instituciones ni datos no confirmados.
-No digas que eres terapeuta, abogada o policia.
-Mantén las respuestas en menos de 140 palabras salvo que la usuaria pida mas detalle.
-''';
-
   final http.Client _client;
 
   ChatbotService({http.Client? client}) : _client = client ?? http.Client();
 
   bool get isConfigured => AppConstants.groqApiKey.trim().isNotEmpty;
 
-  Future<String> generateReply(List<ChatbotTurn> conversation) async {
+  Future<String> generateReply(
+    List<ChatbotTurn> conversation, {
+    AppLanguage? language,
+  }) async {
+    final t = AppLanguageService.instance;
+    final selectedLanguage = language ?? t.language;
     final apiKey = AppConstants.groqApiKey.trim();
     if (apiKey.isEmpty) {
-      throw const ChatbotException(
-        'Falta configurar GROQ_API_KEY. Usa flutter_groq.cmd run o agrega el dart-define en tu configuración de ejecución.',
-      );
+      throw ChatbotException(t.tr('chatbot.errors.missing_key'));
     }
 
     final payload = {
@@ -52,7 +46,10 @@ Mantén las respuestas en menos de 140 palabras salvo que la usuaria pida mas de
       'stream': false,
       'max_completion_tokens': 300,
       'messages': [
-        const {'role': 'system', 'content': _systemPrompt},
+        {
+          'role': 'system',
+          'content': _buildSystemPrompt(selectedLanguage.chatbotName),
+        },
         ...conversation
             .where((turn) => turn.content.trim().isNotEmpty)
             .take(12)
@@ -73,43 +70,54 @@ Mantén las respuestas en menos de 140 palabras salvo que la usuaria pida mas de
           )
           .timeout(const Duration(seconds: 30));
     } catch (_) {
-      throw const ChatbotException('No se pudo conectar con Groq.');
+      throw ChatbotException(t.tr('chatbot.errors.connect'));
     }
 
     final responseMap = _decodeMap(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw ChatbotException(
         _extractError(responseMap) ??
-            'Groq devolvió un error ${response.statusCode}.',
+            t.tr(
+              'chatbot.errors.api',
+              params: {'status': response.statusCode.toString()},
+            ),
       );
     }
 
     final choices = responseMap['choices'];
     if (choices is! List || choices.isEmpty) {
-      throw const ChatbotException(
-        'Groq no devolvió una respuesta utilizable.',
-      );
+      throw ChatbotException(t.tr('chatbot.errors.unusable'));
     }
 
     final firstChoice = choices.first;
     if (firstChoice is! Map) {
-      throw const ChatbotException(
-        'Groq devolvió una respuesta con formato inesperado.',
-      );
+      throw ChatbotException(t.tr('chatbot.errors.unexpected_format'));
     }
 
     final message = firstChoice['message'];
     if (message is! Map) {
-      throw const ChatbotException('Groq no devolvió el mensaje esperado.');
+      throw ChatbotException(t.tr('chatbot.errors.expected_message'));
     }
 
     final content = message['content'];
     final parsedContent = _normalizeContent(content);
     if (parsedContent.isEmpty) {
-      throw const ChatbotException('Groq respondió vacío.');
+      throw ChatbotException(t.tr('chatbot.errors.empty'));
     }
 
     return parsedContent;
+  }
+
+  String _buildSystemPrompt(String targetLanguage) {
+    return '''
+You are a support assistant for a personal safety app in Bolivia.
+Always answer in $targetLanguage with clear, empathetic and practical wording.
+Prioritize short and actionable guidance about safety, emotional support, reports and help routes.
+If the user describes immediate danger, suggest using the app SOS alert, moving to a safer place, and contacting emergency services or a trusted person.
+Do not invent addresses, phone numbers, institutions or unconfirmed facts.
+Do not say that you are a therapist, lawyer or police officer.
+Keep answers under 140 words unless the user asks for more detail.
+''';
   }
 
   Map<String, dynamic> _decodeMap(String body) {

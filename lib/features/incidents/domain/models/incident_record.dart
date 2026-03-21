@@ -1,3 +1,5 @@
+import '../../../../core/localization/app_language_service.dart';
+
 class IncidentRecord {
   final String id;
   final String title;
@@ -55,11 +57,27 @@ class IncidentRecord {
   factory IncidentRecord.fromJson(Map<String, dynamic> json) {
     return IncidentRecord(
       id: _readString(json['id']),
-      title: _readString(json['title'], fallback: 'Incidente'),
+      title: _readString(
+        json['title'],
+        fallback: AppLanguageService.instance.pick(
+          es: 'Incidente',
+          en: 'Incident',
+          ay: 'Incidente',
+          qu: 'Incidente',
+        ),
+      ),
       description: _readString(json['description']),
       type: _readString(json['type'], fallback: 'general'),
       status: _readString(json['status'], fallback: 'registrado'),
-      riskLevel: _readString(json['riskLevel'], fallback: 'sin definir'),
+      riskLevel: _readString(
+        json['riskLevel'],
+        fallback: AppLanguageService.instance.pick(
+          es: 'sin definir',
+          en: 'undefined',
+          ay: 'janiw qhanañchatakiti',
+          qu: 'mana sut\'ichasqachu',
+        ),
+      ),
       location: _readString(json['location']),
       occurredAt: _readString(json['occurredAt'] ?? json['createdAt']),
     );
@@ -70,7 +88,12 @@ class IncidentRecord {
       id: _readString(json['id']),
       title: _readString(
         json['titulo'] ?? json['title'],
-        fallback: 'Incidente',
+        fallback: AppLanguageService.instance.pick(
+          es: 'Incidente',
+          en: 'Incident',
+          ay: 'Incidente',
+          qu: 'Incidente',
+        ),
       ),
       description: _readString(json['descripcion'] ?? json['description']),
       type: _readString(
@@ -83,7 +106,12 @@ class IncidentRecord {
       ),
       riskLevel: _readString(
         json['nivel_riesgo'] ?? json['risk_level'],
-        fallback: 'sin definir',
+        fallback: AppLanguageService.instance.pick(
+          es: 'sin definir',
+          en: 'undefined',
+          ay: 'janiw qhanañchatakiti',
+          qu: 'mana sut\'ichasqachu',
+        ),
       ),
       location: _readString(json['lugar'] ?? json['location']),
       occurredAt: _readString(

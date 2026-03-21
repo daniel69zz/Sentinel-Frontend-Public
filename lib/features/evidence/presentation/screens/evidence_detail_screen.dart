@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../incidents/domain/models/incident_record.dart';
@@ -26,6 +27,20 @@ class _EvidenceDetailScreenState extends State<EvidenceDetailScreen> {
   bool _isLoadingDetail = true;
   bool _isUpdatingAssociation = false;
   String? _statusMessage;
+
+  String _t({
+    required String es,
+    required String en,
+    required String ay,
+    required String qu,
+  }) {
+    return AppLanguageService.instance.pick(
+      es: es,
+      en: en,
+      ay: ay,
+      qu: qu,
+    );
+  }
 
   @override
   void initState() {
@@ -106,7 +121,16 @@ class _EvidenceDetailScreenState extends State<EvidenceDetailScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.surface,
-      appBar: AppBar(title: const Text('Detalle de evidencia')),
+      appBar: AppBar(
+        title: Text(
+          _t(
+            es: 'Detalle de evidencia',
+            en: 'Evidence detail',
+            ay: 'Evidencia detalle',
+            qu: 'Evidencia detalle',
+          ),
+        ),
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
@@ -171,7 +195,19 @@ class _EvidenceDetailScreenState extends State<EvidenceDetailScreen> {
                         color: typeStyle.color,
                       ),
                       _DetailChip(
-                        label: _evidence.isPrivate ? 'Privada' : 'No privada',
+                        label: _evidence.isPrivate
+                            ? _t(
+                                es: 'Privada',
+                                en: 'Private',
+                                ay: 'Privada',
+                                qu: 'Privada',
+                              )
+                            : _t(
+                                es: 'No privada',
+                                en: 'Not private',
+                                ay: 'Jan privada',
+                                qu: 'Mana privada',
+                              ),
                         color: _evidence.isPrivate
                             ? AppTheme.warning
                             : AppTheme.success,
@@ -184,8 +220,18 @@ class _EvidenceDetailScreenState extends State<EvidenceDetailScreen> {
                   const SizedBox(height: 18),
                   CustomButton(
                     text: _evidence.isAssociated
-                        ? 'Mover o quitar asociacion'
-                        : 'Asociar a incidente',
+                        ? _t(
+                            es: 'Mover o quitar asociacion',
+                            en: 'Move or remove association',
+                            ay: 'Asociacion apaqam jan ukax chhaqtayam',
+                            qu: 'Asociacionta kuyuchiy utaq qichuy',
+                          )
+                        : _t(
+                            es: 'Asociar a incidente',
+                            en: 'Associate with incident',
+                            ay: 'Incidente ukar mayacha',
+                            qu: 'Incidenteman tinkichiy',
+                          ),
                     icon: _evidence.isAssociated
                         ? Icons.swap_horiz_rounded
                         : Icons.link_rounded,
@@ -198,11 +244,27 @@ class _EvidenceDetailScreenState extends State<EvidenceDetailScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            Text('Vista previa', style: AppTheme.titleLarge),
+            Text(
+              _t(
+                es: 'Vista previa',
+                en: 'Preview',
+                ay: 'Nayra uñjaña',
+                qu: 'Ñawpaq rikuy',
+              ),
+              style: AppTheme.titleLarge,
+            ),
             const SizedBox(height: 12),
             EvidencePreviewPanel(evidence: _evidence),
             const SizedBox(height: 20),
-            Text('Contexto completo', style: AppTheme.titleLarge),
+            Text(
+              _t(
+                es: 'Contexto completo',
+                en: 'Full context',
+                ay: 'Phuqhata contexto',
+                qu: 'Hunt\'asqa contexto',
+              ),
+              style: AppTheme.titleLarge,
+            ),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -214,13 +276,26 @@ class _EvidenceDetailScreenState extends State<EvidenceDetailScreen> {
               ),
               child: Text(
                 _evidence.description.trim().isEmpty
-                    ? 'No se registro una descripcion para esta evidencia.'
+                    ? _t(
+                        es: 'No se registro una descripcion para esta evidencia.',
+                        en: 'No description was registered for this evidence.',
+                        ay: 'Aka evidenciatakix janiw descripcion qillqt\'atakti.',
+                        qu: 'Kay evidenciapaq descripcionqa mana qillqasqachu.',
+                      )
                     : _evidence.description,
                 style: AppTheme.bodyLarge,
               ),
             ),
             const SizedBox(height: 20),
-            Text('Metadatos', style: AppTheme.titleLarge),
+            Text(
+              _t(
+                es: 'Metadatos',
+                en: 'Metadata',
+                ay: 'Metadatos',
+                qu: 'Metadatos',
+              ),
+              style: AppTheme.titleLarge,
+            ),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(18),
@@ -237,28 +312,63 @@ class _EvidenceDetailScreenState extends State<EvidenceDetailScreen> {
                   ),
                   const Divider(color: AppTheme.divider),
                   _MetadataRow(
-                    label: 'Privacidad',
+                    label: _t(
+                      es: 'Privacidad',
+                      en: 'Privacy',
+                      ay: 'Privacidad',
+                      qu: 'Privacidad',
+                    ),
                     value: _evidence.isPrivate
-                        ? 'Privada para el usuario'
-                        : 'Sin restriccion especial',
+                        ? _t(
+                            es: 'Privada para el usuario',
+                            en: 'Private for the user',
+                            ay: 'Usuario ukatak privada',
+                            qu: 'Usuariopaq privada',
+                          )
+                        : _t(
+                            es: 'Sin restriccion especial',
+                            en: 'No special restriction',
+                            ay: 'Janiw especial restriccion utjkiti',
+                            qu: 'Mana especial restriccion kanchu',
+                          ),
                   ),
                   const Divider(color: AppTheme.divider),
                   _MetadataRow(
-                    label: 'Archivo',
+                    label: _t(
+                      es: 'Archivo',
+                      en: 'File',
+                      ay: 'Archivo',
+                      qu: 'Archivo',
+                    ),
                     value: _evidence.fileName.trim().isEmpty
-                        ? 'Sin nombre disponible'
+                        ? _t(
+                            es: 'Sin nombre disponible',
+                            en: 'No available name',
+                            ay: 'Janiw sutix utjkiti',
+                            qu: 'Mana sutin kanchu',
+                          )
                         : _evidence.fileName,
                   ),
                   const Divider(color: AppTheme.divider),
                   _MetadataRow(
                     label: 'Mime type',
                     value: _evidence.mimeType.trim().isEmpty
-                        ? 'No disponible'
+                        ? _t(
+                            es: 'No disponible',
+                            en: 'Unavailable',
+                            ay: 'Janiw utjkiti',
+                            qu: 'Mana kanchu',
+                          )
                         : _evidence.mimeType,
                   ),
                   const Divider(color: AppTheme.divider),
                   _MetadataRow(
-                    label: 'Tamano',
+                    label: _t(
+                      es: 'Tamano',
+                      en: 'Size',
+                      ay: 'Tamano',
+                      qu: 'Tamano',
+                    ),
                     value: formatEvidenceSize(_evidence.sizeBytes),
                   ),
                 ],
@@ -352,6 +462,20 @@ class _AssociationSheetState extends State<_AssociationSheet> {
   String? _statusMessage;
   List<IncidentRecord> _incidents = [];
 
+  String _t({
+    required String es,
+    required String en,
+    required String ay,
+    required String qu,
+  }) {
+    return AppLanguageService.instance.pick(
+      es: es,
+      en: en,
+      ay: ay,
+      qu: qu,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -383,10 +507,27 @@ class _AssociationSheetState extends State<_AssociationSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Gestionar asociacion', style: AppTheme.titleLarge),
+          Text(
+            _t(
+              es: 'Gestionar asociacion',
+              en: 'Manage association',
+              ay: 'Asociacion apnaqam',
+              qu: 'Asociacionta kamachiy',
+            ),
+            style: AppTheme.titleLarge,
+          ),
           const SizedBox(height: 8),
           Text(
-            'Asocia la evidencia a un incidente, muevela o dejala sin asociacion.',
+            _t(
+              es:
+                  'Asocia la evidencia a un incidente, muevela o dejala sin asociacion.',
+              en:
+                  'Associate the evidence with an incident, move it, or leave it unlinked.',
+              ay:
+                  'Evidencia incidente ukar mayacha, apaqam jan ukax jan mayachata jaytam.',
+              qu:
+                  'Evidenciata incidenteman tinkichiy, kuyuchiy utaq mana tinkisqata saqiy.',
+            ),
             style: AppTheme.bodyMedium,
           ),
           if (_statusMessage != null) ...[
@@ -407,9 +548,22 @@ class _AssociationSheetState extends State<_AssociationSheet> {
                 shrinkWrap: true,
                 children: [
                   _AssociationOptionTile(
-                    title: 'Sin incidente',
-                    subtitle:
-                        'La evidencia quedara disponible para asociarla despues.',
+                    title: _t(
+                      es: 'Sin incidente',
+                      en: 'No incident',
+                      ay: 'Jan incidenteni',
+                      qu: 'Mana incidenteyuq',
+                    ),
+                    subtitle: _t(
+                      es:
+                          'La evidencia quedara disponible para asociarla despues.',
+                      en:
+                          'The evidence will remain available to associate later.',
+                      ay:
+                          'Evidenciax qhipat mayachañatakix utjaskaniwa.',
+                      qu:
+                          'Evidenciaqa qhipaman tinkichinapaq kachkanqa.',
+                    ),
                     selected: _selectedIncidentId == null,
                     onTap: () {
                       setState(() => _selectedIncidentId = null);
@@ -430,7 +584,12 @@ class _AssociationSheetState extends State<_AssociationSheet> {
             ),
           const SizedBox(height: 16),
           CustomButton(
-            text: 'Guardar asociacion',
+            text: _t(
+              es: 'Guardar asociacion',
+              en: 'Save association',
+              ay: 'Asociacion ima',
+              qu: 'Asociacion waqaychay',
+            ),
             icon: Icons.save_outlined,
             onPressed: _isLoading
                 ? null

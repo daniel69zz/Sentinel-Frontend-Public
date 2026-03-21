@@ -6,6 +6,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../../core/localization/app_language_service.dart';
+
 class EmergencyCaptureResult {
   final bool videoStarted;
   final bool audioStarted;
@@ -72,6 +74,20 @@ class EmergencyCaptureService {
   CameraController? _cameraController;
   Directory? _sessionDirectory;
 
+  String _t({
+    required String es,
+    required String en,
+    required String ay,
+    required String qu,
+  }) {
+    return AppLanguageService.instance.pick(
+      es: es,
+      en: en,
+      ay: ay,
+      qu: qu,
+    );
+  }
+
   Future<EmergencyCaptureResult> startEmergencyCapture() async {
     final issues = <String>[];
     var videoStarted = false;
@@ -84,13 +100,34 @@ class EmergencyCaptureService {
     final locationGranted = await _requestLocationPermission();
 
     if (!cameraGranted) {
-      issues.add('Sin permiso de camara.');
+      issues.add(
+        _t(
+          es: 'Sin permiso de camara.',
+          en: 'Camera permission is missing.',
+          ay: 'Janiw camara permisox utjkiti.',
+          qu: 'Camara permisoqa mana kanchu.',
+        ),
+      );
     }
     if (!microphoneGranted) {
-      issues.add('Sin permiso de microfono.');
+      issues.add(
+        _t(
+          es: 'Sin permiso de microfono.',
+          en: 'Microphone permission is missing.',
+          ay: 'Janiw microfono permisox utjkiti.',
+          qu: 'Microfono permisoqa mana kanchu.',
+        ),
+      );
     }
     if (!locationGranted) {
-      issues.add('Sin permiso de ubicacion.');
+      issues.add(
+        _t(
+          es: 'Sin permiso de ubicacion.',
+          en: 'Location permission is missing.',
+          ay: 'Janiw ubicacion permisox utjkiti.',
+          qu: 'Ubicacion permisoqa mana kanchu.',
+        ),
+      );
     }
 
     final sessionDirectory = await _createSessionDirectory();
@@ -121,7 +158,14 @@ class EmergencyCaptureService {
         videoStarted = true;
         audioStarted = microphoneGranted;
       } catch (_) {
-        issues.add('No se pudo iniciar la grabacion de video.');
+        issues.add(
+          _t(
+            es: 'No se pudo iniciar la grabacion de video.',
+            en: 'The video recording could not start.',
+            ay: 'Janiw video grabacion qalltañjamakiti.',
+            qu: 'Video grabacionqa mana qallariyta atikurqanchu.',
+          ),
+        );
       }
     }
 
@@ -133,7 +177,14 @@ class EmergencyCaptureService {
           ),
         );
       } catch (_) {
-        issues.add('No se pudo obtener la ubicacion actual.');
+        issues.add(
+          _t(
+            es: 'No se pudo obtener la ubicacion actual.',
+            en: 'The current location could not be fetched.',
+            ay: 'Jichha ubicacion janiw apsusiskaspati.',
+            qu: 'Kunan pachapi ubicacionqa mana tarikusqachu.',
+          ),
+        );
       }
     }
 
@@ -160,13 +211,27 @@ class EmergencyCaptureService {
           final recordedVideo = await controller.stopVideoRecording();
           videoPath = await _finalizeVideoFile(recordedVideo.path);
           if (videoPath == null || videoPath.isEmpty) {
-            issues.add('No se pudo preparar el video de la alerta.');
+            issues.add(
+              _t(
+                es: 'No se pudo preparar el video de la alerta.',
+                en: 'The alert video could not be prepared.',
+                ay: 'Janiw alerta videox wakicht\'at akiti.',
+                qu: 'Alerta videota mana wakichiyta atikurqanchu.',
+              ),
+            );
           }
         }
         await controller.dispose();
       }
     } catch (_) {
-      issues.add('No se pudo guardar el video de la alerta.');
+      issues.add(
+        _t(
+          es: 'No se pudo guardar el video de la alerta.',
+          en: 'The alert video could not be saved.',
+          ay: 'Janiw alerta videox imat akiti.',
+          qu: 'Alerta videota mana waqaychayta atikurqanchu.',
+        ),
+      );
     } finally {
       _cameraController = null;
     }
@@ -179,8 +244,15 @@ class EmergencyCaptureService {
           ),
         );
       }
-    } catch (_) {
-      issues.add('No se pudo actualizar la ubicacion final.');
+      } catch (_) {
+      issues.add(
+        _t(
+          es: 'No se pudo actualizar la ubicacion final.',
+          en: 'The final location could not be updated.',
+          ay: 'Janiw qhipa ubicacion machaqtayañjamakiti.',
+          qu: 'Qhipa ubicacionqa mana musuqyachiyta atikurqanchu.',
+        ),
+      );
     } finally {
       _sessionDirectory = null;
     }

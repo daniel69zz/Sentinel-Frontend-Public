@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class PanicButton extends StatefulWidget {
@@ -60,9 +61,9 @@ class _PanicButtonState extends State<PanicButton>
                   height: 200,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppTheme.error.withOpacity(0.08),
+                    color: AppTheme.error.withValues(alpha: 0.08),
                     border: Border.all(
-                      color: AppTheme.error.withOpacity(0.2),
+                      color: AppTheme.error.withValues(alpha: 0.2),
                       width: 2,
                     ),
                   ),
@@ -72,9 +73,9 @@ class _PanicButtonState extends State<PanicButton>
                   height: 164,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppTheme.error.withOpacity(0.15),
+                    color: AppTheme.error.withValues(alpha: 0.15),
                     border: Border.all(
-                      color: AppTheme.error.withOpacity(0.3),
+                      color: AppTheme.error.withValues(alpha: 0.3),
                       width: 2,
                     ),
                   ),
@@ -85,11 +86,15 @@ class _PanicButtonState extends State<PanicButton>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
-                      colors: [AppTheme.error, AppTheme.error.withRed(180)],
+                      colors: [
+                        AppTheme.error,
+                        Color.lerp(AppTheme.error, AppTheme.primaryDark, 0.35) ??
+                            AppTheme.error,
+                      ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.error.withOpacity(0.5),
+                        color: AppTheme.error.withValues(alpha: 0.5),
                         blurRadius: 28,
                         spreadRadius: 4,
                       ),
@@ -98,12 +103,16 @@ class _PanicButtonState extends State<PanicButton>
                   child: const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.crisis_alert, color: Colors.white, size: 36),
+                      Icon(
+                        Icons.crisis_alert,
+                        color: AppTheme.surface,
+                        size: 36,
+                      ),
                       SizedBox(height: 6),
                       Text(
                         'SOS',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppTheme.surface,
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 2,
@@ -118,7 +127,7 @@ class _PanicButtonState extends State<PanicButton>
         ),
         const SizedBox(height: 20),
         Text(
-          'Toca una vez para activar la alerta',
+          context.tr('emergency.tap_to_activate'),
           style: AppTheme.bodyMedium.copyWith(fontSize: 13),
           textAlign: TextAlign.center,
         ),

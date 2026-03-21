@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
 
@@ -34,10 +35,13 @@ class EducationGamesCtaCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Juegos', style: AppTheme.titleLarge),
+                    Text(
+                      context.tr('education.companion.games_title'),
+                      style: AppTheme.titleLarge,
+                    ),
                     const SizedBox(height: 4),
                     Text(
-                      'Lecciones cortas de educacion sexual para ganar comida y monedas.',
+                      context.tr('education.companion.games_subtitle'),
                       style: AppTheme.bodyMedium,
                     ),
                   ],
@@ -51,7 +55,7 @@ class EducationGamesCtaCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onTap,
               icon: const Icon(Icons.arrow_forward_rounded),
-              label: const Text('Ir a juegos'),
+              label: Text(context.tr('education.companion.games_button')),
             ),
           ),
         ],

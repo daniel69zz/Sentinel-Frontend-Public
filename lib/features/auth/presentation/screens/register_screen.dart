@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
@@ -72,7 +73,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       initialDate: initialDate.isAfter(now) ? now : initialDate,
       firstDate: DateTime(1900),
       lastDate: now,
-      helpText: 'Selecciona tu fecha de nacimiento',
+      helpText: context.tr('auth.register.birth_date_help'),
     );
 
     if (pickedDate == null || !mounted) {
@@ -239,7 +240,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          'Crear cuenta',
+                          context.tr('auth.register.title'),
                           style: AppTheme.headlineLarge.copyWith(
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
@@ -248,7 +249,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Completa tus datos y usa un Gmail para recuperar acceso.',
+                          context.tr('auth.register.subtitle'),
                           style: AppTheme.bodyMedium.copyWith(fontSize: 14),
                           textAlign: TextAlign.center,
                         ),
@@ -257,19 +258,25 @@ class _RegisterScreenState extends State<RegisterScreen>
                           controller: _firstNamesController,
                           keyboardType: TextInputType.name,
                           style: AppTheme.bodyLarge,
-                          decoration: const InputDecoration(
-                            labelText: 'Nombres',
-                            prefixIcon: Icon(
+                          decoration: InputDecoration(
+                            labelText: context.tr(
+                              'auth.register.first_names_label',
+                            ),
+                            prefixIcon: const Icon(
                               Icons.person_outline,
                               color: AppTheme.textSecondary,
                             ),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Ingresa tus nombres';
+                              return context.tr(
+                                'auth.register.first_names_required',
+                              );
                             }
                             if (value.trim().length < 3) {
-                              return 'Los nombres son muy cortos';
+                              return context.tr(
+                                'auth.register.first_names_short',
+                              );
                             }
                             return null;
                           },
@@ -279,19 +286,25 @@ class _RegisterScreenState extends State<RegisterScreen>
                           controller: _lastNamesController,
                           keyboardType: TextInputType.name,
                           style: AppTheme.bodyLarge,
-                          decoration: const InputDecoration(
-                            labelText: 'Apellidos',
-                            prefixIcon: Icon(
+                          decoration: InputDecoration(
+                            labelText: context.tr(
+                              'auth.register.last_names_label',
+                            ),
+                            prefixIcon: const Icon(
                               Icons.badge_outlined,
                               color: AppTheme.textSecondary,
                             ),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Ingresa tus apellidos';
+                              return context.tr(
+                                'auth.register.last_names_required',
+                              );
                             }
                             if (value.trim().length < 3) {
-                              return 'Los apellidos son muy cortos';
+                              return context.tr(
+                                'auth.register.last_names_short',
+                              );
                             }
                             return null;
                           },
@@ -301,17 +314,17 @@ class _RegisterScreenState extends State<RegisterScreen>
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           style: AppTheme.bodyLarge,
-                          decoration: const InputDecoration(
-                            labelText: 'Correo Gmail',
-                            prefixIcon: Icon(
+                          decoration: InputDecoration(
+                            labelText: context.tr('auth.register.email_label'),
+                            prefixIcon: const Icon(
                               Icons.alternate_email_rounded,
                               color: AppTheme.textSecondary,
                             ),
-                            hintText: 'nombre@gmail.com',
+                            hintText: context.tr('auth.register.email_hint'),
                           ),
                           validator: (value) {
                             if (!AuthIdentityMapper.isValidEmail(value ?? '')) {
-                              return 'Ingresa un correo Gmail valido';
+                              return context.tr('auth.register.email_invalid');
                             }
                             return null;
                           },
@@ -321,21 +334,21 @@ class _RegisterScreenState extends State<RegisterScreen>
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           style: AppTheme.bodyLarge,
-                          decoration: const InputDecoration(
-                            labelText: 'Numero de WhatsApp',
-                            prefixIcon: Icon(
+                          decoration: InputDecoration(
+                            labelText: context.tr('auth.register.phone_label'),
+                            prefixIcon: const Icon(
                               Icons.phone_outlined,
                               color: AppTheme.textSecondary,
                             ),
-                            hintText: '+591 7XXXXXXX',
+                            hintText: context.tr('auth.register.phone_hint'),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Ingresa tu numero';
+                              return context.tr('auth.register.phone_required');
                             }
                             final digits = value.replaceAll(RegExp(r'\D'), '');
                             if (digits.length < 8) {
-                              return 'Ingresa un numero valido';
+                              return context.tr('auth.register.phone_invalid');
                             }
                             return null;
                           },
@@ -346,20 +359,28 @@ class _RegisterScreenState extends State<RegisterScreen>
                           readOnly: true,
                           onTap: _pickBirthDate,
                           style: AppTheme.bodyLarge,
-                          decoration: const InputDecoration(
-                            labelText: 'Fecha de nacimiento',
-                            prefixIcon: Icon(
+                          decoration: InputDecoration(
+                            labelText: context.tr(
+                              'auth.register.birth_date_label',
+                            ),
+                            prefixIcon: const Icon(
                               Icons.cake_outlined,
                               color: AppTheme.textSecondary,
                             ),
-                            hintText: 'DD/MM/AAAA',
+                            hintText: context.tr(
+                              'auth.register.birth_date_hint',
+                            ),
                           ),
                           validator: (value) {
                             if (_selectedBirthDate == null) {
-                              return 'Selecciona tu fecha de nacimiento';
+                              return context.tr(
+                                'auth.register.birth_date_required',
+                              );
                             }
                             if (_selectedBirthDate!.isAfter(DateTime.now())) {
-                              return 'Ingresa una fecha valida';
+                              return context.tr(
+                                'auth.register.birth_date_invalid',
+                              );
                             }
                             return null;
                           },
@@ -369,21 +390,23 @@ class _RegisterScreenState extends State<RegisterScreen>
                           initialValue: _selectedCity,
                           dropdownColor: AppTheme.cardBg,
                           style: AppTheme.bodyLarge,
-                          decoration: const InputDecoration(
-                            labelText: 'Ciudad',
-                            prefixIcon: Icon(
+                          decoration: InputDecoration(
+                            labelText: context.tr('auth.register.city_label'),
+                            prefixIcon: const Icon(
                               Icons.location_on_outlined,
                               color: AppTheme.textSecondary,
                             ),
                           ),
-                          items: const [
+                          items: [
                             DropdownMenuItem(
                               value: 'La Paz',
-                              child: Text('La Paz'),
+                              child: Text(context.tr('auth.register.city_la_paz')),
                             ),
                             DropdownMenuItem(
                               value: 'El Alto',
-                              child: Text('El Alto'),
+                              child: Text(
+                                context.tr('auth.register.city_el_alto'),
+                              ),
                             ),
                           ],
                           onChanged: (value) {
@@ -396,7 +419,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                           obscureText: _obscurePassword,
                           style: AppTheme.bodyLarge,
                           decoration: InputDecoration(
-                            labelText: 'Contrasena',
+                            labelText: context.tr('auth.register.password_label'),
                             prefixIcon: const Icon(
                               Icons.lock_outline,
                               color: AppTheme.textSecondary,
@@ -417,10 +440,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Ingresa una contrasena';
+                              return context.tr(
+                                'auth.register.password_required',
+                              );
                             }
                             if (value.length < 8) {
-                              return 'Minimo 8 caracteres';
+                              return context.tr('auth.register.password_min');
                             }
                             return null;
                           },
@@ -431,7 +456,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                           obscureText: _obscureConfirm,
                           style: AppTheme.bodyLarge,
                           decoration: InputDecoration(
-                            labelText: 'Confirmar contrasena',
+                            labelText: context.tr(
+                              'auth.register.confirm_password_label',
+                            ),
                             prefixIcon: const Icon(
                               Icons.lock_outline,
                               color: AppTheme.textSecondary,
@@ -452,29 +479,33 @@ class _RegisterScreenState extends State<RegisterScreen>
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Confirma tu contrasena';
+                              return context.tr(
+                                'auth.register.confirm_password_required',
+                              );
                             }
                             if (value != _passwordController.text) {
-                              return 'Las contrasenas no coinciden';
+                              return context.tr(
+                                'auth.register.confirm_password_mismatch',
+                              );
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: 32),
                         CustomButton(
-                          text: 'Crear cuenta',
+                          text: context.tr('auth.register.submit'),
                           onPressed: _register,
                           isLoading: _isLoading,
                         ),
                         const SizedBox(height: 16),
                         CustomButton(
-                          text: 'Ya tengo cuenta',
+                          text: context.tr('auth.register.has_account'),
                           variant: ButtonVariant.outline,
                           onPressed: () => Navigator.pop(context),
                         ),
                         const SizedBox(height: 32),
                         Text(
-                          'Al registrarte, aceptas nuestros Terminos\nde Servicio y Politica de Privacidad.',
+                          context.tr('auth.register.terms'),
                           style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                           textAlign: TextAlign.center,
                         ),

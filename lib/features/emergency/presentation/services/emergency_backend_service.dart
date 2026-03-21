@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/services/app_branding_service.dart';
@@ -52,19 +53,50 @@ class EmergencyBackendService {
        _evidenceService = evidenceService ?? EvidenceService(),
        _incidentService = incidentService ?? IncidentService();
 
-  Future<EmergencyIncidentResult> createIncident({String? locationUrl}) async {
+  String _t({
+    required String es,
+    required String en,
+    required String ay,
+    required String qu,
+  }) {
+    return AppLanguageService.instance.pick(
+      es: es,
+      en: en,
+      ay: ay,
+      qu: qu,
+    );
+  }
+
+  Future<EmergencyIncidentResult> createIncident({
+    String? locationUrl,
+    DateTime? alertTriggeredAt,
+  }) async {
     final user = await _authService.getSession();
     if (user == null) {
-      return const EmergencyIncidentResult(
+      return EmergencyIncidentResult(
         success: false,
-        message: 'No hay una sesion activa para registrar la alerta.',
+        message: _t(
+          es: 'No hay una sesion activa para registrar la alerta.',
+          en: 'There is no active session to register the alert.',
+          ay: 'Janiw alerta qillqantañatakix sesion activa utjkiti.',
+          qu: 'Alerta qillqanapaq sesion activaqa mana kanchu.',
+        ),
       );
     }
 
     try {
-      final incidentTitle = 'Alerta SOS';
-      final incidentDescription = _buildIncidentDescription(locationUrl);
-      final incidentDate = DateTime.now().toUtc().toIso8601String();
+      final triggeredAt = alertTriggeredAt ?? DateTime.now();
+      final incidentTitle = _t(
+        es: 'Alerta SOS',
+        en: 'SOS Alert',
+        ay: 'SOS Alerta',
+        qu: 'SOS Alerta',
+      );
+      final incidentDescription = _buildIncidentDescription(
+        locationUrl,
+        alertTriggeredAt: triggeredAt,
+      );
+      final incidentDate = triggeredAt.toUtc().toIso8601String();
       final response = await _apiClient.postJson(
         '/incidents',
         accessToken: user.accessToken,
@@ -82,9 +114,14 @@ class EmergencyBackendService {
       final data = _extractDataMap(response);
       final incidentId = _readString(data['id']);
       if (incidentId.isEmpty) {
-        return const EmergencyIncidentResult(
+        return EmergencyIncidentResult(
           success: false,
-          message: 'El servidor no devolvio un incidente valido.',
+          message: _t(
+            es: 'El servidor no devolvio un incidente valido.',
+            en: 'The server did not return a valid incident.',
+            ay: 'Servidorax janiw valido incident kutt\'aykiti.',
+            qu: 'Servidorqa mana allin incidente kutichirqanchu.',
+          ),
         );
       }
 
@@ -109,9 +146,14 @@ class EmergencyBackendService {
         message: _mapIncidentError(error),
       );
     } catch (_) {
-      return const EmergencyIncidentResult(
+      return EmergencyIncidentResult(
         success: false,
-        message: 'No se pudo registrar la alerta en el servidor.',
+        message: _t(
+          es: 'No se pudo registrar la alerta en el servidor.',
+          en: 'The alert could not be registered on the server.',
+          ay: 'Janiw alerta servidoran qillqantañjamakiti.',
+          qu: 'Alertaqa servidorman mana qillqayta atikurqanchu.',
+        ),
       );
     }
   }
@@ -123,19 +165,29 @@ class EmergencyBackendService {
   }) async {
     final attachmentPaths = stopResult.attachmentPaths;
     if (attachmentPaths.isEmpty) {
-      return const EmergencyEvidenceUploadResult(
+      return EmergencyEvidenceUploadResult(
         success: false,
         uploadedCount: 0,
-        message: 'No habia archivos para subir al servidor.',
+        message: _t(
+          es: 'No habia archivos para subir al servidor.',
+          en: 'There were no files to upload to the server.',
+          ay: 'Janiw servidorar apkatañatakix archivos utjkiti.',
+          qu: 'Servidorman wicharinapaq archivosqa mana karqanchu.',
+        ),
       );
     }
 
     final user = await _authService.getSession();
     if (user == null) {
-      return const EmergencyEvidenceUploadResult(
+      return EmergencyEvidenceUploadResult(
         success: false,
         uploadedCount: 0,
-        message: 'No hay una sesion activa para subir evidencia.',
+        message: _t(
+          es: 'No hay una sesion activa para subir evidencia.',
+          en: 'There is no active session to upload evidence.',
+          ay: 'Janiw evidencia apkatañatakix sesion activa utjkiti.',
+          qu: 'Evidencia wicharinapaq sesion activaqa mana kanchu.',
+        ),
       );
     }
 
@@ -145,14 +197,30 @@ class EmergencyBackendService {
     for (final filePath in attachmentPaths) {
       final file = File(filePath);
       if (!await file.exists()) {
-        issues.add('No se encontro ${p.basename(filePath)}.');
+        issues.add(
+          _t(
+            es: 'No se encontro ${p.basename(filePath)}.',
+            en: '${p.basename(filePath)} was not found.',
+            ay: '${p.basename(filePath)} janiw jikxataskiti.',
+            qu: '${p.basename(filePath)} mana tarikurqanchu.',
+          ),
+        );
         continue;
       }
 
       final mimeType = lookupMimeType(filePath) ?? _fallbackMimeType(filePath);
       final evidenceType = _inferEvidenceType(mimeType);
       if (mimeType == null || evidenceType == null) {
-        issues.add('No se pudo reconocer el tipo de ${p.basename(filePath)}.');
+        issues.add(
+          _t(
+            es: 'No se pudo reconocer el tipo de ${p.basename(filePath)}.',
+            en: 'The type of ${p.basename(filePath)} could not be recognized.',
+            ay:
+                '${p.basename(filePath)} ukax kuna kasta uk janiw uñt\'ayaskiti.',
+            qu:
+                '${p.basename(filePath)} ima kastachus mana reqsiyta atikurqanchu.',
+          ),
+        );
         continue;
       }
 
@@ -190,7 +258,16 @@ class EmergencyBackendService {
             storedEvidence = associationResult.evidence!;
           } else {
             issues.add(
-              '${p.basename(filePath)} se subio, pero no se pudo asociar al incidente.',
+              _t(
+                es:
+                    '${p.basename(filePath)} se subio, pero no se pudo asociar al incidente.',
+                en:
+                    '${p.basename(filePath)} was uploaded, but it could not be linked to the incident.',
+                ay:
+                    '${p.basename(filePath)} apkatawa, ukampis janiw incidenter mayachañjamakiti.',
+                qu:
+                    '${p.basename(filePath)} wicharisqa karqan, ichaqa incidentewan mana tinkanachiyta atikurqanchu.',
+              ),
             );
           }
         }
@@ -203,7 +280,14 @@ class EmergencyBackendService {
           ),
         );
       } catch (_) {
-        issues.add('No se pudo subir ${p.basename(filePath)}.');
+        issues.add(
+          _t(
+            es: 'No se pudo subir ${p.basename(filePath)}.',
+            en: '${p.basename(filePath)} could not be uploaded.',
+            ay: 'Janiw ${p.basename(filePath)} apkatañjamakiti.',
+            qu: '${p.basename(filePath)} mana wichariyta atikurqanchu.',
+          ),
+        );
       }
     }
 
@@ -217,25 +301,67 @@ class EmergencyBackendService {
     );
   }
 
-  String _buildIncidentDescription(String? locationUrl) {
+  String _buildIncidentDescription(
+    String? locationUrl, {
+    required DateTime alertTriggeredAt,
+  }) {
     final appName = AppBrandingService.instance.displayName;
+    final formattedTimestamp = _formatAlertTimestamp(alertTriggeredAt);
     if (locationUrl == null || locationUrl.trim().isEmpty) {
-      return 'Alerta SOS activada desde la app $appName.';
+      return _t(
+        es:
+            'Alerta SOS activada desde la app $appName. Fecha y hora: $formattedTimestamp.',
+        en:
+            'SOS alert activated from the $appName app. Date and time: $formattedTimestamp.',
+        ay:
+            '$appName app tuqit SOS alertax activatawa. Uru ukat hora: $formattedTimestamp.',
+        qu:
+            '$appName appmanta SOS alerta qallarichisqa karqan. P\'unchawwan horawan: $formattedTimestamp.',
+      );
     }
 
-    return 'Alerta SOS activada desde la app $appName. Ubicacion reportada: $locationUrl';
+    return _t(
+      es:
+          'Alerta SOS activada desde la app $appName. Fecha y hora: $formattedTimestamp. Ubicacion reportada: $locationUrl',
+      en:
+          'SOS alert activated from the $appName app. Date and time: $formattedTimestamp. Reported location: $locationUrl',
+      ay:
+          '$appName app tuqit SOS alertax activatawa. Uru ukat hora: $formattedTimestamp. Yatiyata ubicacion: $locationUrl',
+      qu:
+          '$appName appmanta SOS alerta qallarichisqa karqan. P\'unchawwan horawan: $formattedTimestamp. Willasqa ubicacion: $locationUrl',
+    );
   }
 
   String _buildEvidenceTitle(String evidenceType) {
     switch (evidenceType) {
       case 'video':
-        return 'Video SOS';
+        return _t(
+          es: 'Video SOS',
+          en: 'SOS Video',
+          ay: 'SOS Video',
+          qu: 'SOS Video',
+        );
       case 'audio':
-        return 'Audio SOS';
+        return _t(
+          es: 'Audio SOS',
+          en: 'SOS Audio',
+          ay: 'SOS Audio',
+          qu: 'SOS Audio',
+        );
       case 'imagen':
-        return 'Imagen SOS';
+        return _t(
+          es: 'Imagen SOS',
+          en: 'SOS Image',
+          ay: 'SOS Imagen',
+          qu: 'SOS Imagen',
+        );
       default:
-        return 'Evidencia SOS';
+        return _t(
+          es: 'Evidencia SOS',
+          en: 'SOS Evidence',
+          ay: 'SOS Evidencia',
+          qu: 'SOS Evidencia',
+        );
     }
   }
 
@@ -244,17 +370,42 @@ class EmergencyBackendService {
     String? locationUrl,
   }) {
     final typeLabel = switch (evidenceType) {
-      'video' => 'Video registrado durante la alerta SOS.',
-      'audio' => 'Audio registrado durante la alerta SOS.',
-      'imagen' => 'Imagen registrada durante la alerta SOS.',
-      _ => 'Evidencia registrada durante la alerta SOS.',
+      'video' => _t(
+        es: 'Video registrado durante la alerta SOS.',
+        en: 'Video recorded during the SOS alert.',
+        ay: 'SOS alerta pachan qillqt\'ata video.',
+        qu: 'SOS alerta pachapi qillqasqa video.',
+      ),
+      'audio' => _t(
+        es: 'Audio registrado durante la alerta SOS.',
+        en: 'Audio recorded during the SOS alert.',
+        ay: 'SOS alerta pachan qillqt\'ata audio.',
+        qu: 'SOS alerta pachapi qillqasqa audio.',
+      ),
+      'imagen' => _t(
+        es: 'Imagen registrada durante la alerta SOS.',
+        en: 'Image recorded during the SOS alert.',
+        ay: 'SOS alerta pachan qillqt\'ata imagen.',
+        qu: 'SOS alerta pachapi qillqasqa imagen.',
+      ),
+      _ => _t(
+        es: 'Evidencia registrada durante la alerta SOS.',
+        en: 'Evidence recorded during the SOS alert.',
+        ay: 'SOS alerta pachan qillqt\'ata evidencia.',
+        qu: 'SOS alerta pachapi qillqasqa evidencia.',
+      ),
     };
 
     if (locationUrl == null || locationUrl.trim().isEmpty) {
       return typeLabel;
     }
 
-    return '$typeLabel Ubicacion asociada: $locationUrl';
+    return '$typeLabel ${_t(
+      es: 'Ubicacion asociada: $locationUrl',
+      en: 'Linked location: $locationUrl',
+      ay: 'Mayachata ubicacion: $locationUrl',
+      qu: 'Tinkisqa ubicacion: $locationUrl',
+    )}';
   }
 
   String? _fallbackMimeType(String filePath) {
@@ -302,20 +453,46 @@ class EmergencyBackendService {
   }) {
     final appName = AppBrandingService.instance.displayName;
     if (uploadedCount == 0 && issues.isEmpty) {
-      return 'No se pudo subir evidencia al servidor.';
+      return _t(
+        es: 'No se pudo subir evidencia al servidor.',
+        en: 'The evidence could not be uploaded to the server.',
+        ay: 'Janiw evidencia servidorar apkatañjamakiti.',
+        qu: 'Evidenciaqa servidorman mana wichariyta atikurqanchu.',
+      );
     }
 
     if (uploadedCount == 0) {
-      return 'No se pudo subir la evidencia al servidor. ${issues.first}';
+      return '${_t(
+        es: 'No se pudo subir la evidencia al servidor.',
+        en: 'The evidence could not be uploaded to the server.',
+        ay: 'Janiw evidencia servidorar apkatañjamakiti.',
+        qu: 'Evidenciaqa servidorman mana wichariyta atikurqanchu.',
+      )} ${issues.first}';
     }
 
     if (issues.isEmpty) {
       return uploadedCount == 1
-          ? 'La evidencia se subio al servidor $appName.'
-          : 'Se subieron $uploadedCount archivos al servidor $appName.';
+          ? _t(
+              es: 'La evidencia se subio al servidor $appName.',
+              en: 'The evidence was uploaded to the $appName server.',
+              ay: 'Evidenciax $appName servidorar apkatawa.',
+              qu: 'Evidenciaqa $appName servidorman wicharisqa karqan.',
+            )
+          : _t(
+              es: 'Se subieron $uploadedCount archivos al servidor $appName.',
+              en: '$uploadedCount files were uploaded to the $appName server.',
+              ay: '$uploadedCount archivonakax $appName servidorar apkatatawa.',
+              qu:
+                  '$uploadedCount archivosqa $appName servidorman wicharisqa karqanku.',
+            );
     }
 
-    return 'Se subieron $uploadedCount archivos al servidor. ${issues.first}';
+    return '${_t(
+      es: 'Se subieron $uploadedCount archivos al servidor.',
+      en: '$uploadedCount files were uploaded to the server.',
+      ay: '$uploadedCount archivonakax servidorar apkatatawa.',
+      qu: '$uploadedCount archivosqa servidorman wicharisqa karqanku.',
+    )} ${issues.first}';
   }
 
   String _mapIncidentError(ApiException error) {
@@ -323,14 +500,37 @@ class EmergencyBackendService {
     final appName = AppBrandingService.instance.displayName;
 
     if (lowerMessage.contains('no se pudo conectar con el servidor')) {
-      return 'No se pudo conectar con $appName para registrar la alerta.';
+      return _t(
+        es: 'No se pudo conectar con $appName para registrar la alerta.',
+        en: 'Could not connect to $appName to register the alert.',
+        ay: 'Janiw alerta qillqantañatakix $appName ukamp mayachasiñjamakiti.',
+        qu:
+            '${appName}wan alerta qillqanapaq mana tinkanakuyta atikurqanchu.',
+      );
     }
 
     if (lowerMessage.contains('perfil no encontrado')) {
-      return 'La cuenta esta autenticada, pero no tiene perfil en el backend.';
+      return _t(
+        es: 'La cuenta esta autenticada, pero no tiene perfil en el backend.',
+        en: 'The account is authenticated, but it does not have a backend profile.',
+        ay:
+            'Cuentax autenticatawa, ukampis backend ukanx janiw perfilani.',
+        qu:
+            'Cuentaqa autenticada kashan, ichaqa backendpi perfilninta mana kanchu.',
+      );
     }
 
     return error.message;
+  }
+
+  String _formatAlertTimestamp(DateTime value) {
+    final local = value.toLocal();
+    final day = local.day.toString().padLeft(2, '0');
+    final month = local.month.toString().padLeft(2, '0');
+    final year = local.year.toString().padLeft(4, '0');
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '$day/$month/$year $hour:$minute';
   }
 }
 

@@ -1,5 +1,7 @@
 import 'package:path/path.dart' as p;
 
+import '../../../../core/localization/app_language_service.dart';
+
 class EvidenceRecord {
   final String id;
   final String title;
@@ -43,7 +45,12 @@ class EvidenceRecord {
       return fileName;
     }
 
-    return 'Sin descripcion adicional.';
+    return AppLanguageService.instance.pick(
+      es: 'Sin descripcion adicional.',
+      en: 'No additional description.',
+      ay: 'Janiw yaqha qhanañchawi utjkiti.',
+      qu: 'Mana yapasqa qhawachiy kanchu.',
+    );
   }
 
   EvidenceRecord copyWith({
@@ -156,11 +163,36 @@ String _pickTitle(Map<String, dynamic> json) {
     json['tipo_evidencia'] ?? json['type'] ?? json['tipo'],
   );
   return switch (type) {
-    'video' => 'Video',
-    'audio' => 'Audio',
-    'imagen' => 'Imagen',
-    'texto' => 'Texto',
-    _ => 'Documento',
+    'video' => AppLanguageService.instance.pick(
+      es: 'Video',
+      en: 'Video',
+      ay: 'Video',
+      qu: 'Video',
+    ),
+    'audio' => AppLanguageService.instance.pick(
+      es: 'Audio',
+      en: 'Audio',
+      ay: 'Audio',
+      qu: 'Audio',
+    ),
+    'imagen' => AppLanguageService.instance.pick(
+      es: 'Imagen',
+      en: 'Image',
+      ay: 'Imagen',
+      qu: 'Imagen',
+    ),
+    'texto' => AppLanguageService.instance.pick(
+      es: 'Texto',
+      en: 'Text',
+      ay: 'Texto',
+      qu: 'Texto',
+    ),
+    _ => AppLanguageService.instance.pick(
+      es: 'Documento',
+      en: 'Document',
+      ay: 'Documento',
+      qu: 'Documento',
+    ),
   };
 }
 

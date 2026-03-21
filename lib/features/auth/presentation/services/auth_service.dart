@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/services/app_branding_service.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_exception.dart';
@@ -125,11 +126,15 @@ class AuthService {
   }
 
   Future<AuthResult> login(String email, String password) async {
+    final t = AppLanguageService.instance;
     final normalizedEmail = AuthIdentityMapper.normalizeEmail(email);
     if (!AuthIdentityMapper.isValidEmail(normalizedEmail)) {
-      return const AuthResult(
+      return AuthResult(
         success: false,
-        message: 'Ingresa un correo Gmail valido.',
+        message: t.tr(
+          'auth.service.invalid_email',
+          fallback: 'Ingresa un correo Gmail valido.',
+        ),
       );
     }
 
@@ -145,9 +150,12 @@ class AuthService {
       final accessToken = _readString(session['access_token']);
 
       if (authUser.isEmpty || accessToken.isEmpty) {
-        return const AuthResult(
+        return AuthResult(
           success: false,
-          message: 'La cuenta no devolvio una sesion valida.',
+          message: t.tr(
+            'auth.service.invalid_session',
+            fallback: 'La cuenta no devolvio una sesion valida.',
+          ),
         );
       }
 
@@ -163,15 +171,22 @@ class AuthService {
 
       return AuthResult(
         success: true,
-        message: 'Bienvenida, ${user.name.split(' ').first}',
+        message: t.tr(
+          'auth.service.welcome',
+          params: {'name': user.name.split(' ').first},
+          fallback: 'Bienvenida, ${user.name.split(' ').first}',
+        ),
         user: user,
       );
     } on ApiException catch (error) {
       return AuthResult(success: false, message: _mapErrorMessage(error));
     } catch (_) {
-      return const AuthResult(
+      return AuthResult(
         success: false,
-        message: 'Error al iniciar sesion.',
+        message: t.tr(
+          'auth.service.login_error',
+          fallback: 'Error al iniciar sesion.',
+        ),
       );
     }
   }
@@ -185,13 +200,20 @@ class AuthService {
     String city,
     DateTime birthDate,
   ) async {
+    final t = AppLanguageService.instance;
     final normalizedFirstNames = firstNames
         .trim()
         .split(RegExp(r'\s+'))
         .where((part) => part.isNotEmpty)
         .join(' ');
     if (normalizedFirstNames.isEmpty) {
-      return const AuthResult(success: false, message: 'Ingresa tus nombres.');
+      return AuthResult(
+        success: false,
+        message: t.tr(
+          'auth.service.first_names_required',
+          fallback: 'Ingresa tus nombres.',
+        ),
+      );
     }
 
     final normalizedLastNames = lastNames
@@ -200,32 +222,44 @@ class AuthService {
         .where((part) => part.isNotEmpty)
         .join(' ');
     if (normalizedLastNames.isEmpty) {
-      return const AuthResult(
+      return AuthResult(
         success: false,
-        message: 'Ingresa tus apellidos.',
+        message: t.tr(
+          'auth.service.last_names_required',
+          fallback: 'Ingresa tus apellidos.',
+        ),
       );
     }
 
     final normalizedEmail = AuthIdentityMapper.normalizeEmail(email);
     if (!AuthIdentityMapper.isValidEmail(normalizedEmail)) {
-      return const AuthResult(
+      return AuthResult(
         success: false,
-        message: 'Ingresa un correo Gmail valido.',
+        message: t.tr(
+          'auth.service.invalid_email',
+          fallback: 'Ingresa un correo Gmail valido.',
+        ),
       );
     }
 
     if (await _emailRegistry.isKnown(normalizedEmail)) {
-      return const AuthResult(
+      return AuthResult(
         success: false,
-        message: 'Ya existe una cuenta con ese correo Gmail.',
+        message: t.tr(
+          'auth.service.duplicate_email',
+          fallback: 'Ya existe una cuenta con ese correo Gmail.',
+        ),
       );
     }
 
     final normalizedPhone = AuthIdentityMapper.normalizePhone(phone);
     if (normalizedPhone.isEmpty) {
-      return const AuthResult(
+      return AuthResult(
         success: false,
-        message: 'Ingresa un numero valido.',
+        message: t.tr(
+          'auth.service.invalid_phone',
+          fallback: 'Ingresa un numero valido.',
+        ),
       );
     }
 
@@ -246,10 +280,13 @@ class AuthService {
       final accessToken = _readString(session['access_token']);
 
       if (authUser.isEmpty || accessToken.isEmpty) {
-        return const AuthResult(
+        return AuthResult(
           success: false,
-          message:
-              'La cuenta fue creada, pero el servidor no entrego una sesion activa.',
+          message: t.tr(
+            'auth.service.created_without_session',
+            fallback:
+                'La cuenta fue creada, pero el servidor no entrego una sesion activa.',
+          ),
         );
       }
 
@@ -288,15 +325,21 @@ class AuthService {
 
       return AuthResult(
         success: true,
-        message: 'Cuenta creada exitosamente.',
+        message: t.tr(
+          'auth.service.register_success',
+          fallback: 'Cuenta creada exitosamente.',
+        ),
         user: user,
       );
     } on ApiException catch (error) {
       return AuthResult(success: false, message: _mapErrorMessage(error));
     } catch (_) {
-      return const AuthResult(
+      return AuthResult(
         success: false,
-        message: 'Error al crear la cuenta.',
+        message: t.tr(
+          'auth.service.register_error',
+          fallback: 'Error al crear la cuenta.',
+        ),
       );
     }
   }
@@ -382,33 +425,54 @@ class AuthService {
   }
 
   String _mapErrorMessage(ApiException error) {
+    final t = AppLanguageService.instance;
     final lowerMessage = error.message.toLowerCase();
 
     if (lowerMessage.contains('invalid login credentials') ||
         lowerMessage.contains('credenciales invalidas')) {
-      return 'Correo Gmail o contrasena incorrectos.';
+      return t.tr(
+        'auth.service.invalid_credentials',
+        fallback: 'Correo Gmail o contrasena incorrectos.',
+      );
     }
 
     if (lowerMessage.contains('user already registered') ||
         lowerMessage.contains('already registered')) {
-      return 'Ya existe una cuenta con ese correo Gmail.';
+      return t.tr(
+        'auth.service.duplicate_email',
+        fallback: 'Ya existe una cuenta con ese correo Gmail.',
+      );
     }
 
     if (lowerMessage.contains('email not confirmed')) {
-      return 'Tu cuenta existe, pero necesita confirmacion antes de ingresar.';
+      return t.tr(
+        'auth.service.email_not_confirmed',
+        fallback: 'Tu cuenta existe, pero necesita confirmacion antes de ingresar.',
+      );
     }
 
     if (lowerMessage.contains('password') &&
         lowerMessage.contains('at least 8')) {
-      return 'La contrasena debe tener al menos 8 caracteres.';
+      return t.tr(
+        'auth.service.password_min',
+        fallback: 'La contrasena debe tener al menos 8 caracteres.',
+      );
     }
 
     if (lowerMessage.contains('perfil no encontrado')) {
-      return 'La cuenta existe, pero todavia no tiene perfil configurado.';
+      return t.tr(
+        'auth.service.profile_missing',
+        fallback: 'La cuenta existe, pero todavia no tiene perfil configurado.',
+      );
     }
 
     if (lowerMessage.contains('no se pudo conectar con el servidor')) {
-      return 'No se pudo conectar con el servidor ${AppBrandingService.instance.displayName}.';
+      return t.tr(
+        'auth.service.server_unavailable',
+        params: {'appName': AppBrandingService.instance.displayName},
+        fallback:
+            'No se pudo conectar con el servidor ${AppBrandingService.instance.displayName}.',
+      );
     }
 
     return error.message;

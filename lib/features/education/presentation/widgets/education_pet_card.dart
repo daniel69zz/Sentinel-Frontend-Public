@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
+import '../../../../shared/widgets/mascot_image.dart';
 import '../../domain/models/education_pet_state.dart';
 
 class EducationPetCard extends StatelessWidget {
@@ -35,10 +37,13 @@ class EducationPetCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Mascota de educacion', style: AppTheme.titleLarge),
+                    Text(
+                      context.tr('education.companion.pet_title'),
+                      style: AppTheme.titleLarge,
+                    ),
                     const SizedBox(height: 6),
                     Text(
-                      'Se guarda localmente en este dispositivo por ahora.',
+                      context.tr('education.companion.pet_subtitle'),
                       style: AppTheme.bodyMedium,
                     ),
                   ],
@@ -64,7 +69,10 @@ class EducationPetCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Nivel ${petState.level}',
+                      context.tr(
+                        'education.companion.pet_level',
+                        params: {'level': '${petState.level}'},
+                      ),
                       style: AppTheme.bodyMedium.copyWith(
                         color: AppTheme.primaryLight,
                       ),
@@ -90,17 +98,17 @@ class EducationPetCard extends StatelessWidget {
             children: [
               _PetStatPill(
                 icon: Icons.auto_awesome_rounded,
-                label: 'XP total',
+                label: context.tr('education.companion.xp_total'),
                 value: '${petState.totalXp}',
               ),
               _PetStatPill(
                 icon: Icons.restaurant_rounded,
-                label: 'Comida',
+                label: context.tr('education.companion.food'),
                 value: '${petState.foodBalance}',
               ),
               _PetStatPill(
                 icon: Icons.monetization_on_rounded,
-                label: 'Monedas',
+                label: context.tr('education.companion.coins'),
                 value: '${petState.coins}',
               ),
             ],
@@ -117,12 +125,15 @@ class EducationPetCard extends StatelessWidget {
               ),
               label: Text(
                 isLoading
-                    ? 'Cargando mascota...'
+                    ? context.tr('education.companion.loading_pet')
                     : isFeeding
-                    ? 'Alimentando...'
+                    ? context.tr('education.companion.feeding_pet')
                     : petState.hasFood
-                    ? 'Alimentar -1 comida / +${EducationPetState.xpPerMeal} XP'
-                    : 'Sin comida disponible',
+                    ? context.tr(
+                        'education.companion.feed_action',
+                        params: {'xp': '${EducationPetState.xpPerMeal}'},
+                      )
+                    : context.tr('education.companion.no_food_action'),
               ),
             ),
           ),
@@ -130,7 +141,7 @@ class EducationPetCard extends StatelessWidget {
           Text(
             petState.hasFood
                 ? petState.lastFedLabel
-                : 'Juega para conseguir comida y seguir subiendo XP.',
+                : context.tr('education.companion.no_food_hint'),
             style: AppTheme.bodyMedium,
           ),
         ],
@@ -175,12 +186,12 @@ class _MascotFigure extends StatelessWidget {
               ),
             ),
           ),
-          Positioned(
-            bottom: 16,
-            child: Icon(
-              Icons.pets_rounded,
-              size: 54,
-              color: Colors.white.withValues(alpha: 0.95),
+          const Positioned.fill(
+            child: MascotImage(
+              width: 92,
+              height: 92,
+              padding: EdgeInsets.fromLTRB(6, 10, 6, 18),
+              semanticsLabel: 'Mascota',
             ),
           ),
           const Positioned(

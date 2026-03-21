@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/app_constants.dart';
+import '../localization/app_language_service.dart';
+import '../theme/app_theme.dart';
 
 @immutable
 class AppBrandingPreset {
@@ -39,7 +41,7 @@ class AppBrandingService extends ChangeNotifier {
       title: 'Sentinel',
       description: 'Mantiene la identidad actual de seguridad.',
       previewIcon: Icons.shield_rounded,
-      accentColor: Color(0xFFD63864),
+      accentColor: AppTheme.primary,
     ),
     AppBrandingPreset(
       id: 'agenda',
@@ -47,7 +49,7 @@ class AppBrandingService extends ChangeNotifier {
       title: 'Agenda',
       description: 'Aspecto discreto, como una app de calendario.',
       previewIcon: Icons.calendar_month_rounded,
-      accentColor: Color(0xFF1B9AAA),
+      accentColor: AppTheme.roseDust,
     ),
     AppBrandingPreset(
       id: 'notas',
@@ -55,7 +57,7 @@ class AppBrandingService extends ChangeNotifier {
       title: 'Notas',
       description: 'Icono limpio para pasar como bloc de notas.',
       previewIcon: Icons.sticky_note_2_rounded,
-      accentColor: Color(0xFFF28F3B),
+      accentColor: AppTheme.warning,
     ),
     AppBrandingPreset(
       id: 'tareas',
@@ -63,7 +65,7 @@ class AppBrandingService extends ChangeNotifier {
       title: 'Tareas',
       description: 'Lista de pendientes simple y neutral.',
       previewIcon: Icons.checklist_rounded,
-      accentColor: Color(0xFF2E9E57),
+      accentColor: AppTheme.accent,
     ),
   ];
 
@@ -121,18 +123,46 @@ class AppBrandingService extends ChangeNotifier {
 
   Future<String?> _applyNativePreset(String presetId) async {
     if (!supportsLauncherCustomization) {
-      return 'El icono y el nombre del launcher se aplican en Android.';
+      return AppLanguageService.instance.tr(
+        'profile.appearance.platform_android',
+      );
     }
 
     try {
       await _channel.invokeMethod<void>('applyPreset', {'presetId': presetId});
       return null;
     } on MissingPluginException {
-      return 'No se pudo conectar con el cambio nativo del launcher.';
+      return AppLanguageService.instance.tr(
+        'profile.appearance.native_connection_error',
+        fallback: 'No se pudo conectar con el cambio nativo del launcher.',
+      );
     } on PlatformException catch (error) {
-      return error.message ?? 'No se pudo actualizar el launcher.';
+      return error.message ??
+          AppLanguageService.instance.tr(
+            'profile.appearance.native_update_error',
+            fallback: 'No se pudo actualizar el launcher.',
+          );
     } catch (_) {
-      return 'No se pudo actualizar el launcher.';
+      return AppLanguageService.instance.tr(
+        'profile.appearance.native_update_error',
+        fallback: 'No se pudo actualizar el launcher.',
+      );
     }
+  }
+}
+
+extension AppBrandingPresetLocalization on AppBrandingPreset {
+  String get localizedTitle {
+    return AppLanguageService.instance.tr(
+      'profile.branding.$id.title',
+      fallback: title,
+    );
+  }
+
+  String get localizedDescription {
+    return AppLanguageService.instance.tr(
+      'profile.branding.$id.description',
+      fallback: description,
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
 import '../../domain/models/education_story_panel.dart';
@@ -36,7 +37,12 @@ class EducationStoryPanelCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  index == 0 ? 'Comic principal' : 'Paso ${index + 1}',
+                  index == 0
+                      ? context.tr('education.detail.main_comic')
+                      : context.tr(
+                          'education.detail.step',
+                          params: {'number': '${index + 1}'},
+                        ),
                   style: TextStyle(
                     color: panel.color,
                     fontSize: 12,
@@ -135,9 +141,9 @@ class EducationStoryPanelCard extends StatelessWidget {
                           children: [
                             Icon(panel.icon, size: 15, color: Colors.white),
                             const SizedBox(width: 6),
-                            const Text(
-                              'Espacio visual',
-                              style: TextStyle(
+                            Text(
+                              context.tr('education.detail.visual_space'),
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,

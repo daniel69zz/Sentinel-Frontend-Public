@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class ProfileAvatarOption {
@@ -30,32 +31,32 @@ class ProfileAppearanceStore {
       title: 'Agenda',
       subtitle: 'Vista discreta y ordenada.',
       icon: Icons.calendar_month_rounded,
-      startColor: Color(0xFF1B9AAA),
-      endColor: Color(0xFF4FC3D8),
+      startColor: AppTheme.primaryDark,
+      endColor: AppTheme.primary,
     ),
     ProfileAvatarOption(
       id: 'notas_soft',
       title: 'Notas',
       subtitle: 'Simple y bastante neutral.',
       icon: Icons.sticky_note_2_rounded,
-      startColor: Color(0xFFF28F3B),
-      endColor: Color(0xFFF7B267),
+      startColor: AppTheme.mocha,
+      endColor: AppTheme.secondary,
     ),
     ProfileAvatarOption(
       id: 'tareas_soft',
       title: 'Lista',
       subtitle: 'Una opcion generica tipo pendientes.',
       icon: Icons.checklist_rounded,
-      startColor: Color(0xFF2E9E57),
-      endColor: Color(0xFF69C88B),
+      startColor: AppTheme.accent,
+      endColor: AppTheme.primary,
     ),
     ProfileAvatarOption(
       id: 'lectura_soft',
       title: 'Lectura',
       subtitle: 'Perfil sobrio con tono de cuaderno.',
       icon: Icons.menu_book_rounded,
-      startColor: Color(0xFF8B6F47),
-      endColor: Color(0xFFB08968),
+      startColor: AppTheme.espresso,
+      endColor: AppTheme.warning,
     ),
     ProfileAvatarOption(
       id: 'bienestar_soft',
@@ -70,8 +71,8 @@ class ProfileAppearanceStore {
       title: 'Clima',
       subtitle: 'Icono neutro para pasar desapercibido.',
       icon: Icons.cloud_rounded,
-      startColor: Color(0xFF6C8CBF),
-      endColor: Color(0xFF95A8D7),
+      startColor: AppTheme.primaryDark,
+      endColor: AppTheme.roseDust,
     ),
   ];
 
@@ -90,5 +91,21 @@ class ProfileAppearanceStore {
   static Future<void> saveAvatarOptionId(String id) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_avatarPreferenceKey, optionById(id).id);
+  }
+}
+
+extension ProfileAvatarOptionLocalization on ProfileAvatarOption {
+  String get localizedTitle {
+    return AppLanguageService.instance.tr(
+      'profile.avatars.$id.title',
+      fallback: title,
+    );
+  }
+
+  String get localizedSubtitle {
+    return AppLanguageService.instance.tr(
+      'profile.avatars.$id.subtitle',
+      fallback: subtitle,
+    );
   }
 }

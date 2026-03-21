@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../localization/app_language_service.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
@@ -41,7 +42,11 @@ class AppRoutes {
 
     return MaterialPageRoute(
       builder: (_) =>
-          const Scaffold(body: Center(child: Text('Pagina no encontrada'))),
+          Scaffold(
+            body: Center(
+              child: Text(AppLanguageService.instance.tr('app.not_found')),
+            ),
+          ),
     );
   }
 }

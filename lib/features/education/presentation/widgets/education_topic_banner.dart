@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
 import '../../domain/models/education_topic.dart';
@@ -71,13 +72,19 @@ class EducationTopicBanner extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: const [
+              children: [
                 _MiniPill(
                   icon: Icons.play_circle_outline_rounded,
-                  label: 'Video',
+                  label: context.tr('education.detail.video_chip'),
                 ),
-                _MiniPill(icon: Icons.auto_stories_rounded, label: 'Imagen'),
-                _MiniPill(icon: Icons.article_outlined, label: 'Texto'),
+                _MiniPill(
+                  icon: Icons.auto_stories_rounded,
+                  label: context.tr('education.detail.image_chip'),
+                ),
+                _MiniPill(
+                  icon: Icons.article_outlined,
+                  label: context.tr('education.detail.text_chip'),
+                ),
               ],
             ),
           ],

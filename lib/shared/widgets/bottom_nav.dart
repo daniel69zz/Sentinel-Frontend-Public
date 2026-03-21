@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/localization/app_language_service.dart';
 import '../../core/theme/app_theme.dart';
 
 class BottomNav extends StatelessWidget {
@@ -16,36 +17,36 @@ class BottomNav extends StatelessWidget {
       backgroundColor: AppTheme.cardBg,
       indicatorColor: AppTheme.primary.withValues(alpha: 0.18),
       labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-      destinations: const [
+      destinations: [
         NavigationDestination(
-          icon: Icon(Icons.crisis_alert_outlined),
-          selectedIcon: Icon(Icons.crisis_alert),
-          label: 'Alerta',
+          icon: const Icon(Icons.crisis_alert_outlined),
+          selectedIcon: const Icon(Icons.crisis_alert),
+          label: context.tr('navigation.alert'),
         ),
         NavigationDestination(
-          icon: Icon(Icons.folder_copy_outlined),
-          selectedIcon: Icon(Icons.folder_copy),
-          label: 'Evidencias',
+          icon: const Icon(Icons.folder_copy_outlined),
+          selectedIcon: const Icon(Icons.folder_copy),
+          label: context.tr('navigation.evidence'),
         ),
         NavigationDestination(
-          icon: Icon(Icons.description_outlined),
-          selectedIcon: Icon(Icons.description),
-          label: 'Incidentes',
+          icon: const Icon(Icons.description_outlined),
+          selectedIcon: const Icon(Icons.description),
+          label: context.tr('navigation.incidents'),
         ),
         NavigationDestination(
-          icon: Icon(Icons.menu_book_outlined),
-          selectedIcon: Icon(Icons.menu_book),
-          label: 'Aprende',
+          icon: const Icon(Icons.menu_book_outlined),
+          selectedIcon: const Icon(Icons.menu_book),
+          label: context.tr('navigation.learn'),
         ),
         NavigationDestination(
-          icon: Icon(Icons.location_on_outlined),
-          selectedIcon: Icon(Icons.location_on),
-          label: 'Directorio',
+          icon: const Icon(Icons.location_on_outlined),
+          selectedIcon: const Icon(Icons.location_on),
+          label: context.tr('navigation.directory'),
         ),
         NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person),
-          label: 'Perfil',
+          icon: const Icon(Icons.person_outline),
+          selectedIcon: const Icon(Icons.person),
+          label: context.tr('navigation.profile'),
         ),
       ],
     );

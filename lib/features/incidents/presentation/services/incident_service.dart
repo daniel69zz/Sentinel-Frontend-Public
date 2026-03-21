@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../auth/presentation/services/auth_service.dart';
@@ -41,13 +42,32 @@ class IncidentService {
     : _authService = authService ?? AuthService(),
       _apiClient = apiClient ?? ApiClient();
 
+  String _t({
+    required String es,
+    required String en,
+    required String ay,
+    required String qu,
+  }) {
+    return AppLanguageService.instance.pick(
+      es: es,
+      en: en,
+      ay: ay,
+      qu: qu,
+    );
+  }
+
   Future<IncidentListResult> loadIncidents() async {
     final user = await _authService.getSession();
     if (user == null) {
-      return const IncidentListResult(
+      return IncidentListResult(
         incidents: [],
         fromCache: true,
-        message: 'Inicia sesion para ver tus incidentes.',
+        message: _t(
+          es: 'Inicia sesion para ver tus incidentes.',
+          en: 'Sign in to see your incidents.',
+          ay: 'Incidentenakama uñjañatakix sesion qalltaya.',
+          qu: 'Incidenteykikunata rikunaykipaq sesionta qallarichiy.',
+        ),
       );
     }
 
@@ -65,7 +85,12 @@ class IncidentService {
         incidents: incidents,
         fromCache: false,
         message: incidents.isEmpty
-            ? 'Todavia no tienes incidentes registrados.'
+            ? _t(
+                es: 'Todavia no tienes incidentes registrados.',
+                en: 'You do not have any registered incidents yet.',
+                ay: 'Jichhakamax janiw qillqt\'ata incidentenakam utjkiti.',
+                qu: 'Manaraq incidenteykikuna qillqasqachu kashan.',
+              )
             : null,
       );
     } on ApiException catch (error) {
@@ -74,15 +99,30 @@ class IncidentService {
         fromCache: true,
         message: cached.isEmpty
             ? _mapLoadError(error)
-            : 'Mostrando incidentes guardados en este dispositivo.',
+            : _t(
+                es: 'Mostrando incidentes guardados en este dispositivo.',
+                en: 'Showing incidents saved on this device.',
+                ay: 'Aka dispositivon imata incidentenakwa uñstaski.',
+                qu: 'Kay dispositivopi waqaychasqa incidentekuna rikuchisqa kashan.',
+              ),
       );
     } catch (_) {
       return IncidentListResult(
         incidents: cached,
         fromCache: true,
         message: cached.isEmpty
-            ? 'No se pudo cargar tu historial de incidentes.'
-            : 'Mostrando incidentes guardados en este dispositivo.',
+            ? _t(
+                es: 'No se pudo cargar tu historial de incidentes.',
+                en: 'Your incident history could not be loaded.',
+                ay: 'Janiw incidentenakan historialamax cargañjamakiti.',
+                qu: 'Incidente historiaykiqa mana cargayta atikurqanchu.',
+              )
+            : _t(
+                es: 'Mostrando incidentes guardados en este dispositivo.',
+                en: 'Showing incidents saved on this device.',
+                ay: 'Aka dispositivon imata incidentenakwa uñstaski.',
+                qu: 'Kay dispositivopi waqaychasqa incidentekuna rikuchisqa kashan.',
+              ),
       );
     }
   }
@@ -108,7 +148,12 @@ class IncidentService {
     if (user == null) {
       return IncidentMutationResult(
         success: true,
-        message: 'Los cambios se guardaron solo en este dispositivo.',
+        message: _t(
+          es: 'Los cambios se guardaron solo en este dispositivo.',
+          en: 'The changes were saved only on this device.',
+          ay: 'Mayjt\'awinakax aka dispositivon sapaki imatawa.',
+          qu: 'Tukuy tikraykunaqa kay dispositivollapim waqaychasqa karqan.',
+        ),
         incident: updatedIncident,
       );
     }
@@ -125,20 +170,45 @@ class IncidentService {
 
       return IncidentMutationResult(
         success: true,
-        message: 'Incidente actualizado correctamente.',
+        message: _t(
+          es: 'Incidente actualizado correctamente.',
+          en: 'Incident updated successfully.',
+          ay: 'Incidentex wali sum machaqtayatawa.',
+          qu: 'Incidenteqa allinta musuqyachisqa karqan.',
+        ),
         incident: updatedIncident,
       );
     } on ApiException catch (error) {
       return IncidentMutationResult(
         success: true,
         message:
-            'Se guardo localmente. No se pudo sincronizar el incidente: ${error.message}',
+            '${_t(
+              es: 'Se guardo localmente.',
+              en: 'It was saved locally.',
+              ay: 'Localan imatawa.',
+              qu: 'Localpim waqaychasqa karqan.',
+            )} ${_t(
+              es: 'No se pudo sincronizar el incidente:',
+              en: 'The incident could not be synced:',
+              ay: 'Janiw incidentex sincronizañjamakiti:',
+              qu: 'Incidenteqa mana sincronizayta atikurqanchu:',
+            )} ${error.message}',
         incident: updatedIncident,
       );
     } catch (_) {
       return IncidentMutationResult(
         success: true,
-        message: 'Se guardo localmente. No se pudo sincronizar el incidente.',
+        message: '${_t(
+          es: 'Se guardo localmente.',
+          en: 'It was saved locally.',
+          ay: 'Localan imatawa.',
+          qu: 'Localpim waqaychasqa karqan.',
+        )} ${_t(
+          es: 'No se pudo sincronizar el incidente.',
+          en: 'The incident could not be synced.',
+          ay: 'Janiw incidentex sincronizañjamakiti.',
+          qu: 'Incidenteqa mana sincronizayta atikurqanchu.',
+        )}',
         incident: updatedIncident,
       );
     }
@@ -227,7 +297,13 @@ class IncidentService {
   String _mapLoadError(ApiException error) {
     final normalized = error.message.toLowerCase();
     if (normalized.contains('no se pudo conectar con el servidor')) {
-      return 'No se pudo actualizar el historial de incidentes. Revisa tu conexion.';
+      return _t(
+        es: 'No se pudo actualizar el historial de incidentes. Revisa tu conexion.',
+        en: 'The incident history could not be updated. Check your connection.',
+        ay: 'Janiw incidenten historialapax machaqtayañjamakiti. Conexion uñakipam.',
+        qu:
+            'Incidente historiaykiqa mana musuqyachiyta atikurqanchu. Conexionniykita qhawariy.',
+      );
     }
     return error.message;
   }

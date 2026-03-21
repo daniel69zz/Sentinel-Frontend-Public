@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../evidence/presentation/widgets/evidence_components.dart';
 import '../../domain/models/incident_record.dart';
@@ -24,9 +25,26 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
   String? _statusMessage;
   bool _isShowingCache = false;
 
+  String _t({
+    required String es,
+    required String en,
+    required String ay,
+    required String qu,
+  }) {
+    return AppLanguageService.instance.pick(
+      es: es,
+      en: en,
+      ay: ay,
+      qu: qu,
+    );
+  }
+
   int get _openCount => _incidents.where((incident) {
     final status = incident.status.toLowerCase();
-    return status.contains('abierto') || status.contains('registrado');
+    return status.contains('abierto') ||
+        status.contains('open') ||
+        status.contains('registrado') ||
+        status.contains('registered');
   }).length;
 
   int get _withContextCount => _incidents
@@ -74,7 +92,16 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: widget.isEmbedded
-          ? AppBar(title: const Text('Incidentes'))
+          ? AppBar(
+              title: Text(
+                _t(
+                  es: 'Incidentes',
+                  en: 'Incidents',
+                  ay: 'Incidentes',
+                  qu: 'Incidentes',
+                ),
+              ),
+            )
           : null,
       body: _isLoading
           ? const Center(
@@ -90,10 +117,27 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
                   children: [
                     if (!widget.isEmbedded) ...[
-                      Text('Incidentes', style: AppTheme.headlineLarge),
+                      Text(
+                        _t(
+                          es: 'Incidentes',
+                          en: 'Incidents',
+                          ay: 'Incidentes',
+                          qu: 'Incidentes',
+                        ),
+                        style: AppTheme.headlineLarge,
+                      ),
                       const SizedBox(height: 6),
                       Text(
-                        'Aqui se concentra el contexto de cada caso, las evidencias asociadas y la preparacion para una futura denuncia.',
+                        _t(
+                          es:
+                              'Aqui se concentra el contexto de cada caso, las evidencias asociadas y la preparacion para una futura denuncia.',
+                          en:
+                              'Here you can find the context of each case, the linked evidence, and preparation for a future report.',
+                          ay:
+                              'Akan sapa cason contexto, mayachata evidencianaka ukat jutir denuncia wakicht\'awix tantachatawa.',
+                          qu:
+                              'Kaypi sapa kasopa contexto, tinkisqa evidenciakuna hinaspa hamuq denuncia wakichiy tantachisqa kashan.',
+                        ),
                         style: AppTheme.bodyMedium,
                       ),
                       const SizedBox(height: 20),
@@ -102,7 +146,12 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                       children: [
                         Expanded(
                           child: SummaryMetricCard(
-                            label: 'Total',
+                            label: _t(
+                              es: 'Total',
+                              en: 'Total',
+                              ay: 'Total',
+                              qu: 'Total',
+                            ),
                             value: _incidents.length.toString(),
                             color: AppTheme.primaryLight,
                             icon: Icons.report_gmailerrorred_rounded,
@@ -111,7 +160,12 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: SummaryMetricCard(
-                            label: 'Abiertos',
+                            label: _t(
+                              es: 'Abiertos',
+                              en: 'Open',
+                              ay: 'Jist\'arata',
+                              qu: 'Kicharisqa',
+                            ),
                             value: _openCount.toString(),
                             color: AppTheme.warning,
                             icon: Icons.flag_circle_rounded,
@@ -120,7 +174,12 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: SummaryMetricCard(
-                            label: 'Con contexto',
+                            label: _t(
+                              es: 'Con contexto',
+                              en: 'With context',
+                              ay: 'Contextoni',
+                              qu: 'Contextoyuq',
+                            ),
                             value: _withContextCount.toString(),
                             color: AppTheme.success,
                             icon: Icons.notes_rounded,
@@ -140,7 +199,12 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            'Casos registrados',
+                            _t(
+                              es: 'Casos registrados',
+                              en: 'Registered cases',
+                              ay: 'Qillqt\'ata casos',
+                              qu: 'Qillqasqa casos',
+                            ),
                             style: AppTheme.titleLarge,
                           ),
                         ),
@@ -157,16 +221,38 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Cada incidente conserva su contexto completo y una seccion propia para evidencias y preparacion legal.',
+                      _t(
+                        es:
+                            'Cada incidente conserva su contexto completo y una seccion propia para evidencias y preparacion legal.',
+                        en:
+                            'Each incident keeps its full context and a dedicated section for evidence and legal preparation.',
+                        ay:
+                            'Sapa incidentex phuqhata contextop imaski ukat evidencia ukhamarak legal wakicht\'awitaki chiqa utji.',
+                        qu:
+                            'Sapa incidenteqa hunt\'asqa contextonta waqaychan, evidenciapaq hinaspa legal wakichinapaq rakisqa t\'uqta kan.',
+                      ),
                       style: AppTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
                     if (_incidents.isEmpty)
-                      const EmptyStateCard(
+                      EmptyStateCard(
                         icon: Icons.assignment_late_outlined,
-                        title: 'Aun no hay incidentes',
-                        subtitle:
-                            'Las evidencias pueden existir por separado. Cuando registres o recibas incidentes en tu flujo actual, apareceran aqui.',
+                        title: _t(
+                          es: 'Aun no hay incidentes',
+                          en: 'There are no incidents yet',
+                          ay: 'Janiw incidentenakax utjkiti',
+                          qu: 'Manaraq incidentekuna kanchu',
+                        ),
+                        subtitle: _t(
+                          es:
+                              'Las evidencias pueden existir por separado. Cuando registres o recibas incidentes en tu flujo actual, apareceran aqui.',
+                          en:
+                              'Evidence can exist separately. When you register or receive incidents in your current flow, they will appear here.',
+                          ay:
+                              'Evidencianakax sapa maynjamaw utjaspa. Jichha thakhiman incidentenak qillqantasax jan ukax katuqkasax akan uñstaniwa.',
+                          qu:
+                              'Evidenciakunaqa sapallan kanman. Kunan puriyniykipi incidentekunata qillqaspayki utaq chaskispayki, kaypi rikurinqa.',
+                        ),
                       )
                     else
                       ..._incidents.map(
@@ -270,7 +356,12 @@ class _IncidentCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               incident.description.trim().isEmpty
-                  ? 'Sin contexto adicional registrado.'
+                  ? AppLanguageService.instance.pick(
+                      es: 'Sin contexto adicional registrado.',
+                      en: 'No additional context recorded.',
+                      ay: 'Janiw yaqha contexto qillqt\'atakti.',
+                      qu: 'Mana yapasqa contexto qillqasqachu.',
+                    )
                   : incident.description,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
@@ -298,7 +389,14 @@ class _IncidentTag extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        label.trim().isEmpty ? 'sin dato' : label,
+        label.trim().isEmpty
+            ? AppLanguageService.instance.pick(
+                es: 'sin dato',
+                en: 'no data',
+                ay: 'janiw dato utjkiti',
+                qu: 'mana dato kanchu',
+              )
+            : label,
         style: TextStyle(
           color: color,
           fontSize: 11,

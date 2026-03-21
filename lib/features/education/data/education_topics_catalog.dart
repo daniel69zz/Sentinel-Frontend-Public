@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/localization/app_language_service.dart';
 import '../domain/models/education_story_panel.dart';
 import '../domain/models/education_topic.dart';
 
@@ -7,18 +8,26 @@ class EducationTopicsCatalog {
   static const String sampleVideoUrl =
       'https://samplelib.com/lib/preview/mp4/sample-5s.mp4';
 
-  static const List<EducationTopic> topics = [
+  static List<EducationTopic> get topics {
+    final l10n = AppLanguageService.instance;
+    String t(String es, String en) => l10n.pick(es: es, en: en);
+
+    return [
     EducationTopic(
       id: 'derechos-sexuales',
       icon: Icons.favorite_rounded,
       color: Color(0xFFD63864),
-      title: 'Derechos Sexuales',
-      description:
-          'Conoce tus derechos sexuales fundamentales y como ejercerlos libremente.',
-      tag: 'Basico',
-      videoTitle: 'Video introductorio de ejemplo',
-      videoDescription:
-          'Aqui despues podremos colocar un video corto para explicar este tema con ejemplos visuales.',
+      title: t('Derechos Sexuales', 'Sexual Rights'),
+      description: t(
+        'Conoce tus derechos sexuales fundamentales y como ejercerlos libremente.',
+        'Learn about your fundamental sexual rights and how to exercise them freely.',
+      ),
+      tag: t('Basico', 'Basic'),
+      videoTitle: t('Video introductorio de ejemplo', 'Sample introduction video'),
+      videoDescription: t(
+        'Aqui despues podremos colocar un video corto para explicar este tema con ejemplos visuales.',
+        'Later we can place a short video here to explain this topic with visual examples.',
+      ),
       videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
@@ -64,13 +73,17 @@ class EducationTopicsCatalog {
       id: 'derechos-reproductivos',
       icon: Icons.child_care_rounded,
       color: Color(0xFF9C27B0),
-      title: 'Derechos Reproductivos',
-      description:
-          'Informacion sobre planificacion familiar, anticoncepcion y salud reproductiva.',
-      tag: 'Importante',
-      videoTitle: 'Video guia de ejemplo',
-      videoDescription:
-          'Este espacio puede mostrar una guia visual corta sobre decisiones reproductivas y acceso a informacion.',
+      title: t('Derechos Reproductivos', 'Reproductive Rights'),
+      description: t(
+        'Informacion sobre planificacion familiar, anticoncepcion y salud reproductiva.',
+        'Information about family planning, contraception and reproductive health.',
+      ),
+      tag: t('Importante', 'Important'),
+      videoTitle: t('Video guia de ejemplo', 'Sample guide video'),
+      videoDescription: t(
+        'Este espacio puede mostrar una guia visual corta sobre decisiones reproductivas y acceso a informacion.',
+        'This space can show a short visual guide about reproductive decisions and access to information.',
+      ),
       videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
@@ -115,13 +128,17 @@ class EducationTopicsCatalog {
       id: 'prevencion-violencia',
       icon: Icons.shield_rounded,
       color: Color(0xFF2196F3),
-      title: 'Prevencion de Violencia',
-      description:
-          'Aprende a identificar senales de violencia sexual y de genero.',
-      tag: 'Seguridad',
-      videoTitle: 'Video preventivo de ejemplo',
-      videoDescription:
-          'Aqui podemos incluir un video breve para reconocer alertas tempranas y acciones de autocuidado.',
+      title: t('Prevencion de Violencia', 'Violence Prevention'),
+      description: t(
+        'Aprende a identificar senales de violencia sexual y de genero.',
+        'Learn to identify signs of sexual and gender-based violence.',
+      ),
+      tag: t('Seguridad', 'Safety'),
+      videoTitle: t('Video preventivo de ejemplo', 'Sample prevention video'),
+      videoDescription: t(
+        'Aqui podemos incluir un video breve para reconocer alertas tempranas y acciones de autocuidado.',
+        'Here we can include a short video to recognize early warning signs and self-care actions.',
+      ),
       videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
@@ -166,13 +183,17 @@ class EducationTopicsCatalog {
       id: 'metodos-anticonceptivos',
       icon: Icons.medical_services_rounded,
       color: Color(0xFF4CAF50),
-      title: 'Metodos Anticonceptivos',
-      description:
-          'Guia completa sobre tipos, eficacia y acceso a metodos anticonceptivos en Bolivia.',
-      tag: 'Salud',
-      videoTitle: 'Video comparativo de ejemplo',
-      videoDescription:
-          'Mas adelante este bloque puede mostrar una explicacion visual sobre tipos y uso correcto de metodos.',
+      title: t('Metodos Anticonceptivos', 'Contraceptive Methods'),
+      description: t(
+        'Guia completa sobre tipos, eficacia y acceso a metodos anticonceptivos en Bolivia.',
+        'A complete guide to contraceptive types, effectiveness and access in Bolivia.',
+      ),
+      tag: t('Salud', 'Health'),
+      videoTitle: t('Video comparativo de ejemplo', 'Sample comparison video'),
+      videoDescription: t(
+        'Mas adelante este bloque puede mostrar una explicacion visual sobre tipos y uso correcto de metodos.',
+        'Later this block can show a visual explanation about method types and correct use.',
+      ),
       videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
@@ -217,13 +238,17 @@ class EducationTopicsCatalog {
       id: 'riesgo',
       icon: Icons.warning_amber_rounded,
       color: Color(0xFFF57C00),
-      title: 'Que hacer si estas en riesgo?',
-      description:
-          'Pasos a seguir si sientes que puedes ser victima de un ataque o violencia.',
-      tag: 'Urgente',
-      videoTitle: 'Video de respuesta rapida',
-      videoDescription:
-          'Este ejemplo muestra donde ira un recurso visual con pasos inmediatos y faciles de recordar.',
+      title: t('Que hacer si estas en riesgo?', 'What to do if you are at risk?'),
+      description: t(
+        'Pasos a seguir si sientes que puedes ser victima de un ataque o violencia.',
+        'Steps to follow if you feel you could become a victim of an attack or violence.',
+      ),
+      tag: t('Urgente', 'Urgent'),
+      videoTitle: t('Video de respuesta rapida', 'Quick response video'),
+      videoDescription: t(
+        'Este ejemplo muestra donde ira un recurso visual con pasos inmediatos y faciles de recordar.',
+        'This example shows where a visual resource with immediate and easy-to-remember steps will go.',
+      ),
       videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
@@ -267,13 +292,20 @@ class EducationTopicsCatalog {
       id: 'despues',
       icon: Icons.healing_rounded,
       color: Color(0xFF00BCD4),
-      title: 'Que hacer despues',
-      description:
-          'Apoyo, recursos y pasos legales tras una situacion de violencia sexual.',
-      tag: 'Recuperacion',
-      videoTitle: 'Video de acompanamiento de ejemplo',
-      videoDescription:
-          'Aqui ira un contenido visual enfocado en apoyo emocional, opciones disponibles y siguientes pasos.',
+      title: t('Que hacer despues', 'What to do afterwards'),
+      description: t(
+        'Apoyo, recursos y pasos legales tras una situacion de violencia sexual.',
+        'Support, resources and legal steps after a situation of sexual violence.',
+      ),
+      tag: t('Recuperacion', 'Recovery'),
+      videoTitle: t(
+        'Video de acompanamiento de ejemplo',
+        'Sample support video',
+      ),
+      videoDescription: t(
+        'Aqui ira un contenido visual enfocado en apoyo emocional, opciones disponibles y siguientes pasos.',
+        'A visual resource focused on emotional support, available options and next steps will go here.',
+      ),
       videoUrl: sampleVideoUrl,
       storyPanels: [
         EducationStoryPanel(
@@ -313,5 +345,6 @@ class EducationTopicsCatalog {
         'Por el momento dejamos texto de ejemplo para que ya exista la estructura completa.',
       ],
     ),
-  ];
+    ];
+  }
 }

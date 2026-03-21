@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../domain/models/education_pet_state.dart';
 
 class EducationPetFeedResult {
@@ -56,13 +57,17 @@ class EducationPetService {
   }
 
   Future<EducationPetFeedResult> feedPet() async {
+    final l10n = AppLanguageService.instance;
     final currentState = await loadPetState();
 
     if (!currentState.hasFood) {
       return EducationPetFeedResult(
         success: false,
         leveledUp: false,
-        message: 'No tienes comida. Juega para conseguir mas.',
+        message: l10n.pick(
+          es: 'No tienes comida. Juega para conseguir mas.',
+          en: 'You do not have food. Play to get more.',
+        ),
         state: currentState,
       );
     }
@@ -76,8 +81,18 @@ class EducationPetService {
       success: true,
       leveledUp: leveledUp,
       message: leveledUp
-          ? '${updatedState.name} subio al nivel ${updatedState.level} y gano ${EducationPetState.xpPerMeal} XP.'
-          : '${updatedState.name} gano ${EducationPetState.xpPerMeal} XP.',
+          ? l10n.pick(
+              es:
+                  '${updatedState.name} subio al nivel ${updatedState.level} y gano ${EducationPetState.xpPerMeal} XP.',
+              en:
+                  '${updatedState.name} reached level ${updatedState.level} and earned ${EducationPetState.xpPerMeal} XP.',
+            )
+          : l10n.pick(
+              es:
+                  '${updatedState.name} gano ${EducationPetState.xpPerMeal} XP.',
+              en:
+                  '${updatedState.name} earned ${EducationPetState.xpPerMeal} XP.',
+            ),
       state: updatedState,
     );
   }

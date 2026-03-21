@@ -47,8 +47,9 @@ class CustomButton extends StatelessWidget {
   Color get _fgColor {
     switch (variant) {
       case ButtonVariant.primary:
+        return AppTheme.surface;
       case ButtonVariant.danger:
-        return Colors.white;
+        return AppTheme.textPrimary;
       case ButtonVariant.secondary:
         return AppTheme.textPrimary;
       case ButtonVariant.outline:
@@ -102,11 +103,10 @@ class CustomButton extends StatelessWidget {
                   ],
                   Text(
                     text,
-                    style: TextStyle(
+                    style: AppTheme.labelLarge.copyWith(
                       fontSize: 15,
-                      fontWeight: FontWeight.w600,
                       color: _fgColor,
-                      letterSpacing: 0.2,
+                      letterSpacing: 0.65,
                     ),
                   ),
                 ],

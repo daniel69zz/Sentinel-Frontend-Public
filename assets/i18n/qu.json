@@ -1,0 +1,107 @@
+{
+  "app": {
+    "not_found": "Mana tarisqa p'anqa"
+  },
+  "common": {
+    "add": "Yapay",
+    "cancel": "Mana",
+    "close": "Wichq'ay",
+    "continue": "Qatiy",
+    "delete": "Chinkachiy",
+    "edit": "Allichay",
+    "loading": "Cargando...",
+    "manage": "Kamachiy",
+    "save": "Waqaychay"
+  },
+  "languages": {
+    "title": "Simi",
+    "subtitle": "Ima simipi app rikunki chaymanta chatbot kutichinampaq akllay.",
+    "spanish": "Espanol",
+    "english": "Ingles",
+    "aymara": "Aymara",
+    "quechua": "Quechua"
+  },
+  "navigation": {
+    "alert": "Alerta",
+    "evidence": "Evidencias",
+    "incidents": "Incidentes",
+    "learn": "Yachay",
+    "directory": "Directorio",
+    "profile": "Perfil",
+    "chat": "Chat"
+  },
+  "auth": {
+    "session_loading": "Sesion cargashan...",
+    "login": {
+      "tagline": "Qampaq seguridad, nuqaykuq prioridad",
+      "title": "Yaykuy",
+      "subtitle": "Gmail qillqay ripunaykipaq",
+      "email_label": "Correo Gmail",
+      "email_hint": "nombre@gmail.com",
+      "email_invalid": "Allin Gmail qillqayta churay",
+      "password_label": "Contrasena",
+      "password_required": "Contrasena qillqay",
+      "password_min": "Minimo 8 caracteres",
+      "submit": "Yaykuy",
+      "create_account": "Musuq cuenta ruway",
+      "forgot_password": "Contrasena qonqaruni",
+      "terms": "Kayman yaykuspa, terminos nisqatawan privacidadwan chaskinki."
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "user_fallback": "Usuaria",
+    "location_fallback": "Bolivia",
+    "account_title": "Cuenta",
+    "email_label": "Correo Gmail",
+    "email_empty": "Mana correo kanchu",
+    "phone_label": "WhatsApp",
+    "phone_empty": "Mana numero kanchu",
+    "contacts_title": "Emergencia contactos",
+    "settings_title": "Configuracion",
+    "appearance_title": "App rikch'aynin",
+    "language_title": "Simi",
+    "about_title": "{{appName}}manta",
+    "version": "Version {{version}}",
+    "logout": "Sesion lluqsiy",
+    "no_contacts_title": "Mana emergencia contactos kanchu",
+    "no_contacts_subtitle": "Kaypi hukta yapay"
+  },
+  "chatbot": {
+    "title": "Yanapay chatbot",
+    "intro": "Allillan, nuqa virtual masiyki kani. Uyarisqayki ukat paso a paso yanapasqayki.",
+    "hint": "Mensaje qillqay...",
+    "support_pet_note": "Virtual mascota kaypi qampaq kashan",
+    "quick": {
+      "urgent": "Utqay yanapay munani",
+      "emotional": "Emocional yanapay munani",
+      "report": "Imaynataq denuncia ruwani",
+      "center": "Yanapay centro mask'ani"
+    }
+  },
+  "emergency": {
+    "title_embedded": "Emergencia Alerta",
+    "title": "Emergencia",
+    "subtitle": "Utqay ukat segura alerta",
+    "tap_to_activate": "Huk kuti tupay alerta qallarichinaykipaq",
+    "activate_button": "Alerta qallarichiy",
+    "active_button": "Alerta qallarishqa",
+    "quick_actions": "Utqay acciones",
+    "share_title": "Ubicacion quykuy",
+    "record_title": "Evidencia grabay",
+    "help_title": "Auxilio mensaje",
+    "contacts_title": "Emergencia contactos"
+  },
+  "education": {
+    "title_embedded": "Educacion DSDR",
+    "title": "Yachay",
+    "subtitle": "Derechos Sexuales y Reproductivos",
+    "search_hint": "Tema mask'ay...",
+    "results_title": "Resultados",
+    "topics_title": "Temas disponibles",
+    "results_subtitle": "Kicharinaykipaq tema akllay.",
+    "topics_subtitle": "Sapa tarjeta video, comic, texto nisqawan huk pantalla kicharin.",
+    "empty_title": "Mana temas tarirqanchu",
+    "empty_subtitle": "Huk simita yant'ay temas kutin rikuchinapaq."
+  }
+}

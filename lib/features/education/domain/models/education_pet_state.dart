@@ -1,3 +1,5 @@
+import '../../../../core/localization/app_language_service.dart';
+
 class EducationPetState {
   static const int xpPerLevel = 100;
   static const int xpPerMeal = 18;
@@ -49,40 +51,64 @@ class EducationPetState {
   }
 
   String get moodLabel {
+    final l10n = AppLanguageService.instance;
     if (!hasFood) {
-      return 'Esperando comida';
+      return l10n.pick(
+        es: 'Esperando comida',
+        en: 'Waiting for food',
+      );
     }
     if (feedCount == 0) {
-      return 'Curiosa';
+      return l10n.pick(es: 'Curiosa', en: 'Curious');
     }
     if (progress >= 0.75) {
-      return 'Motivada';
+      return l10n.pick(es: 'Motivada', en: 'Motivated');
     }
     if (progress >= 0.40) {
-      return 'Activa';
+      return l10n.pick(es: 'Activa', en: 'Active');
     }
-    return 'Con hambre';
+    return l10n.pick(es: 'Con hambre', en: 'Hungry');
   }
 
   String get statusMessage {
+    final l10n = AppLanguageService.instance;
     if (!hasFood) {
-      return '$name necesita comida del juego para seguir creciendo.';
+      return l10n.pick(
+        es: '$name necesita comida del juego para seguir creciendo.',
+        en: '$name needs food from the game to keep growing.',
+      );
     }
     if (feedCount == 0) {
-      return '$name esta lista para aprender contigo.';
+      return l10n.pick(
+        es: '$name esta lista para aprender contigo.',
+        en: '$name is ready to learn with you.',
+      );
     }
     if (progress >= 0.75) {
-      return '$name esta con toda la energia para seguir.';
+      return l10n.pick(
+        es: '$name esta con toda la energia para seguir.',
+        en: '$name has all the energy to keep going.',
+      );
     }
     if (progress >= 0.40) {
-      return '$name sigue creciendo con cada actividad.';
+      return l10n.pick(
+        es: '$name sigue creciendo con cada actividad.',
+        en: '$name keeps growing with every activity.',
+      );
     }
-    return '$name necesita otra ayuda para subir mas rapido.';
+    return l10n.pick(
+      es: '$name necesita otra ayuda para subir mas rapido.',
+      en: '$name needs another boost to level up faster.',
+    );
   }
 
   String get lastFedLabel {
+    final l10n = AppLanguageService.instance;
     if (lastFedAtMillis == null) {
-      return 'Todavia no la alimentaste.';
+      return l10n.pick(
+        es: 'Todavia no la alimentaste.',
+        en: 'You have not fed her yet.',
+      );
     }
 
     final date = DateTime.fromMillisecondsSinceEpoch(
@@ -90,7 +116,10 @@ class EducationPetState {
     ).toLocal();
     final hour = date.hour.toString().padLeft(2, '0');
     final minute = date.minute.toString().padLeft(2, '0');
-    return 'Ultima comida: $hour:$minute';
+    return l10n.pick(
+      es: 'Ultima comida: $hour:$minute',
+      en: 'Last meal: $hour:$minute',
+    );
   }
 
   EducationPetState feed() {

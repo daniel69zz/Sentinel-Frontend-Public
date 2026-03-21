@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
 import '../services/education_pet_service.dart';
@@ -14,35 +15,65 @@ class EducationGamesScreen extends StatefulWidget {
 class _EducationGamesScreenState extends State<EducationGamesScreen> {
   final EducationPetService _petService = EducationPetService();
 
-  static const List<_EducationGameQuestion> _questions = [
-    _EducationGameQuestion(
-      category: 'Consentimiento',
-      prompt:
-          'El consentimiento debe ser claro y puede retirarse en cualquier momento.',
-      options: ['Verdadero', 'Falso'],
-      correctIndex: 0,
-      explanation:
-          'El consentimiento necesita ser libre, claro y continuo. Si cambia la decision, tambien cambia el acuerdo.',
-    ),
-    _EducationGameQuestion(
-      category: 'Anticoncepcion',
-      prompt:
-          'Informarte sobre metodos anticonceptivos solo sirve despues de tener relaciones.',
-      options: ['Verdadero', 'Falso'],
-      correctIndex: 1,
-      explanation:
-          'Informarse antes ayuda a decidir con calma, conocer opciones y buscar apoyo profesional si hace falta.',
-    ),
-    _EducationGameQuestion(
-      category: 'Apoyo',
-      prompt:
-          'Pedir ayuda si sientes presion, miedo o violencia tambien es una forma de autocuidado.',
-      options: ['Verdadero', 'Falso'],
-      correctIndex: 0,
-      explanation:
-          'Buscar apoyo en una persona segura o en un servicio de salud puede ayudarte a protegerte y tomar decisiones mas informadas.',
-    ),
-  ];
+  List<_EducationGameQuestion> get _questions {
+    final l10n = AppLanguageService.instance;
+    final trueOption = l10n.tr('education.games.true_option');
+    final falseOption = l10n.tr('education.games.false_option');
+
+    return [
+      _EducationGameQuestion(
+        category: l10n.pick(es: 'Consentimiento', en: 'Consent'),
+        prompt: l10n.pick(
+          es:
+              'El consentimiento debe ser claro y puede retirarse en cualquier momento.',
+          en:
+              'Consent must be clear and can be withdrawn at any time.',
+        ),
+        options: [trueOption, falseOption],
+        correctIndex: 0,
+        explanation: l10n.pick(
+          es:
+              'El consentimiento necesita ser libre, claro y continuo. Si cambia la decision, tambien cambia el acuerdo.',
+          en:
+              'Consent must be free, clear and ongoing. If the decision changes, the agreement changes too.',
+        ),
+      ),
+      _EducationGameQuestion(
+        category: l10n.pick(es: 'Anticoncepcion', en: 'Contraception'),
+        prompt: l10n.pick(
+          es:
+              'Informarte sobre metodos anticonceptivos solo sirve despues de tener relaciones.',
+          en:
+              'Learning about contraceptive methods only helps after having sex.',
+        ),
+        options: [trueOption, falseOption],
+        correctIndex: 1,
+        explanation: l10n.pick(
+          es:
+              'Informarse antes ayuda a decidir con calma, conocer opciones y buscar apoyo profesional si hace falta.',
+          en:
+              'Learning beforehand helps you decide calmly, understand options and seek professional support if needed.',
+        ),
+      ),
+      _EducationGameQuestion(
+        category: l10n.pick(es: 'Apoyo', en: 'Support'),
+        prompt: l10n.pick(
+          es:
+              'Pedir ayuda si sientes presion, miedo o violencia tambien es una forma de autocuidado.',
+          en:
+              'Asking for help if you feel pressure, fear or violence is also a form of self-care.',
+        ),
+        options: [trueOption, falseOption],
+        correctIndex: 0,
+        explanation: l10n.pick(
+          es:
+              'Buscar apoyo en una persona segura o en un servicio de salud puede ayudarte a protegerte y tomar decisiones mas informadas.',
+          en:
+              'Seeking support from a safe person or a health service can help you protect yourself and make more informed decisions.',
+        ),
+      ),
+    ];
+  }
 
   int _currentIndex = 0;
   int _correctAnswers = 0;
@@ -53,6 +84,10 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
   EducationGameRewardResult? _reward;
 
   _EducationGameQuestion get _currentQuestion => _questions[_currentIndex];
+
+  String _localizedOption(BuildContext context, String option) {
+    return option;
+  }
 
   void _selectAnswer(int index) {
     if (_showExplanation || _isComplete) {
@@ -130,8 +165,8 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo guardar la recompensa del juego.'),
+        SnackBar(
+          content: Text(context.tr('education.games.save_reward_error')),
         ),
       );
     }
@@ -141,7 +176,7 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.surface,
-      appBar: AppBar(title: const Text('Juegos de educacion')),
+      appBar: AppBar(title: Text(context.tr('education.games.title'))),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
@@ -167,22 +202,22 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: const [
+            children: [
               _HeaderChip(
                 icon: Icons.psychology_alt_rounded,
-                label: 'Juego informativo',
+                label: context.tr('education.games.chip_informative'),
               ),
               _HeaderChip(
                 icon: Icons.favorite_border_rounded,
-                label: 'Educacion sexual',
+                label: context.tr('education.games.chip_sex_ed'),
               ),
             ],
           ),
           const SizedBox(height: 14),
-          Text('Mito o realidad', style: AppTheme.headlineMedium),
+          Text(context.tr('education.games.heading'), style: AppTheme.headlineMedium),
           const SizedBox(height: 8),
           Text(
-            'Responde preguntas cortas, aprende algo util y gana comida o monedas para seguir cuidando a la mascota.',
+            context.tr('education.games.description'),
             style: AppTheme.bodyLarge,
           ),
           const SizedBox(height: 16),
@@ -190,14 +225,14 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
             children: [
               Expanded(
                 child: _HeaderStat(
-                  label: 'Preguntas',
+                  label: context.tr('education.games.stat_questions'),
                   value: '${_questions.length}',
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _HeaderStat(
-                  label: 'Aciertos',
+                  label: context.tr('education.games.stat_hits'),
                   value: '$_correctAnswers',
                 ),
               ),
@@ -240,7 +275,13 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
                 ),
               ),
               Text(
-                'Pregunta ${_currentIndex + 1} de ${_questions.length}',
+                context.tr(
+                  'education.games.question_progress',
+                  params: {
+                    'current': '${_currentIndex + 1}',
+                    'total': '${_questions.length}',
+                  },
+                ),
                 style: AppTheme.bodyMedium,
               ),
             ],
@@ -249,14 +290,14 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
           Text(question.prompt, style: AppTheme.titleLarge),
           const SizedBox(height: 8),
           Text(
-            'Toca una opcion para ver la explicacion.',
+            context.tr('education.games.explanation_hint'),
             style: AppTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
           for (var index = 0; index < question.options.length; index++) ...[
             _AnswerCard(
               label: String.fromCharCode(65 + index),
-              text: question.options[index],
+              text: _localizedOption(context, question.options[index]),
               onTap: () => _selectAnswer(index),
               isSelected: _selectedAnswerIndex == index,
               isCorrect: _showExplanation && question.correctIndex == index,
@@ -281,7 +322,10 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Lo importante', style: AppTheme.labelLarge),
+                  Text(
+                    context.tr('education.games.important'),
+                    style: AppTheme.labelLarge,
+                  ),
                   const SizedBox(height: 6),
                   Text(question.explanation, style: AppTheme.bodyLarge),
                 ],
@@ -295,8 +339,8 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
                 icon: const Icon(Icons.arrow_forward_rounded),
                 label: Text(
                   _currentIndex == _questions.length - 1
-                      ? 'Ver resumen'
-                      : 'Siguiente pregunta',
+                      ? context.tr('education.games.see_summary')
+                      : context.tr('education.games.next_question'),
                 ),
               ),
             ),
@@ -330,10 +374,16 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Text('Resumen del juego', style: AppTheme.headlineMedium),
+          Text(context.tr('education.games.summary_title'), style: AppTheme.headlineMedium),
           const SizedBox(height: 8),
           Text(
-            'Respondiste $_correctAnswers de ${_questions.length} preguntas correctamente.',
+            context.tr(
+              'education.games.summary_result',
+              params: {
+                'correct': '$_correctAnswers',
+                'total': '${_questions.length}',
+              },
+            ),
             style: AppTheme.bodyLarge,
           ),
           const SizedBox(height: 16),
@@ -356,7 +406,7 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Guardando recompensa del juego...',
+                      context.tr('education.games.saving_reward'),
                       style: AppTheme.bodyMedium,
                     ),
                   ),
@@ -379,20 +429,35 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Recompensa ganada', style: AppTheme.labelLarge),
+                  Text(
+                    context.tr('education.games.reward_title'),
+                    style: AppTheme.labelLarge,
+                  ),
                   const SizedBox(height: 8),
                   Text(
-                    '+${_reward!.foodEarned} comida para la mascota',
+                    context.tr(
+                      'education.games.reward_food',
+                      params: {'value': '${_reward!.foodEarned}'},
+                    ),
                     style: AppTheme.bodyLarge,
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '+${_reward!.coinsEarned} monedas guardadas',
+                    context.tr(
+                      'education.games.reward_coins',
+                      params: {'value': '${_reward!.coinsEarned}'},
+                    ),
                     style: AppTheme.bodyLarge,
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Inventario actual: ${_reward!.state.foodBalance} comida y ${_reward!.state.coins} monedas.',
+                    context.tr(
+                      'education.games.reward_inventory',
+                      params: {
+                        'food': '${_reward!.state.foodBalance}',
+                        'coins': '${_reward!.state.coins}',
+                      },
+                    ),
                     style: AppTheme.bodyMedium,
                   ),
                 ],
@@ -408,23 +473,26 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppTheme.divider),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Ideas clave', style: AppTheme.labelLarge),
-                SizedBox(height: 8),
                 Text(
-                  'El consentimiento se comunica y puede cambiarse.',
+                  context.tr('education.games.ideas_title'),
+                  style: AppTheme.labelLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  context.tr('education.games.idea_1'),
                   style: AppTheme.bodyMedium,
                 ),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text(
-                  'La informacion confiable ayuda a decidir antes de actuar.',
+                  context.tr('education.games.idea_2'),
                   style: AppTheme.bodyMedium,
                 ),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text(
-                  'Pedir apoyo es parte del autocuidado.',
+                  context.tr('education.games.idea_3'),
                   style: AppTheme.bodyMedium,
                 ),
               ],
@@ -436,7 +504,7 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
             child: ElevatedButton.icon(
               onPressed: _isApplyingReward ? null : _restartGame,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Jugar otra vez'),
+              label: Text(context.tr('education.games.play_again')),
             ),
           ),
         ],

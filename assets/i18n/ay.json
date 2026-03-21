@@ -1,0 +1,107 @@
+{
+  "app": {
+    "not_found": "Pagina janiw utjkiti"
+  },
+  "common": {
+    "add": "Yapxata",
+    "cancel": "Janiwa",
+    "close": "Jist'anta",
+    "continue": "Saranta",
+    "delete": "Chhaqtaya",
+    "edit": "Askicha",
+    "loading": "Cargando...",
+    "manage": "Apnaqana",
+    "save": "Ima"
+  },
+  "languages": {
+    "title": "Aru",
+    "subtitle": "Kawkha arumpi app unjta ukhamaraki chatbot jaysani uk ajlli.",
+    "spanish": "Espanol",
+    "english": "Ingles",
+    "aymara": "Aymara",
+    "quechua": "Quechua"
+  },
+  "navigation": {
+    "alert": "Alerta",
+    "evidence": "Evidencias",
+    "incidents": "Incidentes",
+    "learn": "Yatiqana",
+    "directory": "Directorio",
+    "profile": "Perfil",
+    "chat": "Chat"
+  },
+  "auth": {
+    "session_loading": "Sesion carga...",
+    "login": {
+      "tagline": "Jumankir seguridad, nanakan nayranka",
+      "title": "Mantma",
+      "subtitle": "Gmail qillqt'asi sarantanataqui",
+      "email_label": "Correo Gmail",
+      "email_hint": "nombre@gmail.com",
+      "email_invalid": "Valido correo Gmail qillqt'ama",
+      "password_label": "Contrasena",
+      "password_required": "Contrasena qillqt'ama",
+      "password_min": "Minimo 8 caracteres",
+      "submit": "Mantma",
+      "create_account": "Machaq cuenta lura",
+      "forgot_password": "Contrasena armasxta",
+      "terms": "Saraskta ukhaxa, terminos ukat privacidad katuqta."
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "user_fallback": "Usuaria",
+    "location_fallback": "Bolivia",
+    "account_title": "Cuenta",
+    "email_label": "Correo Gmail",
+    "email_empty": "Janiw correo utjkiti",
+    "phone_label": "WhatsApp",
+    "phone_empty": "Janiw numero utjkiti",
+    "contacts_title": "Emergencia contactos",
+    "settings_title": "Configuracion",
+    "appearance_title": "App apariencia",
+    "language_title": "Aru",
+    "about_title": "{{appName}} tuqita",
+    "version": "Version {{version}}",
+    "logout": "Sesion mistu",
+    "no_contacts_title": "Janiw emergencia contactos utjkiti",
+    "no_contacts_subtitle": "Aka chiqan maya yapxata"
+  },
+  "chatbot": {
+    "title": "Yanapa chatbot",
+    "intro": "Kamisaki, nayax virtual masimawa. Ist'araksmawa ukat paso a paso yanapt'asmawa.",
+    "hint": "Mensaje qillqt'ama...",
+    "support_pet_note": "Virtual mascota jumamp chikawa aka chiqanxa",
+    "quick": {
+      "urgent": "Jank'aki yanapa munta",
+      "emotional": "Emocional yanapa munta",
+      "report": "Kunjams denuncia lura",
+      "center": "Yanapa centro thaqhta"
+    }
+  },
+  "emergency": {
+    "title_embedded": "Emergencia Alerta",
+    "title": "Emergencia",
+    "subtitle": "Jank'aki ukat segura alerta",
+    "tap_to_activate": "Maya kuti limt'asa alerta activa",
+    "activate_button": "Alerta activa",
+    "active_button": "Alerta activa",
+    "quick_actions": "Jank'aki acciones",
+    "share_title": "Ubicacion apaya",
+    "record_title": "Evidencia grava",
+    "help_title": "Auxilio mensaje",
+    "contacts_title": "Emergencia contactos"
+  },
+  "education": {
+    "title_embedded": "Educacion DSDR",
+    "title": "Yatiqawi",
+    "subtitle": "Derechos Sexuales y Reproductivos",
+    "search_hint": "Tema thaqha...",
+    "results_title": "Resultados",
+    "topics_title": "Temas disponibles",
+    "results_subtitle": "Tema ajlli mantañataki.",
+    "topics_subtitle": "Sapa tarjeta yaqha pantalla jist'ari video, comic ukat texto ukanakampi.",
+    "empty_title": "Janiw temas jikxatapkiti",
+    "empty_subtitle": "Yaqha arumpi yant'a temas unacht'ayañataki."
+  }
+}

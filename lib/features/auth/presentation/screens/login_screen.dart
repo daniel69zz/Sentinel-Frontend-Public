@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/services/app_branding_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -204,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Tu seguridad, nuestra prioridad',
+                          context.tr('auth.login.tagline'),
                           style: AppTheme.bodyMedium.copyWith(fontSize: 15),
                           textAlign: TextAlign.center,
                         ),
@@ -212,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen>
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'Ingresar',
+                            context.tr('auth.login.title'),
                             style: AppTheme.headlineMedium,
                           ),
                         ),
@@ -220,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen>
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'Ingresa tu Gmail para continuar',
+                            context.tr('auth.login.subtitle'),
                             style: AppTheme.bodyMedium,
                           ),
                         ),
@@ -230,17 +231,17 @@ class _LoginScreenState extends State<LoginScreen>
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           style: AppTheme.bodyLarge,
-                          decoration: const InputDecoration(
-                            labelText: 'Correo Gmail',
-                            prefixIcon: Icon(
+                          decoration: InputDecoration(
+                            labelText: context.tr('auth.login.email_label'),
+                            prefixIcon: const Icon(
                               Icons.alternate_email_rounded,
                               color: AppTheme.textSecondary,
                             ),
-                            hintText: 'nombre@gmail.com',
+                            hintText: context.tr('auth.login.email_hint'),
                           ),
                           validator: (value) {
                             if (!AuthIdentityMapper.isValidEmail(value ?? '')) {
-                              return 'Ingresa un correo Gmail valido';
+                              return context.tr('auth.login.email_invalid');
                             }
                             return null;
                           },
@@ -252,7 +253,7 @@ class _LoginScreenState extends State<LoginScreen>
                           textInputAction: TextInputAction.done,
                           style: AppTheme.bodyLarge,
                           decoration: InputDecoration(
-                            labelText: 'Contrasena',
+                            labelText: context.tr('auth.login.password_label'),
                             prefixIcon: const Icon(
                               Icons.lock_outline,
                               color: AppTheme.textSecondary,
@@ -273,23 +274,23 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Ingresa tu contrasena';
+                              return context.tr('auth.login.password_required');
                             }
                             if (value.length < 8) {
-                              return 'Minimo 8 caracteres';
+                              return context.tr('auth.login.password_min');
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: 32),
                         CustomButton(
-                          text: 'Ingresar',
+                          text: context.tr('auth.login.submit'),
                           onPressed: _login,
                           isLoading: _isLoading,
                         ),
                         const SizedBox(height: 16),
                         CustomButton(
-                          text: 'Crear cuenta nueva',
+                          text: context.tr('auth.login.create_account'),
                           variant: ButtonVariant.outline,
                           onPressed: () {
                             Navigator.pushNamed(context, AppRoutes.register);
@@ -304,7 +305,7 @@ class _LoginScreenState extends State<LoginScreen>
                             );
                           },
                           child: Text(
-                            'Olvide mi contrasena',
+                            context.tr('auth.login.forgot_password'),
                             style: AppTheme.bodyMedium.copyWith(
                               color: AppTheme.primaryLight,
                             ),
@@ -312,7 +313,7 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                         const SizedBox(height: 40),
                         Text(
-                          'Al continuar, aceptas nuestros Terminos\nde Servicio y Politica de Privacidad.',
+                          context.tr('auth.login.terms'),
                           style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                           textAlign: TextAlign.center,
                         ),

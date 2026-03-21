@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
 import '../../domain/models/education_topic.dart';
@@ -130,27 +131,27 @@ class EducationVideoShowcase extends StatelessWidget {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: const [
+                  children: [
                     _VideoMetaChip(
                       icon: Icons.play_circle_outline_rounded,
-                      label: 'Video ejemplo',
+                      label: context.tr('education.detail.video_example'),
                     ),
                     _VideoMetaChip(
                       icon: Icons.vertical_align_bottom_rounded,
-                      label: 'Guia vertical',
+                      label: context.tr('education.detail.vertical_guide'),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Este boton abre un video temporal para que ya exista un comportamiento real por tema.',
+                  context.tr('education.detail.video_cta_body'),
                   style: AppTheme.bodyLarge.copyWith(fontSize: 15),
                 ),
                 const SizedBox(height: 16),
                 FilledButton.icon(
                   onPressed: onOpenVideo,
                   icon: const Icon(Icons.open_in_new_rounded),
-                  label: const Text('Abrir video de ejemplo'),
+                  label: Text(context.tr('education.detail.open_video')),
                 ),
               ],
             ),

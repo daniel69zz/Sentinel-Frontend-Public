@@ -33,6 +33,7 @@ class AppConstants {
 
   // Assets
   static const String logoPath = 'assets/images/logo.png';
+  static const String mascotPath = 'assets/images/mascota.png';
 
   // Shared Preferences Keys
   static const String keyOnboarded = 'onboarded';

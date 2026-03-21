@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../services/auth_identity_mapper.dart';
@@ -173,7 +174,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Recuperar acceso',
+                      context.tr('auth.forgot_password.title'),
                       style: AppTheme.headlineLarge.copyWith(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
@@ -181,7 +182,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Ingresa tu Gmail y te enviaremos un codigo de verificacion.',
+                      context.tr('auth.forgot_password.subtitle'),
                       style: AppTheme.bodyMedium,
                     ),
                     const SizedBox(height: 28),
@@ -192,17 +193,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           ? TextInputAction.next
                           : TextInputAction.done,
                       style: AppTheme.bodyLarge,
-                      decoration: const InputDecoration(
-                        labelText: 'Correo Gmail',
-                        prefixIcon: Icon(
+                      decoration: InputDecoration(
+                        labelText: context.tr('auth.forgot_password.email_label'),
+                        prefixIcon: const Icon(
                           Icons.alternate_email_rounded,
                           color: AppTheme.textSecondary,
                         ),
-                        hintText: 'nombre@gmail.com',
+                        hintText: context.tr('auth.forgot_password.email_hint'),
                       ),
                       validator: (value) {
                         if (!AuthIdentityMapper.isValidEmail(value ?? '')) {
-                          return 'Ingresa un correo Gmail valido';
+                          return context.tr('auth.forgot_password.email_invalid');
                         }
                         return null;
                       },
@@ -214,13 +215,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.done,
                         style: AppTheme.bodyLarge,
-                        decoration: const InputDecoration(
-                          labelText: 'Codigo de verificacion',
-                          prefixIcon: Icon(
+                        decoration: InputDecoration(
+                          labelText: context.tr('auth.forgot_password.code_label'),
+                          prefixIcon: const Icon(
                             Icons.pin_outlined,
                             color: AppTheme.textSecondary,
                           ),
-                          hintText: '123456',
+                          hintText: context.tr('auth.forgot_password.code_hint'),
                         ),
                         validator: (value) {
                           if (!_codeRequested) {
@@ -228,7 +229,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           }
 
                           if ((value ?? '').trim().length != 6) {
-                            return 'Ingresa el codigo de 6 digitos';
+                            return context.tr('auth.forgot_password.code_invalid');
                           }
                           return null;
                         },
@@ -242,13 +243,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: AppTheme.divider),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Modo demo', style: AppTheme.titleLarge),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                            Text(
+                              context.tr('auth.forgot_password.demo_title'),
+                              style: AppTheme.titleLarge,
+                            ),
                             const SizedBox(height: 6),
                             Text(
-                              'Mientras conectamos el envio real por correo, el codigo se muestra aqui para que puedas probar el flujo.',
+                              context.tr('auth.forgot_password.demo_subtitle'),
                               style: AppTheme.bodyMedium,
                             ),
                             const SizedBox(height: 12),
@@ -266,8 +270,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     const SizedBox(height: 28),
                     CustomButton(
                       text: _codeRequested
-                          ? 'Validar codigo'
-                          : 'Enviar codigo de verificacion',
+                          ? context.tr('auth.forgot_password.validate_code')
+                          : context.tr('auth.forgot_password.send_code'),
                       onPressed: _codeRequested ? _verifyCode : _sendCode,
                       isLoading: _codeRequested
                           ? _isVerifyingCode
@@ -276,14 +280,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     if (_codeRequested) ...[
                       const SizedBox(height: 14),
                       CustomButton(
-                        text: 'Enviar otro codigo',
+                        text: context.tr('auth.forgot_password.resend_code'),
                         variant: ButtonVariant.outline,
                         onPressed: _sendCode,
                       ),
                     ],
                     const SizedBox(height: 24),
                     Text(
-                      'Usa el mismo Gmail con el que registraste tu cuenta.',
+                      context.tr('auth.forgot_password.footer'),
                       style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                     ),
                     const SizedBox(height: 24),

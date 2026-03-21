@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import 'auth_identity_mapper.dart';
 
 class PasswordRecoveryResult {
@@ -22,11 +23,15 @@ class PasswordRecoveryService {
   static const _codeLifetime = Duration(minutes: 10);
 
   Future<PasswordRecoveryResult> sendVerificationCode(String email) async {
+    final t = AppLanguageService.instance;
     final normalizedEmail = AuthIdentityMapper.normalizeEmail(email);
     if (!AuthIdentityMapper.isValidEmail(normalizedEmail)) {
-      return const PasswordRecoveryResult(
+      return PasswordRecoveryResult(
         success: false,
-        message: 'Ingresa un correo Gmail valido.',
+        message: t.tr(
+          'auth.service.invalid_email',
+          fallback: 'Ingresa un correo Gmail valido.',
+        ),
       );
     }
 
@@ -42,7 +47,11 @@ class PasswordRecoveryService {
 
     return PasswordRecoveryResult(
       success: true,
-      message: 'Te enviamos un codigo de verificacion a $normalizedEmail.',
+      message: t.tr(
+        'auth.recovery.code_sent',
+        params: {'email': normalizedEmail},
+        fallback: 'Te enviamos un codigo de verificacion a $normalizedEmail.',
+      ),
       debugCode: code,
     );
   }
@@ -51,29 +60,39 @@ class PasswordRecoveryService {
     required String email,
     required String code,
   }) async {
+    final t = AppLanguageService.instance;
     final normalizedEmail = AuthIdentityMapper.normalizeEmail(email);
     final normalizedCode = code.trim();
 
     if (!AuthIdentityMapper.isValidEmail(normalizedEmail)) {
-      return const PasswordRecoveryResult(
+      return PasswordRecoveryResult(
         success: false,
-        message: 'Ingresa un correo Gmail valido.',
+        message: t.tr(
+          'auth.service.invalid_email',
+          fallback: 'Ingresa un correo Gmail valido.',
+        ),
       );
     }
 
     if (normalizedCode.length != 6) {
-      return const PasswordRecoveryResult(
+      return PasswordRecoveryResult(
         success: false,
-        message: 'Ingresa el codigo de 6 digitos.',
+        message: t.tr(
+          'auth.recovery.invalid_code_length',
+          fallback: 'Ingresa el codigo de 6 digitos.',
+        ),
       );
     }
 
     final prefs = await SharedPreferences.getInstance();
     final rawPending = prefs.getString(_pendingRecoveryKey);
     if (rawPending == null || rawPending.trim().isEmpty) {
-      return const PasswordRecoveryResult(
+      return PasswordRecoveryResult(
         success: false,
-        message: 'Primero solicita un codigo de verificacion.',
+        message: t.tr(
+          'auth.recovery.request_code_first',
+          fallback: 'Primero solicita un codigo de verificacion.',
+        ),
       );
     }
 
@@ -86,40 +105,55 @@ class PasswordRecoveryService {
       final expiresAt = int.tryParse(payload['expiresAt']?.toString() ?? '');
 
       if (storedEmail != normalizedEmail) {
-        return const PasswordRecoveryResult(
+        return PasswordRecoveryResult(
           success: false,
-          message: 'El codigo solicitado pertenece a otro correo.',
+          message: t.tr(
+            'auth.recovery.other_email',
+            fallback: 'El codigo solicitado pertenece a otro correo.',
+          ),
         );
       }
 
       if (expiresAt == null ||
           DateTime.now().millisecondsSinceEpoch > expiresAt) {
         await prefs.remove(_pendingRecoveryKey);
-        return const PasswordRecoveryResult(
+        return PasswordRecoveryResult(
           success: false,
-          message: 'El codigo ya vencio. Solicita uno nuevo.',
+          message: t.tr(
+            'auth.recovery.expired',
+            fallback: 'El codigo ya vencio. Solicita uno nuevo.',
+          ),
         );
       }
 
       if (storedCode != normalizedCode) {
-        return const PasswordRecoveryResult(
+        return PasswordRecoveryResult(
           success: false,
-          message: 'El codigo ingresado no coincide.',
+          message: t.tr(
+            'auth.recovery.code_mismatch',
+            fallback: 'El codigo ingresado no coincide.',
+          ),
         );
       }
 
       await prefs.remove(_pendingRecoveryKey);
 
-      return const PasswordRecoveryResult(
+      return PasswordRecoveryResult(
         success: true,
-        message:
-            'Codigo verificado correctamente. El flujo ya queda listo para conectar el cambio real de contrasena.',
+        message: t.tr(
+          'auth.recovery.verified',
+          fallback:
+              'Codigo verificado correctamente. El flujo ya queda listo para conectar el cambio real de contrasena.',
+        ),
       );
     } catch (_) {
       await prefs.remove(_pendingRecoveryKey);
-      return const PasswordRecoveryResult(
+      return PasswordRecoveryResult(
         success: false,
-        message: 'No se pudo validar el codigo. Intenta nuevamente.',
+        message: t.tr(
+          'auth.recovery.verify_error',
+          fallback: 'No se pudo validar el codigo. Intenta nuevamente.',
+        ),
       );
     }
   }

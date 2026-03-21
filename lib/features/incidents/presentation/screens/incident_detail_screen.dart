@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../evidence/domain/models/evidence_record.dart';
@@ -30,6 +31,20 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
   bool _isSavingIncident = false;
   bool _isUpdatingAssociation = false;
   String? _statusMessage;
+
+  String _t({
+    required String es,
+    required String en,
+    required String ay,
+    required String qu,
+  }) {
+    return AppLanguageService.instance.pick(
+      es: es,
+      en: en,
+      ay: ay,
+      qu: qu,
+    );
+  }
 
   @override
   void initState() {
@@ -175,20 +190,69 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Flujo futuro de denuncia', style: AppTheme.titleLarge),
+            Text(
+              _t(
+                es: 'Flujo futuro de denuncia',
+                en: 'Future reporting flow',
+                ay: 'Jutir denuncia thakhi',
+                qu: 'Hamuq denuncia puriy',
+              ),
+              style: AppTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             Text(
-              'Se dejara listo para enviar este incidente a $institution con seleccion de evidencias, confirmacion final y envio automatico.',
+              _t(
+                es:
+                    'Se dejara listo para enviar este incidente a $institution con seleccion de evidencias, confirmacion final y envio automatico.',
+                en:
+                    'This incident will be prepared to send to $institution with evidence selection, final confirmation, and automatic delivery.',
+                ay:
+                    'Aka incidentex $institution ukar apayañatak wakicht\'ataniwa, evidencianak ajlliwi, qhipa chiqanchawi ukat automatico apayañampi.',
+                qu:
+                    'Kay incidenteqa ${institution}man apachinapaq wakichisqa kanqa, evidenciakuna akllayninwan, qhipa chiqanchayninwan hinaspa automatico apachiywan.',
+              ),
               style: AppTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
-            const _PlaceholderStep(index: 1, title: 'Seleccionar evidencias'),
-            const _PlaceholderStep(index: 2, title: 'Confirmar informacion'),
-            const _PlaceholderStep(index: 3, title: 'Enviar a la institucion'),
+            _PlaceholderStep(
+              index: 1,
+              title: _t(
+                es: 'Seleccionar evidencias',
+                en: 'Select evidence',
+                ay: 'Evidencianak ajllim',
+                qu: 'Evidenciakunata akllay',
+              ),
+            ),
+            _PlaceholderStep(
+              index: 2,
+              title: _t(
+                es: 'Confirmar informacion',
+                en: 'Confirm information',
+                ay: 'Informacion chiqancha',
+                qu: 'Informacionta chiqanchay',
+              ),
+            ),
+            _PlaceholderStep(
+              index: 3,
+              title: _t(
+                es: 'Enviar a la institucion',
+                en: 'Send to the institution',
+                ay: 'Institucionar apaya',
+                qu: 'Institucionman apachiy',
+              ),
+            ),
             const SizedBox(height: 18),
-            const StatusBanner(
-              message:
-                  'TODO: conectar este flujo con backend legal/RAG e integracion final de denuncias automaticas.',
+            StatusBanner(
+              message: _t(
+                es:
+                    'TODO: conectar este flujo con backend legal/RAG e integracion final de denuncias automaticas.',
+                en:
+                    'TODO: connect this flow with the legal/RAG backend and final automatic reporting integration.',
+                ay:
+                    'TODO: aka thakhi legal/RAG backend ukamp mayacha ukat automatico denuncianakan qhipa integracion lura.',
+                qu:
+                    'TODO: kay puriynaqata legal/RAG backendwan tinkichiy hinaspa automatico denunciakunapa qhipa integracionta ruway.',
+              ),
             ),
           ],
         ),
@@ -208,7 +272,16 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.surface,
-      appBar: AppBar(title: const Text('Detalle de incidente')),
+      appBar: AppBar(
+        title: Text(
+          _t(
+            es: 'Detalle de incidente',
+            en: 'Incident detail',
+            ay: 'Incidente detalle',
+            qu: 'Incidente detalle',
+          ),
+        ),
+      ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => _loadIncidentData(refreshing: true),
@@ -226,7 +299,15 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                   padding: EdgeInsets.only(bottom: 16),
                   child: LinearProgressIndicator(color: AppTheme.primary),
                 ),
-              Text('1. Contexto del incidente', style: AppTheme.titleLarge),
+              Text(
+                _t(
+                  es: '1. Contexto del incidente',
+                  en: '1. Incident context',
+                  ay: '1. Incidente contexto',
+                  qu: '1. Incidente contexto',
+                ),
+                style: AppTheme.titleLarge,
+              ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(18),
@@ -314,7 +395,16 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                     const SizedBox(height: 14),
                     Text(
                       _incident.description.trim().isEmpty
-                          ? 'Todavia no hay contexto adicional registrado para este incidente.'
+                          ? _t(
+                              es:
+                                  'Todavia no hay contexto adicional registrado para este incidente.',
+                              en:
+                                  'There is still no additional context recorded for this incident.',
+                              ay:
+                                  'Aka incidentetakejj janiw yaqha contexto qillqt\'atakiti.',
+                              qu:
+                                  'Kay incidentepaqqa manaraq yapasqa contexto qillqasqachu.',
+                            )
                           : _incident.description,
                       style: AppTheme.bodyLarge,
                     ),
@@ -323,7 +413,12 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                       children: [
                         Expanded(
                           child: CustomButton(
-                            text: 'Editar contexto',
+                            text: _t(
+                              es: 'Editar contexto',
+                              en: 'Edit context',
+                              ay: 'Contexto askicha',
+                              qu: 'Contextota allichay',
+                            ),
                             icon: Icons.edit_outlined,
                             variant: ButtonVariant.secondary,
                             isLoading: _isSavingIncident,
@@ -334,7 +429,12 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      'Acciones preparadas para denuncia futura',
+                      _t(
+                        es: 'Acciones preparadas para denuncia futura',
+                        en: 'Actions prepared for future reporting',
+                        ay: 'Jutir denunciaatak wakicht\'ata acciones',
+                        qu: 'Hamuq denunciapaq wakichisqa acciones',
+                      ),
                       style: AppTheme.labelLarge,
                     ),
                     const SizedBox(height: 10),
@@ -344,7 +444,14 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                           child: OutlinedButton.icon(
                             onPressed: () => _showFutureReportFlow('Fiscalia'),
                             icon: const Icon(Icons.account_balance_outlined),
-                            label: const Text('Fiscalia'),
+                            label: Text(
+                              _t(
+                                es: 'Fiscalia',
+                                en: 'Prosecutor',
+                                ay: 'Fiscalia',
+                                qu: 'Fiscalia',
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -352,7 +459,14 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                           child: OutlinedButton.icon(
                             onPressed: () => _showFutureReportFlow('Policia'),
                             icon: const Icon(Icons.local_police_outlined),
-                            label: const Text('Policia'),
+                            label: Text(
+                              _t(
+                                es: 'Policia',
+                                en: 'Police',
+                                ay: 'Policia',
+                                qu: 'Policia',
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -361,7 +475,15 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('2. Evidencias asociadas', style: AppTheme.titleLarge),
+              Text(
+                _t(
+                  es: '2. Evidencias asociadas',
+                  en: '2. Linked evidence',
+                  ay: '2. Mayachata evidencias',
+                  qu: '2. Tinkisqa evidencias',
+                ),
+                style: AppTheme.titleLarge,
+              ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(18),
@@ -377,12 +499,22 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            '${_incidentEvidences.length} vinculadas',
+                            _t(
+                              es: '${_incidentEvidences.length} vinculadas',
+                              en: '${_incidentEvidences.length} linked',
+                              ay: '${_incidentEvidences.length} mayachata',
+                              qu: '${_incidentEvidences.length} tinkisqa',
+                            ),
                             style: AppTheme.titleLarge,
                           ),
                         ),
                         CustomButton(
-                          text: 'Agregar existentes',
+                          text: _t(
+                            es: 'Agregar existentes',
+                            en: 'Add existing',
+                            ay: 'Utjir katxaru',
+                            qu: 'Kachkaqkunata yapay',
+                          ),
                           icon: Icons.add_link_rounded,
                           variant: ButtonVariant.secondary,
                           fullWidth: false,
@@ -396,7 +528,16 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Puedes agregar evidencias sin incidente o moverlas desde otro caso usando PUT /evidences/:id/incident.',
+                      _t(
+                        es:
+                            'Puedes agregar evidencias sin incidente o moverlas desde otro caso usando PUT /evidences/:id/incident.',
+                        en:
+                            'You can add evidence without an incident or move it from another case using PUT /evidences/:id/incident.',
+                        ay:
+                            'Jan incidenteni evidencianak yapxatasmawa jan ukax yaqha casot apatamsa PUT /evidences/:id/incident apnaqasa.',
+                        qu:
+                            'Mana incidenteyuq evidenciakunata yapayta atinki utaq huk kasomanta kuyuchiyta atinki PUT /evidences/:id/incident nisqawan.',
+                      ),
                       style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                     ),
                     const SizedBox(height: 16),
@@ -410,11 +551,24 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                         ),
                       )
                     else if (_incidentEvidences.isEmpty)
-                      const EmptyStateCard(
+                      EmptyStateCard(
                         icon: Icons.link_off_rounded,
-                        title: 'Sin evidencias asociadas',
-                        subtitle:
-                            'Agrega evidencias existentes desde tu bandeja o mueve archivos desde otros incidentes.',
+                        title: _t(
+                          es: 'Sin evidencias asociadas',
+                          en: 'No linked evidence',
+                          ay: 'Janiw mayachata evidencianakax utjkiti',
+                          qu: 'Mana tinkisqa evidenciakuna kanchu',
+                        ),
+                        subtitle: _t(
+                          es:
+                              'Agrega evidencias existentes desde tu bandeja o mueve archivos desde otros incidentes.',
+                          en:
+                              'Add existing evidence from your inbox or move files from other incidents.',
+                          ay:
+                              'Bandejamat utjir evidencianak yapxatam jan ukax yaqha incidentenakat archivonak apaqam.',
+                          qu:
+                              'Bandejaykimanta kachkaq evidenciakunata yapay utaq huk incidentekunamanta archivokunata kuyuchiy.',
+                        ),
                       )
                     else
                       ..._incidentEvidences.map(
@@ -431,7 +585,12 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                                   : () => _removeEvidence(evidence),
                               icon: const Icon(Icons.link_off_rounded),
                               color: AppTheme.warning,
-                              tooltip: 'Quitar del incidente',
+                              tooltip: _t(
+                                es: 'Quitar del incidente',
+                                en: 'Remove from incident',
+                                ay: 'Incidente tuqit apsu',
+                                qu: 'Incidentemanta qichuy',
+                              ),
                             ),
                           ),
                         ),
@@ -440,7 +599,15 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('3. Informacion legal', style: AppTheme.titleLarge),
+              Text(
+                _t(
+                  es: '3. Informacion legal',
+                  en: '3. Legal information',
+                  ay: '3. Legal informacion',
+                  qu: '3. Legal informacion',
+                ),
+                style: AppTheme.titleLarge,
+              ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(18),
@@ -452,22 +619,50 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.gavel_rounded, color: AppTheme.primaryLight),
-                        SizedBox(width: 10),
-                        Text('Panel reservado', style: AppTheme.titleLarge),
+                        const Icon(
+                          Icons.gavel_rounded,
+                          color: AppTheme.primaryLight,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          _t(
+                            es: 'Panel reservado',
+                            en: 'Reserved panel',
+                            ay: 'Apnaqañatak katxarata panel',
+                            qu: 'Waqaychasqa panel',
+                          ),
+                          style: AppTheme.titleLarge,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Aqui se integrara la capa legal futura: resumen del caso, instituciones sugeridas segun contexto, checklist de envio y soporte RAG/backend.',
+                      _t(
+                        es:
+                            'Aqui se integrara la capa legal futura: resumen del caso, instituciones sugeridas segun contexto, checklist de envio y soporte RAG/backend.',
+                        en:
+                            'The future legal layer will be integrated here: case summary, suggested institutions by context, sending checklist and RAG/backend support.',
+                        ay:
+                            'Akanwa jutir legal capa integrasini: caso resumen, contextoarjama sugerita instituciones, apayañ checklist ukat RAG/backend yanapa.',
+                        qu:
+                            'Kaypim hamuq legal capa integrasqa kanqa: kaso resumen, contexto hina sugerisqa instituciones, apachiy checklist hinaspa RAG/backend yanapay.',
+                      ),
                       style: AppTheme.bodyMedium,
                     ),
                     const SizedBox(height: 12),
-                    const StatusBanner(
-                      message:
-                          'TODO: conectar informacion legal contextual y estado de denuncias automaticas.',
+                    StatusBanner(
+                      message: _t(
+                        es:
+                            'TODO: conectar informacion legal contextual y estado de denuncias automaticas.',
+                        en:
+                            'TODO: connect contextual legal information and the status of automatic reports.',
+                        ay:
+                            'TODO: contextual legal informacion ukat automatico denuncianakan estadopa mayacha.',
+                        qu:
+                            'TODO: contextual legal informacionta hinaspa automatico denunciakunapa estadonta tinkichiy.',
+                      ),
                     ),
                   ],
                 ),
@@ -491,6 +686,20 @@ class _EvidencePickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String t({
+      required String es,
+      required String en,
+      required String ay,
+      required String qu,
+    }) {
+      return AppLanguageService.instance.pick(
+        es: es,
+        en: en,
+        ay: ay,
+        qu: qu,
+      );
+    }
+
     return Padding(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -502,19 +711,49 @@ class _EvidencePickerSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Agregar evidencias existentes', style: AppTheme.titleLarge),
+          Text(
+            t(
+              es: 'Agregar evidencias existentes',
+              en: 'Add existing evidence',
+              ay: 'Utjir evidencianak yapxata',
+              qu: 'Kachkaq evidenciakunata yapay',
+            ),
+            style: AppTheme.titleLarge,
+          ),
           const SizedBox(height: 8),
           Text(
-            'Selecciona archivos de tu bandeja. Si ya pertenecen a otro incidente, se moveran a este caso.',
+            t(
+              es:
+                  'Selecciona archivos de tu bandeja. Si ya pertenecen a otro incidente, se moveran a este caso.',
+              en:
+                  'Select files from your inbox. If they already belong to another incident, they will be moved to this case.',
+              ay:
+                  'Bandejamat archivonak ajllim. Yaqha incidentenkx utt\'askchi ukhax aka casar apaqataniwa.',
+              qu:
+                  'Bandejaykimanta archivokunata akllay. Huk incidentemanña kaptinqa, kay kasoman kuyuchisqa kanqa.',
+            ),
             style: AppTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
           if (evidences.isEmpty)
-            const EmptyStateCard(
+            EmptyStateCard(
               icon: Icons.perm_media_outlined,
-              title: 'No hay evidencias disponibles',
-              subtitle:
-                  'Primero crea evidencias en su modulo para poder asociarlas aqui.',
+              title: t(
+                es: 'No hay evidencias disponibles',
+                en: 'No evidence available',
+                ay: 'Janiw evidencianakax utjkiti',
+                qu: 'Mana evidenciakuna kanchu',
+              ),
+              subtitle: t(
+                es:
+                    'Primero crea evidencias en su modulo para poder asociarlas aqui.',
+                en:
+                    'First create evidence in its module so you can associate it here.',
+                ay:
+                    'Nayraqata moduloapan evidencianak luram ukhamat akank mayachañataki.',
+                qu:
+                    'Ñawpaqta modulonpi evidenciakunata ruway hinaspa kaypi tinkichinaykipaq.',
+              ),
             )
           else
             Flexible(
@@ -523,10 +762,25 @@ class _EvidencePickerSheet extends StatelessWidget {
                 children: evidences.map((evidence) {
                   final isCurrent = evidence.incidentId == currentIncidentId;
                   final actionLabel = isCurrent
-                      ? 'Ya asociada'
+                      ? t(
+                          es: 'Ya asociada',
+                          en: 'Already linked',
+                          ay: 'Niy mayachata',
+                          qu: 'Ñan tinkisqa',
+                        )
                       : evidence.isAssociated
-                      ? 'Mover'
-                      : 'Agregar';
+                      ? t(
+                          es: 'Mover',
+                          en: 'Move',
+                          ay: 'Apaqam',
+                          qu: 'Kuyuchiy',
+                        )
+                      : t(
+                          es: 'Agregar',
+                          en: 'Add',
+                          ay: 'Yapxata',
+                          qu: 'Yapay',
+                        );
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -595,6 +849,20 @@ class _IncidentEditSheetState extends State<_IncidentEditSheet> {
 
   @override
   Widget build(BuildContext context) {
+    String t({
+      required String es,
+      required String en,
+      required String ay,
+      required String qu,
+    }) {
+      return AppLanguageService.instance.pick(
+        es: es,
+        en: en,
+        ay: ay,
+        qu: qu,
+      );
+    }
+
     return Padding(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -607,18 +875,36 @@ class _IncidentEditSheetState extends State<_IncidentEditSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Editar contexto', style: AppTheme.titleLarge),
+            Text(
+              t(
+                es: 'Editar contexto',
+                en: 'Edit context',
+                ay: 'Contexto askicha',
+                qu: 'Contextota allichay',
+              ),
+              style: AppTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             Text(
-              'Ajusta el titulo y el contexto principal del incidente.',
+              t(
+                es: 'Ajusta el titulo y el contexto principal del incidente.',
+                en: 'Adjust the title and main context of the incident.',
+                ay: 'Incidente titulo ukat nayriri contextop askicham.',
+                qu: 'Incidentepa sutinwan hatun contextonwan allichay.',
+              ),
               style: AppTheme.bodyMedium,
             ),
             const SizedBox(height: 18),
             TextField(
               controller: _titleController,
               maxLength: 80,
-              decoration: const InputDecoration(
-                labelText: 'Titulo del incidente',
+              decoration: InputDecoration(
+                labelText: t(
+                  es: 'Titulo del incidente',
+                  en: 'Incident title',
+                  ay: 'Incidente titulo',
+                  qu: 'Incidente titulo',
+                ),
                 prefixIcon: Icon(Icons.title_rounded),
               ),
             ),
@@ -627,8 +913,13 @@ class _IncidentEditSheetState extends State<_IncidentEditSheet> {
               controller: _descriptionController,
               minLines: 5,
               maxLines: 7,
-              decoration: const InputDecoration(
-                labelText: 'Contexto completo',
+              decoration: InputDecoration(
+                labelText: t(
+                  es: 'Contexto completo',
+                  en: 'Full context',
+                  ay: 'Phuqhata contexto',
+                  qu: 'Hunt\'asqa contexto',
+                ),
                 alignLabelWithHint: true,
                 prefixIcon: Padding(
                   padding: EdgeInsets.only(bottom: 76),
@@ -638,7 +929,12 @@ class _IncidentEditSheetState extends State<_IncidentEditSheet> {
             ),
             const SizedBox(height: 18),
             CustomButton(
-              text: 'Guardar cambios',
+              text: t(
+                es: 'Guardar cambios',
+                en: 'Save changes',
+                ay: 'Mayjt\'awinak ima',
+                qu: 'Tikraykunata waqaychay',
+              ),
               icon: Icons.save_outlined,
               onPressed: () {
                 Navigator.pop(

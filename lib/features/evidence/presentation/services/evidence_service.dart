@@ -6,6 +6,7 @@ import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../auth/presentation/services/auth_service.dart';
@@ -57,13 +58,32 @@ class EvidenceService {
     : _authService = authService ?? AuthService(),
       _apiClient = apiClient ?? ApiClient();
 
+  String _t({
+    required String es,
+    required String en,
+    required String ay,
+    required String qu,
+  }) {
+    return AppLanguageService.instance.pick(
+      es: es,
+      en: en,
+      ay: ay,
+      qu: qu,
+    );
+  }
+
   Future<EvidenceListResult> loadEvidences() async {
     final user = await _authService.getSession();
     if (user == null) {
-      return const EvidenceListResult(
+      return EvidenceListResult(
         evidences: [],
         fromCache: true,
-        message: 'Inicia sesion para ver tus evidencias.',
+        message: _t(
+          es: 'Inicia sesion para ver tus evidencias.',
+          en: 'Sign in to see your evidence.',
+          ay: 'Evidencianakama uñjañatakix sesion qalltaya.',
+          qu: 'Evidenciaykikunata rikunaykipaq sesionta qallarichiy.',
+        ),
       );
     }
 
@@ -81,7 +101,12 @@ class EvidenceService {
         evidences: evidences,
         fromCache: false,
         message: evidences.isEmpty
-            ? 'Todavia no tienes evidencias registradas.'
+            ? _t(
+                es: 'Todavia no tienes evidencias registradas.',
+                en: 'You do not have any registered evidence yet.',
+                ay: 'Jichhakamax janiw qillqt\'ata evidencianakaman utjkiti.',
+                qu: 'Manaraq evidenciaykikuna qillqasqachu kashan.',
+              )
             : null,
       );
     } on ApiException catch (error) {
@@ -90,15 +115,30 @@ class EvidenceService {
         fromCache: true,
         message: cached.isEmpty
             ? _mapLoadError(error)
-            : 'Mostrando evidencias guardadas en este dispositivo.',
+            : _t(
+                es: 'Mostrando evidencias guardadas en este dispositivo.',
+                en: 'Showing evidence saved on this device.',
+                ay: 'Aka dispositivon imata evidencianakwa uñstaski.',
+                qu: 'Kay dispositivopi waqaychasqa evidenciakuna rikuchisqa kashan.',
+              ),
       );
     } catch (_) {
       return EvidenceListResult(
         evidences: cached,
         fromCache: true,
         message: cached.isEmpty
-            ? 'No se pudo cargar tu bandeja de evidencias.'
-            : 'Mostrando evidencias guardadas en este dispositivo.',
+            ? _t(
+                es: 'No se pudo cargar tu bandeja de evidencias.',
+                en: 'Your evidence inbox could not be loaded.',
+                ay: 'Janiw evidencianakaman bandejax cargañjamakiti.',
+                qu: 'Evidenciayki bandejaqa mana cargayta atikurqanchu.',
+              )
+            : _t(
+                es: 'Mostrando evidencias guardadas en este dispositivo.',
+                en: 'Showing evidence saved on this device.',
+                ay: 'Aka dispositivon imata evidencianakwa uñstaski.',
+                qu: 'Kay dispositivopi waqaychasqa evidenciakuna rikuchisqa kashan.',
+              ),
       );
     }
   }
@@ -112,7 +152,12 @@ class EvidenceService {
       return EvidenceDetailResult(
         success: fallback != null,
         evidence: fallback,
-        message: 'Inicia sesion para abrir esta evidencia.',
+        message: _t(
+          es: 'Inicia sesion para abrir esta evidencia.',
+          en: 'Sign in to open this evidence.',
+          ay: 'Aka evidencia jist\'arañatakix sesion qalltaya.',
+          qu: 'Kay evidenciata kicharinaykipaq sesionta qallarichiy.',
+        ),
       );
     }
 
@@ -126,7 +171,12 @@ class EvidenceService {
         return EvidenceDetailResult(
           success: fallback != null,
           evidence: fallback,
-          message: 'No se encontro detalle para esta evidencia.',
+          message: _t(
+            es: 'No se encontro detalle para esta evidencia.',
+            en: 'No detail was found for this evidence.',
+            ay: 'Aka evidenciatakix janiw detalle jikxataskiti.',
+            qu: 'Kay evidenciapaq detalleqa mana tarikurqanchu.',
+          ),
         );
       }
 
@@ -140,7 +190,12 @@ class EvidenceService {
         evidence: cached ?? fallback,
         message: cached == null && fallback == null
             ? error.message
-            : 'Mostrando el ultimo detalle guardado localmente.',
+            : _t(
+                es: 'Mostrando el ultimo detalle guardado localmente.',
+                en: 'Showing the latest detail saved locally.',
+                ay: 'Qhipa localan imata detallew uñstaski.',
+                qu: 'Qhipa localpi waqaychasqa detalleqa rikuchisqa kashan.',
+              ),
       );
     } catch (_) {
       final cached = await findCachedEvidence(user.id, evidenceId);
@@ -148,8 +203,18 @@ class EvidenceService {
         success: cached != null || fallback != null,
         evidence: cached ?? fallback,
         message: cached == null && fallback == null
-            ? 'No se pudo abrir el detalle de la evidencia.'
-            : 'Mostrando el ultimo detalle guardado localmente.',
+            ? _t(
+                es: 'No se pudo abrir el detalle de la evidencia.',
+                en: 'The evidence detail could not be opened.',
+                ay: 'Janiw evidencia detallex jist\'arañjamakiti.',
+                qu: 'Evidencia detalleqa mana kichariyta atikurqanchu.',
+              )
+            : _t(
+                es: 'Mostrando el ultimo detalle guardado localmente.',
+                en: 'Showing the latest detail saved locally.',
+                ay: 'Qhipa localan imata detallew uñstaski.',
+                qu: 'Qhipa localpi waqaychasqa detalleqa rikuchisqa kashan.',
+              ),
       );
     }
   }
@@ -164,25 +229,40 @@ class EvidenceService {
   }) async {
     final user = await _authService.getSession();
     if (user == null) {
-      return const EvidenceMutationResult(
+      return EvidenceMutationResult(
         success: false,
-        message: 'No hay una sesion activa para subir evidencias.',
+        message: _t(
+          es: 'No hay una sesion activa para subir evidencias.',
+          en: 'There is no active session to upload evidence.',
+          ay: 'Janiw evidencianak apkatañatakix sesion activa utjkiti.',
+          qu: 'Evidenciakuna wicharinapaq sesion activaqa mana kanchu.',
+        ),
       );
     }
 
     final file = File(filePath);
     if (!await file.exists()) {
-      return const EvidenceMutationResult(
+      return EvidenceMutationResult(
         success: false,
-        message: 'El archivo seleccionado ya no existe.',
+        message: _t(
+          es: 'El archivo seleccionado ya no existe.',
+          en: 'The selected file no longer exists.',
+          ay: 'Ajllita archivox janiw utjxiti.',
+          qu: 'Akllasqa archivoqa manan kashanchu.',
+        ),
       );
     }
 
     final sizeBytes = await file.length();
     if (sizeBytes > 20 * 1024 * 1024) {
-      return const EvidenceMutationResult(
+      return EvidenceMutationResult(
         success: false,
-        message: 'El archivo supera el limite de 20 MB.',
+        message: _t(
+          es: 'El archivo supera el limite de 20 MB.',
+          en: 'The file exceeds the 20 MB limit.',
+          ay: 'Archivox 20 MB limite jilankiwa.',
+          qu: 'Archivoqa 20 MB limiteta aswan hatunmi.',
+        ),
       );
     }
 
@@ -193,9 +273,14 @@ class EvidenceService {
     );
 
     if (mimeType == null) {
-      return const EvidenceMutationResult(
+      return EvidenceMutationResult(
         success: false,
-        message: 'No se pudo reconocer el tipo del archivo seleccionado.',
+        message: _t(
+          es: 'No se pudo reconocer el tipo del archivo seleccionado.',
+          en: 'The selected file type could not be recognized.',
+          ay: 'Ajllita archivon kastapax janiw uñt\'ayaskiti.',
+          qu: 'Akllasqa archivopa kastanqa mana reqsiyta atikurqanchu.',
+        ),
       );
     }
 
@@ -250,7 +335,12 @@ class EvidenceService {
 
       return EvidenceMutationResult(
         success: true,
-        message: 'Evidencia creada correctamente.',
+        message: _t(
+          es: 'Evidencia creada correctamente.',
+          en: 'Evidence created successfully.',
+          ay: 'Evidenciax wali sum luratawa.',
+          qu: 'Evidenciaqa allinta ruwasqa karqan.',
+        ),
         evidence: createdEvidence,
       );
     } on ApiException catch (error) {
@@ -259,9 +349,14 @@ class EvidenceService {
         message: _mapCreateError(error),
       );
     } catch (_) {
-      return const EvidenceMutationResult(
+      return EvidenceMutationResult(
         success: false,
-        message: 'No se pudo crear la evidencia.',
+        message: _t(
+          es: 'No se pudo crear la evidencia.',
+          en: 'The evidence could not be created.',
+          ay: 'Janiw evidencia lurañjamakiti.',
+          qu: 'Evidenciaqa mana ruwayta atikurqanchu.',
+        ),
       );
     }
   }
@@ -272,9 +367,14 @@ class EvidenceService {
   }) async {
     final user = await _authService.getSession();
     if (user == null) {
-      return const EvidenceMutationResult(
+      return EvidenceMutationResult(
         success: false,
-        message: 'No hay una sesion activa para actualizar la asociacion.',
+        message: _t(
+          es: 'No hay una sesion activa para actualizar la asociacion.',
+          en: 'There is no active session to update the association.',
+          ay: 'Janiw asociacion machaqtayañatakix sesion activa utjkiti.',
+          qu: 'Asociacionta musuqyachinapaq sesion activaqa mana kanchu.',
+        ),
       );
     }
 
@@ -297,8 +397,18 @@ class EvidenceService {
       return EvidenceMutationResult(
         success: true,
         message: incidentId == null
-            ? 'La evidencia quedo sin incidente asociado.'
-            : 'La evidencia ahora esta asociada al incidente.',
+            ? _t(
+                es: 'La evidencia quedo sin incidente asociado.',
+                en: 'The evidence was left without an associated incident.',
+                ay: 'Evidenciax janiw incidenter mayachatakiti.',
+                qu: 'Evidenciaqa mana incidentewan tinkisqachu kipakun.',
+              )
+            : _t(
+                es: 'La evidencia ahora esta asociada al incidente.',
+                en: 'The evidence is now associated with the incident.',
+                ay: 'Evidenciax jichhax incidenter mayachatawa.',
+                qu: 'Evidenciaqa kunanqa incidentewan tinkisqa kashan.',
+              ),
         evidence: updatedEvidence,
       );
     } on ApiException catch (error) {
@@ -307,9 +417,14 @@ class EvidenceService {
         message: _mapAssociationError(error),
       );
     } catch (_) {
-      return const EvidenceMutationResult(
+      return EvidenceMutationResult(
         success: false,
-        message: 'No se pudo actualizar la asociacion de la evidencia.',
+        message: _t(
+          es: 'No se pudo actualizar la asociacion de la evidencia.',
+          en: 'The evidence association could not be updated.',
+          ay: 'Janiw evidencia mayachawix machaqtayañjamakiti.',
+          qu: 'Evidenciawan asociacionninqa mana musuqyachiyta atikurqanchu.',
+        ),
       );
     }
   }
@@ -425,7 +540,13 @@ class EvidenceService {
   String _mapLoadError(ApiException error) {
     final normalized = error.message.toLowerCase();
     if (normalized.contains('no se pudo conectar con el servidor')) {
-      return 'No se pudo actualizar la bandeja de evidencias. Revisa tu conexion.';
+      return _t(
+        es: 'No se pudo actualizar la bandeja de evidencias. Revisa tu conexion.',
+        en: 'The evidence inbox could not be updated. Check your connection.',
+        ay: 'Janiw evidencianak bandejax machaqtayañjamakiti. Conexion uñakipam.',
+        qu:
+            'Evidencia bandejaqa mana musuqyachiyta atikurqanchu. Conexionniykita qhawariy.',
+      );
     }
     return error.message;
   }
@@ -433,14 +554,29 @@ class EvidenceService {
   String _mapCreateError(ApiException error) {
     final normalized = error.message.toLowerCase();
     if (normalized.contains('uuid invalido')) {
-      return 'La asociacion enviada para esta evidencia no es valida.';
+      return _t(
+        es: 'La asociacion enviada para esta evidencia no es valida.',
+        en: 'The association sent for this evidence is not valid.',
+        ay: 'Aka evidenciatak apayata asociacionax janiw validokiti.',
+        qu: 'Kay evidenciapaq apasqa asociacionqa mana allinchu.',
+      );
     }
     if (normalized.contains('archivo no soportado') ||
         normalized.contains('tipo de archivo no permitido')) {
-      return 'El archivo seleccionado no tiene un formato permitido.';
+      return _t(
+        es: 'El archivo seleccionado no tiene un formato permitido.',
+        en: 'The selected file does not have an allowed format.',
+        ay: 'Ajllita archivox janiw iyawsata formato niyki.',
+        qu: 'Akllasqa archivoqa mana saqesqa formato niyuqchu.',
+      );
     }
     if (normalized.contains('tipo_evidencia no coincide')) {
-      return 'El tipo de evidencia no coincide con el archivo elegido.';
+      return _t(
+        es: 'El tipo de evidencia no coincide con el archivo elegido.',
+        en: 'The evidence type does not match the chosen file.',
+        ay: 'Evidencian kastapax ajllita archivompi janiw kikpkiti.',
+        qu: 'Evidencia kastanqa akllasqa archivowan mana tupanchu.',
+      );
     }
     return error.message;
   }
@@ -448,10 +584,20 @@ class EvidenceService {
   String _mapAssociationError(ApiException error) {
     final normalized = error.message.toLowerCase();
     if (normalized.contains('incidente no encontrado')) {
-      return 'No se encontro el incidente seleccionado.';
+      return _t(
+        es: 'No se encontro el incidente seleccionado.',
+        en: 'The selected incident was not found.',
+        ay: 'Ajllita incidentex janiw jikxataskiti.',
+        qu: 'Akllasqa incidenteqa mana tarikurqanchu.',
+      );
     }
     if (normalized.contains('evidencia no encontrada')) {
-      return 'No se encontro la evidencia a actualizar.';
+      return _t(
+        es: 'No se encontro la evidencia a actualizar.',
+        en: 'The evidence to update was not found.',
+        ay: 'Machaqtayañ evidencianix janiw jikxataskiti.',
+        qu: 'Musuqyachina evidenciata mana tarikurqanchu.',
+      );
     }
     return error.message;
   }

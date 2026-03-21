@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../core/theme/app_design_theme.dart';
 import '../../core/theme/app_theme.dart';
 
 class CustomCard extends StatelessWidget {
@@ -9,6 +11,9 @@ class CustomCard extends StatelessWidget {
   final Color? borderColor;
   final double borderRadius;
   final bool hasShadow;
+  final double floatPhase;
+  final double floatAmplitude;
+  final Gradient? gradient;
 
   const CustomCard({
     super.key,
@@ -19,36 +24,24 @@ class CustomCard extends StatelessWidget {
     this.borderColor,
     this.borderRadius = 16,
     this.hasShadow = false,
+    this.floatPhase = 0,
+    this.floatAmplitude = 3.2,
+    this.gradient,
   });
 
   @override
   Widget build(BuildContext context) {
-    final card = Container(
-      decoration: BoxDecoration(
-        color: backgroundColor ?? AppTheme.cardBg,
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: borderColor ?? AppTheme.divider, width: 1),
-        boxShadow: hasShadow
-            ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
-      ),
+    return AppFloatingSurface(
+      onTap: onTap,
       padding: padding ?? const EdgeInsets.all(16),
+      backgroundColor: backgroundColor ?? AppTheme.cardBg,
+      borderColor: borderColor ?? AppTheme.divider,
+      gradient: gradient,
+      borderRadius: borderRadius,
+      amplitude: floatAmplitude,
+      phase: floatPhase,
+      showShadow: true,
       child: child,
     );
-
-    if (onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: card,
-      );
-    }
-    return card;
   }
 }

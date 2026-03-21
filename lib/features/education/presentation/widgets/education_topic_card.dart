@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
 import '../../domain/models/education_topic.dart';
@@ -84,20 +85,26 @@ class EducationTopicCard extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: const [
+              children: [
                 _ContentChip(
                   icon: Icons.play_circle_fill_rounded,
-                  label: 'Video',
+                  label: context.tr('education.detail.video_chip'),
                 ),
-                _ContentChip(icon: Icons.auto_stories_rounded, label: 'Comic'),
-                _ContentChip(icon: Icons.subject_rounded, label: 'Texto'),
+                _ContentChip(
+                  icon: Icons.auto_stories_rounded,
+                  label: context.tr('education.detail.comic_chip'),
+                ),
+                _ContentChip(
+                  icon: Icons.subject_rounded,
+                  label: context.tr('education.detail.text_chip'),
+                ),
               ],
             ),
             const SizedBox(height: 14),
             Row(
               children: [
                 Text(
-                  'Abrir tema',
+                  context.tr('education.detail.open_topic'),
                   style: TextStyle(
                     color: topic.color,
                     fontSize: 14,

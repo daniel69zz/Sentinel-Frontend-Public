@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/services/app_branding_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
@@ -63,8 +64,11 @@ class _ProfileAppearanceScreenState extends State<ProfileAppearanceScreen> {
     setState(() => _isSaving = false);
 
     final message = warning == null
-        ? 'Apariencia actualizada.'
-        : 'Apariencia guardada. $warning';
+        ? context.tr('profile.appearance.updated')
+        : context.tr(
+            'profile.appearance.saved_warning',
+            params: {'warning': warning},
+          );
 
     ScaffoldMessenger.of(
       context,
@@ -87,7 +91,7 @@ class _ProfileAppearanceScreenState extends State<ProfileAppearanceScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.surface,
-      appBar: AppBar(title: const Text('Apariencia de la app')),
+      appBar: AppBar(title: Text(context.tr('profile.appearance.title'))),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -112,12 +116,18 @@ class _ProfileAppearanceScreenState extends State<ProfileAppearanceScreen> {
                           Text(displayNamePreview, style: AppTheme.titleLarge),
                           const SizedBox(height: 4),
                           Text(
-                            'Perfil: ${selectedAvatar.title}',
+                            context.tr(
+                              'profile.appearance.profile_preview',
+                              params: {'title': selectedAvatar.localizedTitle},
+                            ),
                             style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Launcher: ${selectedPreset.launcherName}',
+                            context.tr(
+                              'profile.appearance.launcher_preview',
+                              params: {'title': selectedPreset.launcherName},
+                            ),
                             style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                           ),
                         ],
@@ -131,10 +141,10 @@ class _ProfileAppearanceScreenState extends State<ProfileAppearanceScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Icono del perfil', style: AppTheme.titleLarge),
+              Text(context.tr('profile.appearance.avatar_title'), style: AppTheme.titleLarge),
               const SizedBox(height: 8),
               Text(
-                'Estas opciones son genericas y solo cambian la vista del perfil.',
+                context.tr('profile.appearance.avatar_subtitle'),
                 style: AppTheme.bodyMedium,
               ),
               const SizedBox(height: 14),
@@ -152,10 +162,10 @@ class _ProfileAppearanceScreenState extends State<ProfileAppearanceScreen> {
                 }).toList(),
               ),
               const SizedBox(height: 24),
-              Text('Icono del acceso directo', style: AppTheme.titleLarge),
+              Text(context.tr('profile.appearance.launcher_title'), style: AppTheme.titleLarge),
               const SizedBox(height: 8),
               Text(
-                'Se mantienen los presets genericos y puedes seguir usando un nombre personalizado dentro de la app.',
+                context.tr('profile.appearance.launcher_subtitle'),
                 style: AppTheme.bodyMedium,
               ),
               const SizedBox(height: 14),
@@ -177,10 +187,10 @@ class _ProfileAppearanceScreenState extends State<ProfileAppearanceScreen> {
                 controller: _appNameController,
                 maxLength: 24,
                 decoration: InputDecoration(
-                  labelText: 'Nombre personalizado',
+                  labelText: context.tr('profile.appearance.custom_name_label'),
                   hintText: selectedPreset.launcherName,
                   helperText:
-                      'Dejalo vacio para usar el nombre del icono seleccionado.',
+                      context.tr('profile.appearance.custom_name_helper'),
                   prefixIcon: const Icon(Icons.draw_outlined),
                 ),
               ),
@@ -201,8 +211,8 @@ class _ProfileAppearanceScreenState extends State<ProfileAppearanceScreen> {
                     Expanded(
                       child: Text(
                         _brandingService.supportsLauncherCustomization
-                            ? 'En Android, el preset del launcher cambia el acceso directo. El icono del perfil se queda solo dentro de esta seccion.'
-                            : 'En esta plataforma se guarda el nombre personalizado dentro de la app. El launcher depende del sistema operativo.',
+                            ? context.tr('profile.appearance.platform_android')
+                            : context.tr('profile.appearance.platform_other'),
                         style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                       ),
                     ),
@@ -225,7 +235,9 @@ class _ProfileAppearanceScreenState extends State<ProfileAppearanceScreen> {
                         )
                       : const Icon(Icons.palette_outlined, size: 18),
                   label: Text(
-                    _isSaving ? 'Guardando apariencia...' : 'Guardar apariencia',
+                    _isSaving
+                        ? context.tr('profile.appearance.saving')
+                        : context.tr('profile.appearance.save'),
                   ),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -283,10 +295,10 @@ class _AvatarOptionCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(option.title, style: AppTheme.labelLarge),
+            Text(option.localizedTitle, style: AppTheme.labelLarge),
             const SizedBox(height: 4),
             Text(
-              option.subtitle,
+              option.localizedSubtitle,
               style: AppTheme.bodyMedium.copyWith(fontSize: 12),
             ),
           ],
@@ -362,10 +374,10 @@ class _BrandingPresetCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(preset.title, style: AppTheme.labelLarge),
+            Text(preset.localizedTitle, style: AppTheme.labelLarge),
             const SizedBox(height: 4),
             Text(
-              preset.description,
+              preset.localizedDescription,
               style: AppTheme.bodyMedium.copyWith(fontSize: 12),
             ),
           ],

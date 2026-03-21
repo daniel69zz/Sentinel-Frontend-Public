@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'contacts_screen.dart';
 import '../../../home/presentation/screens/home_screen.dart';
@@ -89,15 +90,15 @@ class _SessionLoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: AppTheme.surface,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: AppTheme.primary),
-            SizedBox(height: 16),
-            Text('Cargando sesion...', style: AppTheme.bodyMedium),
+            const CircularProgressIndicator(color: AppTheme.primary),
+            const SizedBox(height: 16),
+            Text(context.tr('auth.session_loading'), style: AppTheme.bodyMedium),
           ],
         ),
       ),

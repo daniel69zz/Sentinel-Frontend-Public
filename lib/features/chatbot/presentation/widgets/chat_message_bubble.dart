@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/mascot_image.dart';
 
 class ChatMessageBubble extends StatelessWidget {
   final String text;
@@ -20,13 +22,18 @@ class ChatMessageBubble extends StatelessWidget {
       return Align(
         alignment: Alignment.centerRight,
         child: _MessageCard(
-          label: 'Tu',
+          label: AppLanguageService.instance.pick(
+            es: 'Tu',
+            en: 'You',
+            ay: 'Juma',
+            qu: 'Qam',
+          ),
           text: text,
           isTyping: isTyping,
           backgroundColor: AppTheme.primary,
           borderColor: AppTheme.primaryLight,
-          textColor: Colors.white,
-          labelColor: Colors.white70,
+          textColor: AppTheme.surface,
+          labelColor: AppTheme.surface.withValues(alpha: 0.72),
           maxWidth: 290,
         ),
       );
@@ -41,7 +48,19 @@ class ChatMessageBubble extends StatelessWidget {
           const SizedBox(width: 10),
           Flexible(
             child: _MessageCard(
-              label: isTyping ? 'Tu mascota esta pensando...' : 'Mascota virtual',
+              label: isTyping
+                  ? AppLanguageService.instance.pick(
+                      es: 'Tu mascota esta pensando...',
+                      en: 'Your pet is thinking...',
+                      ay: 'Virtual mascotasamax amuyt\'aski...',
+                      qu: 'Mascotayki yuyaykushan...',
+                    )
+                  : AppLanguageService.instance.pick(
+                      es: 'Mascota virtual',
+                      en: 'Virtual pet',
+                      ay: 'Virtual mascota',
+                      qu: 'Virtual mascota',
+                    ),
               text: text,
               isTyping: isTyping,
               backgroundColor: AppTheme.cardBg,
@@ -172,61 +191,26 @@ class _VirtualPetAvatar extends StatelessWidget {
               ],
             ),
             child: Stack(
-              clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
                 Positioned(
-                  top: 2,
-                  left: 10,
-                  child: _PetEar(
-                    angle: -0.45,
-                    color: const Color(0xFFF5AEC8),
-                    innerColor: const Color(0xFFFFE7EF),
-                  ),
-                ),
-                Positioned(
-                  top: 2,
-                  right: 10,
-                  child: _PetEar(
-                    angle: 0.45,
-                    color: const Color(0xFFF5AEC8),
-                    innerColor: const Color(0xFFFFE7EF),
-                  ),
-                ),
-                Positioned(
-                  top: 12,
+                  top: 10,
                   child: Container(
-                    width: 46,
-                    height: 46,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFFF4F8),
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.34),
                       shape: BoxShape.circle,
                     ),
                   ),
                 ),
-                const Positioned(
-                  top: 28,
-                  left: 20,
-                  child: _PetEye(),
-                ),
-                const Positioned(
-                  top: 28,
-                  right: 20,
-                  child: _PetEye(),
-                ),
-                Positioned(
-                  top: 38,
-                  left: 17,
-                  child: _PetCheek(color: AppTheme.primaryLight),
-                ),
-                Positioned(
-                  top: 38,
-                  right: 17,
-                  child: _PetCheek(color: AppTheme.primaryLight),
-                ),
-                const Positioned(
-                  top: 35,
-                  child: _PetMouth(),
+                const Positioned.fill(
+                  child: MascotImage(
+                    width: 56,
+                    height: 56,
+                    padding: EdgeInsets.fromLTRB(6, 6, 6, 18),
+                    semanticsLabel: 'Mascota virtual',
+                  ),
                 ),
                 Positioned(
                   bottom: 7,
@@ -240,7 +224,19 @@ class _VirtualPetAvatar extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      isTyping ? 'Pensando' : 'Aqui',
+                      isTyping
+                          ? AppLanguageService.instance.pick(
+                              es: 'Pensando',
+                              en: 'Thinking',
+                              ay: 'Amuyt\'aski',
+                              qu: 'Yuyaykushan',
+                            )
+                          : AppLanguageService.instance.pick(
+                              es: 'Aqui',
+                              en: 'Here',
+                              ay: 'Akan',
+                              qu: 'Kaypi',
+                            ),
                       style: AppTheme.bodyMedium.copyWith(
                         color: AppTheme.textPrimary,
                         fontSize: 10,
@@ -254,7 +250,12 @@ class _VirtualPetAvatar extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Compi',
+            AppLanguageService.instance.pick(
+              es: 'Compi',
+              en: 'Buddy',
+              ay: 'Masi',
+              qu: 'Masi',
+            ),
             style: AppTheme.bodyMedium.copyWith(
               color: AppTheme.textPrimary,
               fontSize: 11,
@@ -265,120 +266,4 @@ class _VirtualPetAvatar extends StatelessWidget {
       ),
     );
   }
-}
-
-class _PetEar extends StatelessWidget {
-  final double angle;
-  final Color color;
-  final Color innerColor;
-
-  const _PetEar({
-    required this.angle,
-    required this.color,
-    required this.innerColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Transform.rotate(
-      angle: angle,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 18,
-            height: 24,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(18),
-            ),
-          ),
-          Container(
-            width: 10,
-            height: 14,
-            decoration: BoxDecoration(
-              color: innerColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PetEye extends StatelessWidget {
-  const _PetEye();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 6,
-      height: 10,
-      decoration: BoxDecoration(
-        color: AppTheme.textPrimary,
-        borderRadius: BorderRadius.circular(8),
-      ),
-    );
-  }
-}
-
-class _PetCheek extends StatelessWidget {
-  final Color color;
-
-  const _PetCheek({required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.55),
-        shape: BoxShape.circle,
-      ),
-    );
-  }
-}
-
-class _PetMouth extends StatelessWidget {
-  const _PetMouth();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 12,
-      height: 8,
-      child: CustomPaint(painter: _PetMouthPainter()),
-    );
-  }
-}
-
-class _PetMouthPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppTheme.textPrimary
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4
-      ..strokeCap = StrokeCap.round;
-
-    final leftArc = Path()
-      ..moveTo(size.width / 2, size.height / 2)
-      ..quadraticBezierTo(1, size.height + 1, 1, 1);
-    final rightArc = Path()
-      ..moveTo(size.width / 2, size.height / 2)
-      ..quadraticBezierTo(
-        size.width - 1,
-        size.height + 1,
-        size.width - 1,
-        1,
-      );
-
-    canvas.drawPath(leftArc, paint);
-    canvas.drawPath(rightArc, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

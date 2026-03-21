@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../shared/widgets/bottom_nav.dart';
 import '../../../directory/presentation/screens/directory_screen.dart';
@@ -65,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, AppRoutes.chatbot),
         icon: const Icon(Icons.chat_bubble_outline_rounded),
-        label: const Text('Chat'),
+        label: Text(context.tr('navigation.chat')),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: BottomNav(

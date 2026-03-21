@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
+import '../../../../shared/widgets/mascot_image.dart';
 import '../../domain/models/education_pet_state.dart';
 
 class EducationPetHubEntryCard extends StatelessWidget {
@@ -19,10 +21,20 @@ class EducationPetHubEntryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subtitle = isLoading
-        ? 'Cargando mascota y progreso...'
+        ? context.tr('education.companion.hub_loading_subtitle')
         : petState.hasFood
-        ? 'Nivel ${petState.level} - ${petState.foodBalance} comida - ${petState.coins} monedas'
-        : 'Nivel ${petState.level} - Juega para conseguir comida';
+        ? context.tr(
+            'education.companion.hub_ready_subtitle',
+            params: {
+              'level': '${petState.level}',
+              'food': '${petState.foodBalance}',
+              'coins': '${petState.coins}',
+            },
+          )
+        : context.tr(
+            'education.companion.hub_no_food_subtitle',
+            params: {'level': '${petState.level}'},
+          );
 
     return CustomCard(
       padding: const EdgeInsets.all(18),
@@ -38,10 +50,11 @@ class EducationPetHubEntryCard extends StatelessWidget {
                   color: AppTheme.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(
-                  Icons.pets_rounded,
-                  color: AppTheme.primary,
-                  size: 28,
+                child: const MascotImage(
+                  width: 36,
+                  height: 36,
+                  padding: EdgeInsets.all(8),
+                  semanticsLabel: 'Mascota',
                 ),
               ),
               const SizedBox(width: 12),
@@ -49,7 +62,10 @@ class EducationPetHubEntryCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Mascota guia', style: AppTheme.titleLarge),
+                    Text(
+                      context.tr('education.companion.hub_title'),
+                      style: AppTheme.titleLarge,
+                    ),
                     const SizedBox(height: 4),
                     Text(subtitle, style: AppTheme.bodyMedium),
                   ],
@@ -60,8 +76,11 @@ class EducationPetHubEntryCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             isLoading
-                ? 'Entra para ver su estado completo.'
-                : '${petState.name} tiene su propio espacio con juegos y recompensas.',
+                ? context.tr('education.companion.hub_loading_body')
+                : context.tr(
+                    'education.companion.hub_ready_body',
+                    params: {'name': petState.name},
+                  ),
             style: AppTheme.bodyLarge,
           ),
           const SizedBox(height: 16),
@@ -70,7 +89,7 @@ class EducationPetHubEntryCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onTap,
               icon: const Icon(Icons.arrow_forward_rounded),
-              label: const Text('Abrir mascota y juegos'),
+              label: Text(context.tr('education.companion.hub_button')),
             ),
           ),
         ],

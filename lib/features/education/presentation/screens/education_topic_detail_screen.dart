@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/models/education_topic.dart';
 import '../widgets/education_section_header.dart';
@@ -23,7 +24,7 @@ class EducationTopicDetailScreen extends StatelessWidget {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('No se pudo abrir el video de ejemplo.')),
+      SnackBar(content: Text(context.tr('education.detail.open_video_error'))),
     );
   }
 
@@ -41,10 +42,9 @@ class EducationTopicDetailScreen extends StatelessWidget {
                 delegate: SliverChildListDelegate([
                   EducationTopicBanner(topic: topic),
                   const SizedBox(height: 24),
-                  const EducationSectionHeader(
-                    title: 'Video de ejemplo',
-                    subtitle:
-                        'El video principal queda arriba y cambia segun el tema elegido.',
+                  EducationSectionHeader(
+                    title: context.tr('education.detail.video_title'),
+                    subtitle: context.tr('education.detail.video_subtitle'),
                   ),
                   const SizedBox(height: 12),
                   EducationVideoShowcase(
@@ -52,10 +52,9 @@ class EducationTopicDetailScreen extends StatelessWidget {
                     onOpenVideo: () => _openVideoExample(context),
                   ),
                   const SizedBox(height: 24),
-                  const EducationSectionHeader(
-                    title: 'Comic de ejemplo',
-                    subtitle:
-                        'El comic se muestra completo en vertical para leerlo bajando.',
+                  EducationSectionHeader(
+                    title: context.tr('education.detail.comic_title'),
+                    subtitle: context.tr('education.detail.comic_subtitle'),
                   ),
                   const SizedBox(height: 12),
                   for (
@@ -71,10 +70,9 @@ class EducationTopicDetailScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                   ],
                   const SizedBox(height: 24),
-                  const EducationSectionHeader(
-                    title: 'Informacion en texto',
-                    subtitle:
-                        'Al final dejamos el espacio solo para bloques de lectura.',
+                  EducationSectionHeader(
+                    title: context.tr('education.detail.text_title'),
+                    subtitle: context.tr('education.detail.text_subtitle'),
                   ),
                   const SizedBox(height: 12),
                   for (final block in topic.textBlocks) ...[

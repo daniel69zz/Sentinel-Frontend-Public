@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
 import '../../domain/models/evidence_record.dart';
@@ -16,35 +17,74 @@ class EvidenceTypeStyle {
   });
 }
 
+String _t({
+  required String es,
+  required String en,
+  required String ay,
+  required String qu,
+}) {
+  return AppLanguageService.instance.pick(
+    es: es,
+    en: en,
+    ay: ay,
+    qu: qu,
+  );
+}
+
 EvidenceTypeStyle evidenceTypeStyleFor(String type) {
   switch (type.trim().toLowerCase()) {
     case 'audio':
-      return const EvidenceTypeStyle(
-        label: 'Audio',
+      return EvidenceTypeStyle(
+        label: _t(
+          es: 'Audio',
+          en: 'Audio',
+          ay: 'Audio',
+          qu: 'Audio',
+        ),
         icon: Icons.graphic_eq_rounded,
         color: Color(0xFF39B7A0),
       );
     case 'video':
-      return const EvidenceTypeStyle(
-        label: 'Video',
+      return EvidenceTypeStyle(
+        label: _t(
+          es: 'Video',
+          en: 'Video',
+          ay: 'Video',
+          qu: 'Video',
+        ),
         icon: Icons.videocam_rounded,
         color: Color(0xFFE26C6C),
       );
     case 'imagen':
-      return const EvidenceTypeStyle(
-        label: 'Imagen',
+      return EvidenceTypeStyle(
+        label: _t(
+          es: 'Imagen',
+          en: 'Image',
+          ay: 'Imagen',
+          qu: 'Imagen',
+        ),
         icon: Icons.image_rounded,
         color: Color(0xFF64A8FF),
       );
     case 'texto':
-      return const EvidenceTypeStyle(
-        label: 'Texto',
+      return EvidenceTypeStyle(
+        label: _t(
+          es: 'Texto',
+          en: 'Text',
+          ay: 'Texto',
+          qu: 'Texto',
+        ),
         icon: Icons.notes_rounded,
         color: Color(0xFFB988FF),
       );
     default:
-      return const EvidenceTypeStyle(
-        label: 'Documento',
+      return EvidenceTypeStyle(
+        label: _t(
+          es: 'Documento',
+          en: 'Document',
+          ay: 'Documento',
+          qu: 'Documento',
+        ),
         icon: Icons.description_rounded,
         color: Color(0xFFF0A15E),
       );
@@ -54,33 +94,30 @@ EvidenceTypeStyle evidenceTypeStyleFor(String type) {
 String formatEvidenceDate(String value) {
   final date = DateTime.tryParse(value)?.toLocal();
   if (date == null) {
-    return 'Fecha no disponible';
+    return _t(
+      es: 'Fecha no disponible',
+      en: 'Date unavailable',
+      ay: 'Uru janiw utjkiti',
+      qu: 'P\'unchaw mana kanchu',
+    );
   }
 
-  const months = [
-    'ene',
-    'feb',
-    'mar',
-    'abr',
-    'may',
-    'jun',
-    'jul',
-    'ago',
-    'sep',
-    'oct',
-    'nov',
-    'dic',
-  ];
-
   final day = date.day.toString().padLeft(2, '0');
+  final month = date.month.toString().padLeft(2, '0');
+  final year = date.year.toString().padLeft(4, '0');
   final hour = date.hour.toString().padLeft(2, '0');
   final minute = date.minute.toString().padLeft(2, '0');
-  return '$day ${months[date.month - 1]} ${date.year} - $hour:$minute';
+  return '$day/$month/$year - $hour:$minute';
 }
 
 String formatEvidenceSize(int? bytes) {
   if (bytes == null || bytes <= 0) {
-    return 'Tamano no disponible';
+    return _t(
+      es: 'Tamano no disponible',
+      en: 'Size unavailable',
+      ay: 'Tamano janiw utjkiti',
+      qu: 'Tamano mana kanchu',
+    );
   }
   if (bytes < 1024) {
     return '$bytes B';
@@ -186,7 +223,19 @@ class EvidenceAssociationBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isAssociated ? AppTheme.success : AppTheme.warning;
-    final label = isAssociated ? 'Asociada' : 'Sin incidente';
+    final label = isAssociated
+        ? _t(
+            es: 'Asociada',
+            en: 'Linked',
+            ay: 'Mayachata',
+            qu: 'Tinkisqa',
+          )
+        : _t(
+            es: 'Sin incidente',
+            en: 'No incident',
+            ay: 'Jan incidenteni',
+            qu: 'Mana incidenteyuq',
+          );
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -351,7 +400,14 @@ class _TagChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        label.trim().isEmpty ? 'sin dato' : label,
+        label.trim().isEmpty
+            ? _t(
+                es: 'sin dato',
+                en: 'no data',
+                ay: 'janiw dato utjkiti',
+                qu: 'mana dato kanchu',
+              )
+            : label,
         style: TextStyle(
           color: color,
           fontSize: 11,

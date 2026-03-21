@@ -6,10 +6,25 @@ import 'package:just_audio/just_audio.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
 import '../../domain/models/evidence_record.dart';
 import 'evidence_components.dart';
+
+String _t({
+  required String es,
+  required String en,
+  required String ay,
+  required String qu,
+}) {
+  return AppLanguageService.instance.pick(
+    es: es,
+    en: en,
+    ay: ay,
+    qu: qu,
+  );
+}
 
 class EvidencePreviewPanel extends StatelessWidget {
   final EvidenceRecord evidence;
@@ -40,10 +55,20 @@ class _ImagePreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final fileUrl = evidence.fileUrl.trim();
     if (fileUrl.isEmpty) {
-      return const _PreviewFallback(
+      return _PreviewFallback(
         icon: Icons.image_not_supported_outlined,
-        title: 'No hay vista previa disponible',
-        subtitle: 'La evidencia no incluye una URL o archivo para mostrar.',
+        title: _t(
+          es: 'No hay vista previa disponible',
+          en: 'No preview available',
+          ay: 'Janiw nayra uñjañax utjkiti',
+          qu: 'Mana ñawpaq rikuy kanchu',
+        ),
+        subtitle: _t(
+          es: 'La evidencia no incluye una URL o archivo para mostrar.',
+          en: 'The evidence does not include a URL or file to display.',
+          ay: 'Evidenciax janiw uñacht\'ayañatak URL ni archivo apankiti.',
+          qu: 'Evidenciaqa URL nitaq archivo rikuchinapaq mana apamunchu.',
+        ),
       );
     }
 
@@ -51,19 +76,39 @@ class _ImagePreview extends StatelessWidget {
         ? Image.network(
             fileUrl,
             fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => const _PreviewFallback(
+            errorBuilder: (_, _, _) => _PreviewFallback(
               icon: Icons.broken_image_outlined,
-              title: 'No se pudo cargar la imagen',
-              subtitle: 'Intenta abrir el archivo de forma externa.',
+              title: _t(
+                es: 'No se pudo cargar la imagen',
+                en: 'The image could not be loaded',
+                ay: 'Janiw imagen cargañjamakiti',
+                qu: 'Imagenqa mana cargayta atikurqanchu',
+              ),
+              subtitle: _t(
+                es: 'Intenta abrir el archivo de forma externa.',
+                en: 'Try opening the file externally.',
+                ay: 'Archivor anqaxat jist\'arañ yant\'am.',
+                qu: 'Archivota hawa ladtamanta kichariyta yant\'ay.',
+              ),
             ),
           )
         : Image.file(
             File(fileUrl),
             fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => const _PreviewFallback(
+            errorBuilder: (_, _, _) => _PreviewFallback(
               icon: Icons.broken_image_outlined,
-              title: 'No se pudo abrir la imagen',
-              subtitle: 'El archivo local ya no esta disponible.',
+              title: _t(
+                es: 'No se pudo abrir la imagen',
+                en: 'The image could not be opened',
+                ay: 'Janiw imagen jist\'arañjamakiti',
+                qu: 'Imagenqa mana kichariyta atikurqanchu',
+              ),
+              subtitle: _t(
+                es: 'El archivo local ya no esta disponible.',
+                en: 'The local file is no longer available.',
+                ay: 'Local archivox janiw utjxiti.',
+                qu: 'Local archivoqa manan kashanchu.',
+              ),
             ),
           );
 
@@ -99,7 +144,12 @@ class _VideoPreviewState extends State<_VideoPreview> {
     if (source.isEmpty) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'No hay un archivo disponible para reproducir.';
+        _errorMessage = _t(
+          es: 'No hay un archivo disponible para reproducir.',
+          en: 'There is no available file to play.',
+          ay: 'Janiw anatayañatakix archivo utjkiti.',
+          qu: 'Purichinapaq archivoqa mana kanchu.',
+        );
       });
       return;
     }
@@ -122,7 +172,12 @@ class _VideoPreviewState extends State<_VideoPreview> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMessage = 'No se pudo inicializar la vista previa del video.';
+        _errorMessage = _t(
+          es: 'No se pudo inicializar la vista previa del video.',
+          en: 'The video preview could not be initialized.',
+          ay: 'Janiw video nayra uñjañax qalltayañjamakiti.',
+          qu: 'Video ñawpaq rikuyqa mana qallariyta atikurqanchu.',
+        );
       });
     }
   }
@@ -136,14 +191,32 @@ class _VideoPreviewState extends State<_VideoPreview> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const _PreviewLoading(label: 'Preparando video...');
+      return _PreviewLoading(
+        label: _t(
+          es: 'Preparando video...',
+          en: 'Preparing video...',
+          ay: 'Video wakicht\'aski...',
+          qu: 'Video wakichikushan...',
+        ),
+      );
     }
 
     if (_errorMessage != null || _controller == null) {
       return _PreviewFallback(
         icon: Icons.videocam_off_rounded,
-        title: 'No se pudo cargar el video',
-        subtitle: _errorMessage ?? 'Intenta abrir el archivo externamente.',
+        title: _t(
+          es: 'No se pudo cargar el video',
+          en: 'The video could not be loaded',
+          ay: 'Janiw video cargañjamakiti',
+          qu: 'Videoqa mana cargayta atikurqanchu',
+        ),
+        subtitle: _errorMessage ??
+            _t(
+              es: 'Intenta abrir el archivo externamente.',
+              en: 'Try opening the file externally.',
+              ay: 'Archivor anqaxat jist\'arañ yant\'am.',
+              qu: 'Archivota hawa ladtamanta kichariyta yant\'ay.',
+            ),
       );
     }
 
@@ -235,7 +308,12 @@ class _AudioPreviewState extends State<_AudioPreview> {
     if (source.isEmpty) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'No hay un archivo disponible para reproducir.';
+        _errorMessage = _t(
+          es: 'No hay un archivo disponible para reproducir.',
+          en: 'There is no available file to play.',
+          ay: 'Janiw anatayañatakix archivo utjkiti.',
+          qu: 'Purichinapaq archivoqa mana kanchu.',
+        );
       });
       return;
     }
@@ -266,7 +344,12 @@ class _AudioPreviewState extends State<_AudioPreview> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMessage = 'No se pudo inicializar el reproductor de audio.';
+        _errorMessage = _t(
+          es: 'No se pudo inicializar el reproductor de audio.',
+          en: 'The audio player could not be initialized.',
+          ay: 'Janiw audio anatirix qalltayañjamakiti.',
+          qu: 'Audio purichiqqa mana qallariyta atikurqanchu.',
+        );
       });
     }
   }
@@ -281,13 +364,25 @@ class _AudioPreviewState extends State<_AudioPreview> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const _PreviewLoading(label: 'Preparando audio...');
+      return _PreviewLoading(
+        label: _t(
+          es: 'Preparando audio...',
+          en: 'Preparing audio...',
+          ay: 'Audio wakicht\'aski...',
+          qu: 'Audio wakichikushan...',
+        ),
+      );
     }
 
     if (_errorMessage != null) {
       return _PreviewFallback(
         icon: Icons.volume_off_rounded,
-        title: 'No se pudo cargar el audio',
+        title: _t(
+          es: 'No se pudo cargar el audio',
+          en: 'The audio could not be loaded',
+          ay: 'Janiw audio cargañjamakiti',
+          qu: 'Audioqa mana cargayta atikurqanchu',
+        ),
         subtitle: _errorMessage!,
       );
     }
@@ -428,7 +523,16 @@ class _DocumentPreview extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'La vista previa de documentos queda preparada para abrir o descargar el archivo segun el soporte disponible.',
+            _t(
+              es:
+                  'La vista previa de documentos queda preparada para abrir o descargar el archivo segun el soporte disponible.',
+              en:
+                  'The document preview is ready to open or download the file depending on the available support.',
+              ay:
+                  'Documentonakan nayra uñjañapax archivo jist\'arañataki jan ukax apaqañataki wakicht\'atawa.',
+              qu:
+                  'Documento ñawpaq rikuyqa archivo kicharinapaq utaq uraykachinapaq wakichisqa kashan.',
+            ),
             style: AppTheme.bodyMedium,
           ),
           const SizedBox(height: 14),
@@ -437,7 +541,21 @@ class _DocumentPreview extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: canOpen ? _openEvidenceFile : null,
               icon: const Icon(Icons.open_in_new_rounded),
-              label: Text(canOpen ? 'Abrir archivo' : 'Archivo no disponible'),
+              label: Text(
+                canOpen
+                    ? _t(
+                        es: 'Abrir archivo',
+                        en: 'Open file',
+                        ay: 'Archivo jist\'ara',
+                        qu: 'Archivo kichariy',
+                      )
+                    : _t(
+                        es: 'Archivo no disponible',
+                        en: 'File unavailable',
+                        ay: 'Archivo janiw utjkiti',
+                        qu: 'Archivo mana kanchu',
+                      ),
+              ),
             ),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app.dart';
+import 'core/localization/app_language_service.dart';
 import 'core/services/app_branding_service.dart';
 
 void main() async {
@@ -21,6 +22,7 @@ void main() async {
   );
 
   await AppBrandingService.instance.initialize();
+  await AppLanguageService.instance.initialize();
 
   runApp(const SentinelApp());
 }

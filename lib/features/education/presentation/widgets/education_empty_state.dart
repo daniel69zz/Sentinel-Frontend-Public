@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
 
@@ -27,10 +28,10 @@ class EducationEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text('No encontramos temas', style: AppTheme.titleLarge),
+          Text(context.tr('education.empty_title'), style: AppTheme.titleLarge),
           const SizedBox(height: 6),
           Text(
-            'Prueba con otra palabra para volver a mostrar los temas de educacion.',
+            context.tr('education.empty_subtitle'),
             style: AppTheme.bodyMedium,
           ),
         ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/models/education_pet_state.dart';
 import '../services/education_pet_service.dart';
@@ -78,8 +79,13 @@ class _EducationCompanionScreenState extends State<EducationCompanionScreen> {
 
       setState(() => _isFeedingPet = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo actualizar la mascota localmente.'),
+        SnackBar(
+          content: Text(
+            AppLanguageService.instance.pick(
+              es: 'No se pudo actualizar la mascota localmente.',
+              en: 'The local pet could not be updated.',
+            ),
+          ),
         ),
       );
     }
@@ -103,7 +109,7 @@ class _EducationCompanionScreenState extends State<EducationCompanionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.surface,
-      appBar: AppBar(title: const Text('Mascota y juegos')),
+      appBar: AppBar(title: Text(context.tr('education.companion.title'))),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),

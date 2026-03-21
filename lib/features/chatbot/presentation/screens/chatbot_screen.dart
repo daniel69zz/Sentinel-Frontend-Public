@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../services/chatbot_service.dart';
 import '../widgets/chat_message_bubble.dart';
@@ -14,25 +15,26 @@ class ChatbotScreen extends StatefulWidget {
 }
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
-  static const List<String> _quickPrompts = [
-    'Necesito ayuda urgente',
-    'Quiero apoyo emocional',
-    'Como hago una denuncia',
-    'Busco un centro de apoyo',
-  ];
-
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ChatbotService _chatbotService = ChatbotService();
-  final List<_ChatMessage> _messages = [
-    const _ChatMessage(
-      text:
-          'Hola, soy tu companera virtual. Estoy aqui para escucharte y orientarte paso a paso.',
+  late final List<_ChatMessage> _messages = [
+    _ChatMessage(
+      text: AppLanguageService.instance.tr('chatbot.intro'),
       isUser: false,
     ),
   ];
 
   bool _isBotTyping = false;
+
+  List<String> _quickPrompts(BuildContext context) {
+    return [
+      context.tr('chatbot.quick.urgent'),
+      context.tr('chatbot.quick.emotional'),
+      context.tr('chatbot.quick.report'),
+      context.tr('chatbot.quick.center'),
+    ];
+  }
 
   Future<void> _sendMessage([String? presetMessage]) async {
     final rawMessage = presetMessage ?? _messageController.text;
@@ -52,6 +54,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     try {
       final reply = await _chatbotService.generateReply(
         _buildConversationTurns(),
+        language: context.appLanguage,
       );
       if (!mounted) return;
 
@@ -71,8 +74,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
       setState(() {
         _messages.add(
-          const _ChatMessage(
-            text: 'Ocurrio un error inesperado al consultar el chatbot.',
+          _ChatMessage(
+            text: context.tr('chatbot.errors.unexpected'),
             isUser: false,
           ),
         );
@@ -128,9 +131,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final quickPrompts = _quickPrompts(context);
     return Scaffold(
       backgroundColor: AppTheme.surface,
-      appBar: AppBar(title: const Text('Chatbot de apoyo')),
+      appBar: AppBar(title: Text(context.tr('chatbot.title'))),
       body: SafeArea(
         child: Column(
           children: [
@@ -140,10 +144,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 scrollDirection: Axis.horizontal,
-                itemCount: _quickPrompts.length,
+                itemCount: quickPrompts.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
-                  final prompt = _quickPrompts[index];
+                  final prompt = quickPrompts[index];
                   return ActionChip(
                     onPressed: () => _sendMessage(prompt),
                     backgroundColor: AppTheme.cardBg,
@@ -224,9 +228,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       maxLines: 4,
                       textInputAction: TextInputAction.send,
                       onSubmitted: (_) => _sendMessage(),
-                      decoration: const InputDecoration(
-                        hintText: 'Escribe tu mensaje...',
-                        contentPadding: EdgeInsets.symmetric(
+                      decoration: InputDecoration(
+                        hintText: context.tr('chatbot.hint'),
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 14,
                         ),
@@ -342,7 +346,7 @@ class _ChatStageBackground extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Tu mascota virtual te acompana aqui',
+                  context.tr('chatbot.support_pet_note'),
                   style: AppTheme.bodyMedium.copyWith(
                     color: AppTheme.textPrimary,
                     fontSize: 12,
