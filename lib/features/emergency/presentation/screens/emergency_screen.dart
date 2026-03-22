@@ -59,10 +59,21 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     if (_isRecording) return;
 
     final triggeredAt = DateTime.now();
+
+    setState(() {
+      _isRecording = true;
+      _captureStatus = AppLanguageService.instance.tr(
+        'emergency.capture_preparing_alert',
+      );
+    });
+    _showAlertDialog();
+
     final capture = await _captureService.startEmergencyCapture();
     if (!mounted) return;
 
     if (!capture.hasAnyAction) {
+      Navigator.of(context).pop();
+      setState(() => _isRecording = false);
       for (final issue in capture.issues) {
         _showSnackBar(issue);
       }
@@ -73,7 +84,6 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     _activeAlertTriggeredAt = triggeredAt;
 
     setState(() {
-      _isRecording = true;
       _captureStatus = _buildCaptureStatus(capture);
     });
 
@@ -92,7 +102,6 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
         alertTriggeredAt: triggeredAt,
       ),
     );
-    _showAlertDialog();
   }
 
   Future<void> _deactivateAlert() async {

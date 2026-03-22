@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:gal/gal.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -111,9 +112,14 @@ class EmergencyCaptureService {
     String? videoPath;
     Position? position;
 
-    final cameraGranted = await _requestPermission(Permission.camera);
-    final microphoneGranted = await _requestPermission(Permission.microphone);
-    final locationGranted = await _requestLocationPermission();
+    final permissionResults = await Future.wait([
+      _requestPermission(Permission.camera),
+      _requestPermission(Permission.microphone),
+      _requestLocationPermission(),
+    ]);
+    final cameraGranted = permissionResults[0];
+    final microphoneGranted = permissionResults[1];
+    final locationGranted = permissionResults[2];
 
     if (!cameraGranted) {
       issues.add(
@@ -149,7 +155,8 @@ class EmergencyCaptureService {
     final sessionDirectory = await _createSessionDirectory();
     _sessionDirectory = sessionDirectory;
 
-    if (cameraGranted) {
+    Future<void> startCamera() async {
+      if (!cameraGranted) return;
       try {
         final cameras = await availableCameras();
         final selectedCamera = cameras.firstWhere(
@@ -185,7 +192,8 @@ class EmergencyCaptureService {
       }
     }
 
-    if (locationGranted) {
+    Future<void> fetchLocation() async {
+      if (!locationGranted) return;
       try {
         position = await Geolocator.getCurrentPosition(
           locationSettings: const LocationSettings(
@@ -203,6 +211,8 @@ class EmergencyCaptureService {
         );
       }
     }
+
+    await Future.wait([startCamera(), fetchLocation()]);
 
     return EmergencyCaptureResult(
       videoStarted: videoStarted,
@@ -427,12 +437,26 @@ class EmergencyCaptureService {
       lastSize = currentSize;
 
       if (currentSize > 0 && stableReads >= 1) {
+        await _saveToGallery(file.path);
         return file.path;
       }
 
       await Future<void>.delayed(const Duration(milliseconds: 300));
     }
 
-    return (lastSize ?? 0) > 0 ? file.path : null;
+    final finalPath = (lastSize ?? 0) > 0 ? file.path : null;
+    if (finalPath != null) {
+      await _saveToGallery(finalPath);
+    }
+    return finalPath;
+  }
+
+  Future<void> _saveToGallery(String filePath) async {
+    try {
+      await Gal.putVideo(filePath, album: 'Sentinel SOS');
+    } catch (_) {
+      // La copia a galería no es crítica; la evidencia ya está en el
+      // directorio de la app y se subirá al backend igualmente.
+    }
   }
 }
