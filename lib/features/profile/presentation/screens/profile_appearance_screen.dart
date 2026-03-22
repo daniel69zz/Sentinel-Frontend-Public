@@ -152,18 +152,29 @@ class _ProfileAppearanceScreenState extends State<ProfileAppearanceScreen> {
                 style: AppTheme.bodyMedium,
               ),
               const SizedBox(height: 14),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: ProfileAppearanceStore.avatarOptions.map((option) {
-                  return _AvatarOptionCard(
-                    option: option,
-                    isSelected: option.id == _selectedAvatarId,
-                    onTap: () {
-                      setState(() => _selectedAvatarId = option.id);
-                    },
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final columns = (constraints.maxWidth / 140).floor().clamp(2, 4);
+                  final spacing = 10.0;
+                  final itemWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+                  final items = ProfileAppearanceStore.avatarOptions;
+                  return Wrap(
+                    spacing: spacing,
+                    runSpacing: spacing,
+                    children: items.map((option) {
+                      return SizedBox(
+                        width: itemWidth,
+                        child: _AvatarOptionCard(
+                          option: option,
+                          isSelected: option.id == _selectedAvatarId,
+                          onTap: () {
+                            setState(() => _selectedAvatarId = option.id);
+                          },
+                        ),
+                      );
+                    }).toList(),
                   );
-                }).toList(),
+                },
               ),
               const SizedBox(height: 24),
               Text(
@@ -189,18 +200,29 @@ class _ProfileAppearanceScreenState extends State<ProfileAppearanceScreen> {
                 style: AppTheme.bodyMedium,
               ),
               const SizedBox(height: 14),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: AppBrandingService.presets.map((preset) {
-                  return _BrandingPresetCard(
-                    preset: preset,
-                    isSelected: preset.id == _selectedPresetId,
-                    onTap: () {
-                      setState(() => _selectedPresetId = preset.id);
-                    },
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final columns = (constraints.maxWidth / 140).floor().clamp(2, 4);
+                  final spacing = 10.0;
+                  final itemWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+                  final items = AppBrandingService.presets;
+                  return Wrap(
+                    spacing: spacing,
+                    runSpacing: spacing,
+                    children: items.map((preset) {
+                      return SizedBox(
+                        width: itemWidth,
+                        child: _BrandingPresetCard(
+                          preset: preset,
+                          isSelected: preset.id == _selectedPresetId,
+                          onTap: () {
+                            setState(() => _selectedPresetId = preset.id);
+                          },
+                        ),
+                      );
+                    }).toList(),
                   );
-                }).toList(),
+                },
               ),
               const SizedBox(height: 16),
               TextField(
@@ -289,41 +311,48 @@ class _AvatarOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 160,
-      child: CustomCard(
-        onTap: onTap,
-        borderRadius: 18,
-        backgroundColor: isSelected
-            ? option.startColor.withValues(alpha: 0.18)
-            : AppTheme.cardBg,
-        borderColor: isSelected ? option.startColor : AppTheme.divider,
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ProfileAvatarBadge(
+    return CustomCard(
+      onTap: onTap,
+      borderRadius: 16,
+      backgroundColor: isSelected
+          ? option.startColor.withValues(alpha: 0.18)
+          : AppTheme.cardBg,
+      borderColor: isSelected ? option.startColor : AppTheme.divider,
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        children: [
+          Stack(
+            alignment: Alignment.topRight,
+            children: [
+              Center(
+                child: ProfileAvatarBadge(
                   option: option,
-                  size: 58,
-                  borderRadius: 18,
-                  iconSize: 28,
+                  size: 48,
+                  borderRadius: 16,
+                  iconSize: 24,
                 ),
-                const Spacer(),
-                if (isSelected)
-                  Icon(Icons.check_circle, color: option.startColor, size: 20),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(option.localizedTitle, style: AppTheme.labelLarge),
-            const SizedBox(height: 4),
-            Text(
-              option.localizedSubtitle,
-              style: AppTheme.bodyMedium.copyWith(fontSize: 12),
-            ),
-          ],
-        ),
+              ),
+              if (isSelected)
+                Icon(Icons.check_circle, color: option.startColor, size: 18),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            option.localizedTitle,
+            style: AppTheme.labelLarge.copyWith(fontSize: 13),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            option.localizedSubtitle,
+            style: AppTheme.bodyMedium.copyWith(fontSize: 11),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
@@ -338,21 +367,21 @@ class _BrandingPreviewBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 58,
-      height: 58,
+      width: 48,
+      height: 48,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.32),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Icon(icon, color: AppTheme.textPrimary, size: 28),
+      child: Icon(icon, color: AppTheme.textPrimary, size: 24),
     );
   }
 }
@@ -370,39 +399,46 @@ class _BrandingPresetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 160,
-      child: CustomCard(
-        onTap: onTap,
-        borderRadius: 18,
-        backgroundColor: isSelected
-            ? preset.accentColor.withValues(alpha: 0.18)
-            : AppTheme.cardBg,
-        borderColor: isSelected ? preset.accentColor : AppTheme.divider,
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                _BrandingPreviewBadge(
+    return CustomCard(
+      onTap: onTap,
+      borderRadius: 16,
+      backgroundColor: isSelected
+          ? preset.accentColor.withValues(alpha: 0.18)
+          : AppTheme.cardBg,
+      borderColor: isSelected ? preset.accentColor : AppTheme.divider,
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        children: [
+          Stack(
+            alignment: Alignment.topRight,
+            children: [
+              Center(
+                child: _BrandingPreviewBadge(
                   icon: preset.previewIcon,
                   color: preset.accentColor,
                 ),
-                const Spacer(),
-                if (isSelected)
-                  Icon(Icons.check_circle, color: preset.accentColor, size: 20),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(preset.localizedTitle, style: AppTheme.labelLarge),
-            const SizedBox(height: 4),
-            Text(
-              preset.localizedDescription,
-              style: AppTheme.bodyMedium.copyWith(fontSize: 12),
-            ),
-          ],
-        ),
+              ),
+              if (isSelected)
+                Icon(Icons.check_circle, color: preset.accentColor, size: 18),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            preset.localizedTitle,
+            style: AppTheme.labelLarge.copyWith(fontSize: 13),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            preset.localizedDescription,
+            style: AppTheme.bodyMedium.copyWith(fontSize: 11),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }

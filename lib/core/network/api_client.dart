@@ -90,7 +90,11 @@ class ApiClient {
     final parsedBody = _decodeBody(response.body);
     final responseMap = _normalizeResponse(parsedBody);
 
-    if (response.statusCode == 401) {
+    final requestPath = request.url.path;
+    final isAuthRoute = requestPath.contains('/auth/login') ||
+        requestPath.contains('/auth/register');
+
+    if (response.statusCode == 401 && !isAuthRoute) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('sentinel_session');
       AppNavigator.navigatorKey.currentState?.pushNamedAndRemoveUntil(
