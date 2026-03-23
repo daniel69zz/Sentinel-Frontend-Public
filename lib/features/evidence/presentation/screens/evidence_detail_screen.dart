@@ -30,6 +30,7 @@ class _EvidenceDetailScreenState extends State<EvidenceDetailScreen> {
   bool _isLoadingDetail = true;
   bool _isLoadingIncidents = true;
   bool _isUpdatingAssociation = false;
+  bool _isDeletingEvidence = false;
   String? _statusMessage;
   String? _associationMessage;
   String _selectedIncidentValue = _noIncidentValue;
@@ -165,6 +166,61 @@ class _EvidenceDetailScreenState extends State<EvidenceDetailScreen> {
     _showSnackBar(result.message);
   }
 
+  Future<void> _deleteEvidence() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.cardBg,
+        title: Text(
+          _t(
+            es: 'Eliminar evidencia',
+            en: 'Delete evidence',
+            ay: 'Evidencia juchukaña',
+            qu: 'Evidencia juchukaychiy',
+          ),
+        ),
+        content: Text(
+          _t(
+            es: 'La evidencia se eliminara permanentemente. Esta accion no se puede deshacer.',
+            en: 'The evidence will be permanently deleted. This action cannot be undone.',
+            ay: 'Evidenciax kimsa juchukataski. Aka lurawinax janiw aruskipasiñjamakiti.',
+            qu: 'Evidenciaqa wiñaypaq juchukaykusqa kanqa. Kay ruwaytaqa mana kutichiyta atikuchu.',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              _t(es: 'Cancelar', en: 'Cancel', ay: 'Amuyt\'aña', qu: 'Saqiy'),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              _t(es: 'Eliminar', en: 'Delete', ay: 'Juchukaña', qu: 'Juchukaychiy'),
+              style: const TextStyle(color: AppTheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isDeletingEvidence = true);
+
+    final result = await _evidenceService.deleteEvidence(evidence: _evidence);
+
+    if (!mounted) return;
+    setState(() => _isDeletingEvidence = false);
+
+    if (result.success) {
+      Navigator.of(context).pop(true);
+    } else {
+      _showSnackBar(result.message);
+    }
+  }
+
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(
       context,
@@ -262,6 +318,28 @@ class _EvidenceDetailScreenState extends State<EvidenceDetailScreen> {
             qu: 'Evidencia detalle',
           ),
         ),
+        actions: [
+          IconButton(
+            icon: _isDeletingEvidence
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppTheme.error,
+                    ),
+                  )
+                : const Icon(Icons.delete_outline_rounded),
+            color: AppTheme.error,
+            tooltip: _t(
+              es: 'Eliminar evidencia',
+              en: 'Delete evidence',
+              ay: 'Evidencia juchukaña',
+              qu: 'Evidencia juchukaychiy',
+            ),
+            onPressed: _isDeletingEvidence ? null : _deleteEvidence,
+          ),
+        ],
       ),
       body: SafeArea(
         child: ListView(

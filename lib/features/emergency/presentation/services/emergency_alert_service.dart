@@ -792,6 +792,21 @@ class EmergencyAlertService {
     }
 
     try {
+      final bodyFields = <String, dynamic>{
+        'alert_message': _buildEmergencyMessage(
+          locationUrl,
+          alertTriggeredAt: alertTriggeredAt,
+        ),
+        'alert_triggered_at': alertTriggeredAt.toIso8601String(),
+        'has_video': hasVideo,
+        'has_audio': hasAudio,
+      };
+      final trimmedUrl = locationUrl?.trim() ?? '';
+      if (trimmedUrl.startsWith('http://') ||
+          trimmedUrl.startsWith('https://')) {
+        bodyFields['location_url'] = trimmedUrl;
+      }
+
       await _apiClient.postJson(
         '/emergency/send-email',
         accessToken: user.accessToken,
@@ -804,16 +819,7 @@ class EmergencyAlertService {
                 ay: 'SOS emergencia evidencia',
                 qu: 'SOS emergencia evidencia',
               )} - ${_formatAlertTimestampForSubject(alertTriggeredAt)}',
-          'body': {
-            'alert_message': _buildEmergencyMessage(
-              locationUrl,
-              alertTriggeredAt: alertTriggeredAt,
-            ),
-            'location_url': locationUrl,
-            'alert_triggered_at': alertTriggeredAt.toIso8601String(),
-            'has_video': hasVideo,
-            'has_audio': hasAudio,
-          },
+          'body': bodyFields,
           'evidence_ids': evidenceIds,
         },
       );

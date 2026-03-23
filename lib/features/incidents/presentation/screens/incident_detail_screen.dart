@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_language_service.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
+import '../../../auth/presentation/services/auth_service.dart';
 import '../../../evidence/domain/models/evidence_record.dart';
 import '../../../evidence/presentation/screens/evidence_detail_screen.dart';
 import '../../../evidence/presentation/services/evidence_service.dart';
@@ -24,6 +26,8 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
   final IncidentService _incidentService = IncidentService();
   final EvidenceService _evidenceService = EvidenceService();
   final LegalInfoService _legalInfoService = LegalInfoService();
+  final AuthService _authService = AuthService();
+  final ApiClient _apiClient = ApiClient();
 
   late IncidentRecord _incident;
   List<EvidenceRecord> _allEvidences = [];
@@ -32,6 +36,8 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
   bool _isRefreshing = false;
   bool _isSavingIncident = false;
   bool _isUpdatingAssociation = false;
+  bool _isSendingToInstitution = false;
+  bool _isDeletingIncident = false;
   String? _statusMessage;
 
   List<LegalLaw> _legalLaws = [];
@@ -159,6 +165,72 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
     await _updateEvidenceAssociation(evidence: evidence, incidentId: null);
   }
 
+  Future<void> _deleteIncident() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.cardBg,
+        title: Text(
+          _t(
+            es: 'Eliminar incidente',
+            en: 'Delete incident',
+            ay: 'Incidente juchukaña',
+            qu: 'Incidente juchukaychiy',
+          ),
+        ),
+        content: Text(
+          _t(
+            es: 'Se desvincularan todas las evidencias y el incidente se eliminara permanentemente. Esta accion no se puede deshacer.',
+            en: 'All evidence will be unlinked and the incident will be permanently deleted. This action cannot be undone.',
+            ay: 'Evidencia tukuy wakichañapax juchukañatanix incidentex kimsa juchukataski. Aka lurawinax janiw aruskipasiñjamakiti.',
+            qu: 'Evidencia tukuy tinkikunaqa juchukasqa kanqa hinaspa incidenteqa wiñaypaq juchukaykusqa kanqa. Kay ruwaytaqa mana kutichiyta atikuchu.',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              _t(es: 'Cancelar', en: 'Cancel', ay: 'Amuyt\'aña', qu: 'Saqiy'),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              _t(es: 'Eliminar', en: 'Delete', ay: 'Juchukaña', qu: 'Juchukaychiy'),
+              style: const TextStyle(color: AppTheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isDeletingIncident = true);
+
+    // 1. Unlink all associated evidences first.
+    for (final evidence in List<EvidenceRecord>.from(_incidentEvidences)) {
+      await _evidenceService.updateEvidenceIncident(
+        evidence: evidence,
+        incidentId: null,
+      );
+    }
+
+    if (!mounted) return;
+
+    // 2. Delete the incident.
+    final result = await _incidentService.deleteIncident(incident: _incident);
+
+    if (!mounted) return;
+    setState(() => _isDeletingIncident = false);
+
+    if (result.success) {
+      Navigator.of(context).pop(true);
+    } else {
+      _showSnackBar(result.message);
+    }
+  }
+
   Future<void> _updateEvidenceAssociation({
     required EvidenceRecord evidence,
     required String? incidentId,
@@ -199,88 +271,153 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
     _showSnackBar(result.message);
   }
 
-  Future<void> _showFutureReportFlow(String institution) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      backgroundColor: AppTheme.cardBg,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _t(
-                es: 'Flujo futuro de denuncia',
-                en: 'Future reporting flow',
-                ay: 'Jutir denuncia thakhi',
-                qu: 'Hamuq denuncia puriy',
-              ),
-              style: AppTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _t(
-                es:
-                    'Se dejara listo para enviar este incidente a $institution con seleccion de evidencias, confirmacion final y envio automatico.',
-                en:
-                    'This incident will be prepared to send to $institution with evidence selection, final confirmation, and automatic delivery.',
-                ay:
-                    'Aka incidentex $institution ukar apayañatak wakicht\'ataniwa, evidencianak ajlliwi, qhipa chiqanchawi ukat automatico apayañampi.',
-                qu:
-                    'Kay incidenteqa ${institution}man apachinapaq wakichisqa kanqa, evidenciakuna akllayninwan, qhipa chiqanchayninwan hinaspa automatico apachiywan.',
-              ),
-              style: AppTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            _PlaceholderStep(
-              index: 1,
-              title: _t(
-                es: 'Seleccionar evidencias',
-                en: 'Select evidence',
-                ay: 'Evidencianak ajllim',
-                qu: 'Evidenciakunata akllay',
-              ),
-            ),
-            _PlaceholderStep(
-              index: 2,
-              title: _t(
-                es: 'Confirmar informacion',
-                en: 'Confirm information',
-                ay: 'Informacion chiqancha',
-                qu: 'Informacionta chiqanchay',
-              ),
-            ),
-            _PlaceholderStep(
-              index: 3,
-              title: _t(
-                es: 'Enviar a la institucion',
-                en: 'Send to the institution',
-                ay: 'Institucionar apaya',
-                qu: 'Institucionman apachiy',
-              ),
-            ),
-            const SizedBox(height: 18),
-            StatusBanner(
-              message: _t(
-                es:
-                    'TODO: conectar este flujo con backend legal/RAG e integracion final de denuncias automaticas.',
-                en:
-                    'TODO: connect this flow with the legal/RAG backend and final automatic reporting integration.',
-                ay:
-                    'TODO: aka thakhi legal/RAG backend ukamp mayacha ukat automatico denuncianakan qhipa integracion lura.',
-                qu:
-                    'TODO: kay puriynaqata legal/RAG backendwan tinkichiy hinaspa automatico denunciakunapa qhipa integracionta ruway.',
-              ),
-            ),
-          ],
+  Future<void> _sendToInstitution(_SupportInstitution institution) async {
+    if (_incidentEvidences.isEmpty) {
+      _showSnackBar(
+        _t(
+          es:
+              'Debes asociar al menos una evidencia antes de enviar este incidente.',
+          en:
+              'You must attach at least one piece of evidence before sending this incident.',
+          ay:
+              'Paya sinti evidencia mayachasiskama aka incidente apayañatak.',
+          qu:
+              'Huk evidenciata tinkichinapuniyki kay incidenteta apachinaykipaq.',
         ),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(institution.name),
+        content: Text(
+          _t(
+            es:
+                'Se enviaran ${_incidentEvidences.length} evidencia(s) a ${institution.name}. '
+                '¿Deseas continuar?',
+            en:
+                '${_incidentEvidences.length} evidence file(s) will be sent to ${institution.name}. '
+                'Do you want to continue?',
+            ay:
+                '${_incidentEvidences.length} evidencia(s) ${institution.name} ukar apayataniwa. '
+                '¿Sarantayañ munista?',
+            qu:
+                '${_incidentEvidences.length} evidencia(s) ${institution.name}man apachisqa kanqa. '
+                '¿Kaytachu munankis?',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              _t(es: 'Cancelar', en: 'Cancel', ay: 'Janiwa', qu: 'Mana'),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              _t(es: 'Enviar', en: 'Send', ay: 'Apaya', qu: 'Apachiy'),
+            ),
+          ),
+        ],
       ),
     );
+
+    if (!mounted || confirmed != true) return;
+
+    setState(() => _isSendingToInstitution = true);
+
+    final user = await _authService.getSession();
+    if (!mounted) return;
+
+    if (user == null) {
+      setState(() => _isSendingToInstitution = false);
+      _showSnackBar(
+        _t(
+          es: 'No hay una sesion activa.',
+          en: 'There is no active session.',
+          ay: 'Janiw sesion activa utjkiti.',
+          qu: 'Sesion activaqa mana kanchu.',
+        ),
+      );
+      return;
+    }
+
+    final evidenceIds =
+        _incidentEvidences
+            .where((e) => e.id.trim().isNotEmpty)
+            .map((e) => e.id)
+            .toList();
+
+    final hasVideo = _incidentEvidences.any((e) => e.type == 'video');
+    final hasAudio = _incidentEvidences.any((e) => e.type == 'audio');
+
+    try {
+      final locationUrl = _incident.location.trim();
+      final bodyFields = <String, dynamic>{
+        'alert_message':
+            '${_t(
+              es: 'Incidente reportado a ${institution.name}',
+              en: 'Incident reported to ${institution.name}',
+              ay: '${institution.name} ukax incidente willjtawa',
+              qu: '${institution.name}man incidente willaykusqa',
+            )}.\n\n${_incident.description}',
+        'alert_triggered_at': _incident.occurredAt,
+        'has_video': hasVideo,
+        'has_audio': hasAudio,
+      };
+      if (locationUrl.startsWith('http://') ||
+          locationUrl.startsWith('https://')) {
+        bodyFields['location_url'] = locationUrl;
+      }
+
+      await _apiClient.postJson(
+        '/emergency/send-email',
+        accessToken: user.accessToken,
+        body: {
+          'recipients': [institution.email],
+          'subject':
+              '${_t(
+                es: 'Denuncia de incidente',
+                en: 'Incident report',
+                ay: 'Incidente denuncia',
+                qu: 'Incidente denuncia',
+              )}: ${_incident.title} — ${institution.name}',
+          'body': bodyFields,
+          'evidence_ids': evidenceIds,
+        },
+      );
+
+      if (mounted) {
+        _showSnackBar(
+          _t(
+            es:
+                'Incidente enviado correctamente a ${institution.name}.',
+            en: 'Incident successfully sent to ${institution.name}.',
+            ay: '${institution.name} ukar incidente apayatäwa.',
+            qu: '${institution.name}man incidenteqa allinmanta apachisqa.',
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        _showSnackBar(
+          _t(
+            es: 'No se pudo enviar a ${institution.name}. Intenta de nuevo.',
+            en:
+                'Could not send to ${institution.name}. Please try again.',
+            ay:
+                'Janiw ${institution.name} ukar apayañjamakiti. Wakiskt\'ata lura.',
+            qu:
+                '${institution.name}man mana apachikurqanchu. Kutipayta tink\'iy.',
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSendingToInstitution = false);
+    }
   }
 
   Future<void> _loadLegalInfo() async {
@@ -334,6 +471,28 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
             qu: 'Incidente detalle',
           ),
         ),
+        actions: [
+          IconButton(
+            icon: _isDeletingIncident
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppTheme.error,
+                    ),
+                  )
+                : const Icon(Icons.delete_outline_rounded),
+            color: AppTheme.error,
+            tooltip: _t(
+              es: 'Eliminar incidente',
+              en: 'Delete incident',
+              ay: 'Incidente juchukaña',
+              qu: 'Incidente juchukaychiy',
+            ),
+            onPressed: _isDeletingIncident ? null : _deleteIncident,
+          ),
+        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -483,46 +642,39 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                     const SizedBox(height: 18),
                     Text(
                       _t(
-                        es: 'Acciones preparadas para denuncia futura',
-                        en: 'Actions prepared for future reporting',
-                        ay: 'Jutir denunciaatak wakicht\'ata acciones',
-                        qu: 'Hamuq denunciapaq wakichisqa acciones',
+                        es: 'Enviar a institución de apoyo',
+                        en: 'Send to support institution',
+                        ay: 'Yanapt\'iri institucionar apaya',
+                        qu: 'Yanapayniyuq institucionman apachiy',
                       ),
                       style: AppTheme.labelLarge,
                     ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showFutureReportFlow('Fiscalia'),
-                            icon: const Icon(Icons.account_balance_outlined),
-                            label: Text(
-                              _t(
-                                es: 'Fiscalia',
-                                en: 'Prosecutor',
-                                ay: 'Fiscalia',
-                                qu: 'Fiscalia',
-                              ),
-                            ),
-                          ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _t(
+                        es:
+                            'Se enviaran todas las evidencias asociadas a este incidente.',
+                        en:
+                            'All evidence linked to this incident will be sent.',
+                        ay:
+                            'Aka incidenten mayachata evidencianak apayataniwa.',
+                        qu:
+                            'Kay incidentewan tinkisqa evidenciakunaqa apachisqa kanqa.',
+                      ),
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ..._kSupportInstitutions.map(
+                      (inst) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _InstitutionButton(
+                          institution: inst,
+                          isLoading: _isSendingToInstitution,
+                          onTap: () => _sendToInstitution(inst),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showFutureReportFlow('Policia'),
-                            icon: const Icon(Icons.local_police_outlined),
-                            label: Text(
-                              _t(
-                                es: 'Policia',
-                                en: 'Police',
-                                ay: 'Policia',
-                                qu: 'Policia',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -1157,35 +1309,115 @@ class _IncidentEditSheetState extends State<_IncidentEditSheet> {
   }
 }
 
-class _PlaceholderStep extends StatelessWidget {
-  final int index;
-  final String title;
+class _SupportInstitution {
+  final String name;
+  final String description;
+  final String email;
+  final IconData icon;
 
-  const _PlaceholderStep({required this.index, required this.title});
+  const _SupportInstitution({
+    required this.name,
+    required this.description,
+    required this.email,
+    required this.icon,
+  });
+}
+
+const List<_SupportInstitution> _kSupportInstitutions = [
+  _SupportInstitution(
+    name: 'Alianza por la Solidaridad Bolivia',
+    description:
+        'Organización que apoya los derechos de las mujeres, la reducción de desigualdades y el acceso a apoyo social.',
+    email: 'daniel.b.rueda.munoz@gmail.com',
+    icon: Icons.diversity_3_outlined,
+  ),
+  _SupportInstitution(
+    name: 'Ipas Bolivia',
+    description:
+        'Institución que trabaja en salud y derechos sexuales y reproductivos, además de apoyo ante violencia sexual.',
+    email: 'daniel.b.rueda.munoz@gmail.com',
+    icon: Icons.favorite_outline,
+  ),
+  _SupportInstitution(
+    name: 'Pro Mujer Bolivia',
+    description:
+        'Institución que brinda apoyo integral a mujeres mediante orientación, bienestar, capacitación y acompañamiento.',
+    email: 'daniel.b.rueda.munoz@gmail.com',
+    icon: Icons.support_agent_outlined,
+  ),
+  _SupportInstitution(
+    name: 'Fundación Munasim Kullakita',
+    description:
+        'Fundación enfocada en prevención de violencia, protección de personas en riesgo y atención integral a víctimas.',
+    email: 'daniel.b.rueda.munoz@gmail.com',
+    icon: Icons.shield_outlined,
+  ),
+];
+
+class _InstitutionButton extends StatelessWidget {
+  final _SupportInstitution institution;
+  final bool isLoading;
+  final VoidCallback onTap;
+
+  const _InstitutionButton({
+    required this.institution,
+    required this.isLoading,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Center(
-              child: Text(
-                '$index',
-                style: AppTheme.labelLarge.copyWith(fontSize: 12),
-              ),
-            ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isLoading ? null : onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppTheme.divider),
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(width: 10),
-          Expanded(child: Text(title, style: AppTheme.bodyMedium)),
-        ],
+          child: Row(
+            children: [
+              Icon(
+                institution.icon,
+                size: 22,
+                color: AppTheme.primary,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      institution.name,
+                      style: AppTheme.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      institution.description,
+                      style: AppTheme.bodyMedium.copyWith(
+                        color: AppTheme.textSecondary,
+                        fontSize: 12,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.send_outlined,
+                size: 18,
+                color: isLoading ? AppTheme.textSecondary : AppTheme.primary,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

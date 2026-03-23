@@ -37,9 +37,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   );
   String? _processingStatus;
   String? _activeLocationUrl;
-  String? _activeIncidentId;
   DateTime? _activeAlertTriggeredAt;
-  Future<EmergencyIncidentResult>? _incidentCreationFuture;
 
   final AuthService _authService = AuthService();
   final ContactsService _contactsService = ContactsService();
@@ -92,11 +90,6 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
       _showSnackBar(issue);
     }
 
-    _incidentCreationFuture = _backendService.createIncident(
-      locationUrl: capture.mapsUrl,
-      alertTriggeredAt: triggeredAt,
-    );
-    unawaited(_rememberIncidentId(_incidentCreationFuture!));
     unawaited(
       _sendEmergencyAlert(
         locationUrl: capture.mapsUrl,
@@ -117,12 +110,10 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
     EmergencyCaptureStopResult? stopResult;
     String? locationUrl;
-    final pendingIncidentFuture = _incidentCreationFuture;
     final previousLocationUrl = _activeLocationUrl;
     final previousAlertTriggeredAt = _activeAlertTriggeredAt;
     _activeLocationUrl = null;
     _activeAlertTriggeredAt = null;
-    _incidentCreationFuture = null;
 
     try {
       stopResult = await _captureService.stopEmergencyCapture();
@@ -136,13 +127,6 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
       }
 
       final hasEvidence = stopResult.attachmentPaths.isNotEmpty;
-
-      final incidentId = await _resolveIncidentId(
-        locationUrl: locationUrl,
-        pendingIncidentFuture: pendingIncidentFuture,
-        alertTriggeredAt: previousAlertTriggeredAt,
-      );
-
       List<String> uploadedEvidenceIds = [];
 
       if (hasEvidence) {
@@ -153,9 +137,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
         });
 
         final uploadResult = await _backendService.uploadEvidence(
-          incidentId: incidentId,
           stopResult: stopResult,
           locationUrl: locationUrl,
+          alertTriggeredAt: previousAlertTriggeredAt,
         );
 
         uploadedEvidenceIds = uploadResult.evidenceIds;
@@ -186,7 +170,6 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
         }
       }
     } finally {
-      _activeIncidentId = null;
       if (mounted) {
         setState(() {
           _isProcessingEvidence = false;
@@ -362,77 +345,6 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     }
   }
 
-  Future<void> _rememberIncidentId(
-    Future<EmergencyIncidentResult> incidentFuture,
-  ) async {
-    final result = await incidentFuture;
-    if (_incidentCreationFuture != incidentFuture) return;
-
-    if (result.success && result.incidentId != null) {
-      if (mounted) {
-        setState(() => _activeIncidentId = result.incidentId);
-      } else {
-        _activeIncidentId = result.incidentId;
-      }
-      if (mounted &&
-          result.message != null &&
-          result.message!.trim().isNotEmpty) {
-        _showSnackBar(result.message!);
-      }
-    }
-  }
-
-  Future<String?> _resolveIncidentId({
-    String? locationUrl,
-    Future<EmergencyIncidentResult>? pendingIncidentFuture,
-    DateTime? alertTriggeredAt,
-  }) async {
-    if (_activeIncidentId != null && _activeIncidentId!.isNotEmpty) {
-      return _activeIncidentId;
-    }
-
-    if (pendingIncidentFuture != null) {
-      final result = await pendingIncidentFuture;
-      if (result.success && result.incidentId != null) {
-        if (mounted) {
-          setState(() => _activeIncidentId = result.incidentId);
-        } else {
-          _activeIncidentId = result.incidentId;
-        }
-        if (mounted &&
-            result.message != null &&
-            result.message!.trim().isNotEmpty) {
-          _showSnackBar(result.message!);
-        }
-        return result.incidentId;
-      }
-    }
-
-    final createResult = await _backendService.createIncident(
-      locationUrl: locationUrl,
-      alertTriggeredAt: alertTriggeredAt,
-    );
-    if (createResult.success && createResult.incidentId != null) {
-      if (mounted) {
-        setState(() => _activeIncidentId = createResult.incidentId);
-      } else {
-        _activeIncidentId = createResult.incidentId;
-      }
-      if (mounted &&
-          createResult.message != null &&
-          createResult.message!.trim().isNotEmpty) {
-        _showSnackBar(createResult.message!);
-      }
-      return createResult.incidentId;
-    }
-
-    if (mounted && createResult.message != null) {
-      _showSnackBar(createResult.message!);
-    }
-
-    return null;
-  }
-
   Future<List<ContactModel>> _loadEmergencyContacts() async {
     final user = await _authService.getSession();
     if (user == null) return [];
@@ -454,28 +366,6 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     return AppLanguageService.instance.tr(
       'emergency.capture_active',
       params: {'parts': parts.join(', ')},
-    );
-  }
-
-  String? _incidentProgressNote() {
-    if (_activeIncidentId == null || _activeIncidentId!.trim().isEmpty) {
-      return null;
-    }
-
-    if (_isProcessingEvidence) {
-      return _t(
-        es: 'El incidente SOS ya esta listo. Ahora estamos adjuntando las evidencias registradas.',
-        en: 'The SOS incident is already ready. We are now attaching the recorded evidence.',
-        ay: 'SOS incidentex wakichatawa. Jichhax qillqtata evidencianak mayachasktanwa.',
-        qu: 'SOS incidenteqa wakichisqanam kashan. Kunanqa qillqasqa evidenciakunatam hukllachkuchkan.',
-      );
-    }
-
-    return _t(
-      es: 'El incidente SOS ya fue creado. Cuando detengas la alerta, el video, el audio y la ubicacion se adjuntaran automaticamente.',
-      en: 'The SOS incident has already been created. When you stop the alert, the video, audio, and location will be attached automatically.',
-      ay: 'SOS incidentex niyaw lurataxi. Alerta saytayasax video, audio ukat ubicacionax automatico mayachasiniwa.',
-      qu: 'SOS incidenteqa nispallam ruwasqa. Alertata sayachispaykiqa, video, audio hinaspa ubicacionqa kikillantam hukllachisqa kanqa.',
     );
   }
 
@@ -573,8 +463,6 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final incidentProgressNote = _incidentProgressNote();
-
     return Scaffold(
       backgroundColor: AppTheme.surface,
       appBar: widget.isEmbedded

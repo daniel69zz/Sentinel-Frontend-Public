@@ -659,6 +659,100 @@ class EvidenceService {
     }
   }
 
+  Future<EvidenceMutationResult> deleteEvidence({
+    required EvidenceRecord evidence,
+  }) async {
+    final user = await _authService.getSession();
+    if (user == null) {
+      return EvidenceMutationResult(
+        success: false,
+        message: _t(
+          es: 'No hay una sesion activa para eliminar evidencias.',
+          en: 'There is no active session to delete evidence.',
+          ay: 'Janiw evidencianak juchukañatakix sesion activa utjkiti.',
+          qu: 'Evidenciakunata juchukanapaq sesion activaqa mana kanchu.',
+        ),
+      );
+    }
+
+    // Remove from local cache first so the UI reflects deletion immediately.
+    await _removeCachedEvidence(userId: user.id, evidenceId: evidence.id);
+
+    if (_isPendingSyncId(evidence.id)) {
+      // Local-only evidence: cache removal above is sufficient.
+      return EvidenceMutationResult(
+        success: true,
+        message: _t(
+          es: 'Evidencia eliminada.',
+          en: 'Evidence deleted.',
+          ay: 'Evidenciax juchukataski.',
+          qu: 'Evidenciaqa juchukaykusqa.',
+        ),
+      );
+    }
+
+    try {
+      await _apiClient.deleteJson(
+        '/evidences/${evidence.id}',
+        accessToken: user.accessToken,
+      );
+      return EvidenceMutationResult(
+        success: true,
+        message: _t(
+          es: 'Evidencia eliminada correctamente.',
+          en: 'Evidence deleted successfully.',
+          ay: 'Evidenciax wali sum juchukataski.',
+          qu: 'Evidenciaqa allinta juchukaykusqa.',
+        ),
+      );
+    } on ApiException catch (error) {
+      // Restore to cache on error so data is not lost.
+      await upsertCachedEvidence(userId: user.id, evidence: evidence);
+      return EvidenceMutationResult(
+        success: false,
+        message: '${_t(
+          es: 'No se pudo eliminar la evidencia.',
+          en: 'The evidence could not be deleted.',
+          ay: 'Janiw evidencia juchukañjamakiti.',
+          qu: 'Evidenciaqa mana juchukayta atikurqanchu.',
+        )} ${error.message}',
+      );
+    } catch (_) {
+      await upsertCachedEvidence(userId: user.id, evidence: evidence);
+      return EvidenceMutationResult(
+        success: false,
+        message: _t(
+          es: 'No se pudo conectar con el servidor para eliminar la evidencia.',
+          en: 'Could not connect to the server to delete the evidence.',
+          ay: 'Janiw evidencia juchukañatakix servidorampi mayachasiyjamakiti.',
+          qu: 'Evidencia juchukanapaq servidorwan mana tinkanakuyta atikurqanchu.',
+        ),
+      );
+    }
+  }
+
+  Future<void> _removeCachedEvidence({
+    required String userId,
+    required String evidenceId,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('$_cacheKeyPrefix$userId');
+    if (raw == null) return;
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return;
+      final updated = decoded
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .where((item) => item['id']?.toString() != evidenceId)
+          .toList();
+      await prefs.setString('$_cacheKeyPrefix$userId', jsonEncode(updated));
+    } catch (_) {}
+  }
+
+  bool _isPendingSyncId(String? id) =>
+      (id ?? '').trim().startsWith('local-');
+
   Future<void> upsertCachedEvidence({
     required String userId,
     required EvidenceRecord evidence,

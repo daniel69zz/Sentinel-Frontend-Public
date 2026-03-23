@@ -386,6 +386,84 @@ class IncidentService {
     }
   }
 
+  Future<IncidentMutationResult> deleteIncident({
+    required IncidentRecord incident,
+  }) async {
+    final user = await _authService.getSession();
+    if (user == null) {
+      return IncidentMutationResult(
+        success: false,
+        message: _t(
+          es: 'No hay una sesion activa para eliminar el incidente.',
+          en: 'There is no active session to delete the incident.',
+          ay: 'Janiw incidente juchukañatakix sesion activa utjkiti.',
+          qu: 'Incidente juchukanapaq sesion activaqa mana kanchu.',
+        ),
+      );
+    }
+
+    await _removeCachedIncident(userId: user.id, incidentId: incident.id);
+
+    if (_isLocalId(incident.id)) {
+      return IncidentMutationResult(
+        success: true,
+        message: _t(
+          es: 'Incidente eliminado.',
+          en: 'Incident deleted.',
+          ay: 'Incidentex juchukataski.',
+          qu: 'Incidenteqa juchukaykusqa.',
+        ),
+      );
+    }
+
+    try {
+      await _apiClient.deleteJson(
+        '/incidents/${incident.id}',
+        accessToken: user.accessToken,
+      );
+      return IncidentMutationResult(
+        success: true,
+        message: _t(
+          es: 'Incidente eliminado correctamente.',
+          en: 'Incident deleted successfully.',
+          ay: 'Incidentex wali sum juchukataski.',
+          qu: 'Incidenteqa allinta juchukaykusqa.',
+        ),
+      );
+    } on ApiException catch (error) {
+      await upsertCachedIncident(userId: user.id, incident: incident);
+      return IncidentMutationResult(
+        success: false,
+        message: '${_t(
+          es: 'No se pudo eliminar el incidente.',
+          en: 'The incident could not be deleted.',
+          ay: 'Janiw incidente juchukañjamakiti.',
+          qu: 'Incidenteqa mana juchukayta atikurqanchu.',
+        )} ${error.message}',
+      );
+    } catch (_) {
+      await upsertCachedIncident(userId: user.id, incident: incident);
+      return IncidentMutationResult(
+        success: false,
+        message: _t(
+          es: 'No se pudo conectar con el servidor para eliminar el incidente.',
+          en: 'Could not connect to the server to delete the incident.',
+          ay: 'Janiw incidente juchukañatakix servidorampi mayachasiyjamakiti.',
+          qu: 'Incidente juchukanapaq servidorwan mana tinkanakuyta atikurqanchu.',
+        ),
+      );
+    }
+  }
+
+  Future<void> _removeCachedIncident({
+    required String userId,
+    required String incidentId,
+  }) async {
+    final incidents = await _loadCachedIncidents(userId);
+    incidents.removeWhere((item) => item.id == incidentId);
+    await _saveCachedIncidents(userId, incidents);
+  }
+
   Future<void> upsertCachedIncident({
     required String userId,
     required IncidentRecord incident,

@@ -4,26 +4,10 @@ import 'package:mime/mime.dart';
 import 'package:path/path.dart' as p;
 
 import '../../../../core/localization/app_language_service.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/network/api_exception.dart';
 import '../../../../core/services/app_branding_service.dart';
 import '../../../auth/presentation/services/auth_service.dart';
 import '../../../evidence/presentation/services/evidence_service.dart';
-import '../../../incidents/domain/models/incident_record.dart';
-import '../../../incidents/presentation/services/incident_service.dart';
 import 'emergency_capture_service.dart';
-
-class EmergencyIncidentResult {
-  final bool success;
-  final String? incidentId;
-  final String? message;
-
-  const EmergencyIncidentResult({
-    required this.success,
-    this.incidentId,
-    this.message,
-  });
-}
 
 class EmergencyEvidenceUploadResult {
   final bool success;
@@ -41,19 +25,13 @@ class EmergencyEvidenceUploadResult {
 
 class EmergencyBackendService {
   final AuthService _authService;
-  final ApiClient _apiClient;
   final EvidenceService _evidenceService;
-  final IncidentService _incidentService;
 
   EmergencyBackendService({
     AuthService? authService,
-    ApiClient? apiClient,
     EvidenceService? evidenceService,
-    IncidentService? incidentService,
   }) : _authService = authService ?? AuthService(),
-       _apiClient = apiClient ?? ApiClient(),
-       _evidenceService = evidenceService ?? EvidenceService(),
-       _incidentService = incidentService ?? IncidentService();
+       _evidenceService = evidenceService ?? EvidenceService();
 
   String _t({
     required String es,
@@ -69,133 +47,10 @@ class EmergencyBackendService {
     );
   }
 
-  Future<EmergencyIncidentResult> createIncident({
-    String? locationUrl,
-    DateTime? alertTriggeredAt,
-  }) async {
-    final user = await _authService.getSession();
-    if (user == null) {
-      return EmergencyIncidentResult(
-        success: false,
-        message: _t(
-          es: 'No hay una sesion activa para registrar la alerta.',
-          en: 'There is no active session to register the alert.',
-          ay: 'Janiw alerta qillqantatanakax sesion activa utjkiti.',
-          qu: 'Alerta qillqanapaq sesion activaqa mana kanchu.',
-        ),
-      );
-    }
-
-    final triggeredAt = alertTriggeredAt ?? DateTime.now();
-    final incidentTitle = _t(
-      es: 'Alerta SOS',
-      en: 'SOS Alert',
-      ay: 'SOS Alerta',
-      qu: 'SOS Alerta',
-    );
-    final incidentDescription = _buildIncidentDescription(
-      locationUrl,
-      alertTriggeredAt: triggeredAt,
-    );
-    final incidentDate = triggeredAt.toUtc().toIso8601String();
-    final incidentDraft = IncidentRecord(
-      id: '',
-      title: incidentTitle,
-      description: incidentDescription,
-      type: 'sos',
-      status: 'registrado',
-      riskLevel: 'critico',
-      location: locationUrl ?? '',
-      occurredAt: incidentDate,
-    );
-
-    try {
-      final response = await _apiClient.postJson(
-        '/incidents',
-        accessToken: user.accessToken,
-        body: {
-          'titulo': incidentTitle,
-          'descripcion': incidentDescription,
-          'tipo_incidente': 'sos',
-          'fecha_incidente': incidentDate,
-          'lugar': locationUrl,
-          'nivel_riesgo': 'critico',
-          'estado': 'registrado',
-        },
-      );
-
-      final createdIncident =
-          _extractIncidentDetail(response) ?? incidentDraft;
-      final storedIncident = createdIncident.id.trim().isEmpty
-          ? incidentDraft.copyWith(id: _buildLocalIncidentId())
-          : createdIncident;
-
-      await _incidentService.upsertCachedIncident(
-        userId: user.id,
-        incident: storedIncident,
-      );
-
-      if (createdIncident.id.trim().isEmpty) {
-        return EmergencyIncidentResult(
-          success: true,
-          incidentId: storedIncident.id,
-          message: _t(
-            es:
-                'La alerta SOS se guardo localmente porque el servidor no devolvio un incidente valido.',
-            en:
-                'The SOS alert was saved locally because the server did not return a valid incident.',
-            ay:
-                'SOS alertax localan imatawa kunatix servidorax janiw valido incidente kuttaykiti.',
-            qu:
-                'SOS alertaqa localpim waqaychasqa karqan, servidorqa mana allin incidente kutichirqanchu.',
-          ),
-        );
-      }
-
-      return EmergencyIncidentResult(
-        success: true,
-        incidentId: storedIncident.id,
-      );
-    } on ApiException catch (error) {
-      final localIncident = incidentDraft.copyWith(id: _buildLocalIncidentId());
-      await _incidentService.upsertCachedIncident(
-        userId: user.id,
-        incident: localIncident,
-      );
-
-      return EmergencyIncidentResult(
-        success: true,
-        incidentId: localIncident.id,
-        message: _buildLocalIncidentFallbackMessage(error),
-      );
-    } catch (_) {
-      final localIncident = incidentDraft.copyWith(id: _buildLocalIncidentId());
-      await _incidentService.upsertCachedIncident(
-        userId: user.id,
-        incident: localIncident,
-      );
-
-      return EmergencyIncidentResult(
-        success: true,
-        incidentId: localIncident.id,
-        message: _t(
-          es:
-              'La alerta SOS se guardo localmente en este dispositivo mientras vuelve la conexion con el servidor.',
-          en:
-              'The SOS alert was saved locally on this device while the server connection returns.',
-          ay:
-              'SOS alertax aka dispositivon localan imatawa servidorampi mayachasiy kutinipkama.',
-          qu:
-              'SOS alertaqa kay dispositivopi localpim waqaychasqa karqan servidorman tinkanakuy kutimunankama.',
-        ),
-      );
-    }
-  }
-
   Future<EmergencyEvidenceUploadResult> uploadEvidence({
-    required String? incidentId,
     required EmergencyCaptureStopResult stopResult,
     String? locationUrl,
+    DateTime? alertTriggeredAt,
   }) async {
     final attachmentPaths = stopResult.attachmentPaths;
     if (attachmentPaths.isEmpty) {
@@ -225,6 +80,7 @@ class EmergencyBackendService {
       );
     }
 
+    final triggeredAt = alertTriggeredAt ?? DateTime.now();
     var uploadedCount = 0;
     final issues = <String>[];
     final evidenceIds = <String>[];
@@ -260,7 +116,10 @@ class EmergencyBackendService {
 
       try {
         final takenAt = await file.lastModified();
-        final evidenceTitle = _buildEvidenceTitle(evidenceType);
+        final evidenceTitle = _buildEvidenceTitle(
+          evidenceType: evidenceType,
+          triggeredAt: triggeredAt,
+        );
         final evidenceDescription = _buildEvidenceDescription(
           evidenceType: evidenceType,
           locationUrl: locationUrl,
@@ -279,34 +138,10 @@ class EmergencyBackendService {
           continue;
         }
 
-        var storedEvidence = createResult.evidence!;
+        final storedEvidence = createResult.evidence!;
         uploadedCount++;
         if (storedEvidence.id.trim().isNotEmpty) {
           evidenceIds.add(storedEvidence.id);
-        }
-
-        if (incidentId != null && incidentId.trim().isNotEmpty) {
-          final associationResult = await _evidenceService
-              .updateEvidenceIncident(
-                evidence: storedEvidence,
-                incidentId: incidentId,
-              );
-          if (associationResult.success && associationResult.evidence != null) {
-            storedEvidence = associationResult.evidence!;
-          } else {
-            issues.add(
-              _t(
-                es:
-                    '${p.basename(filePath)} se subio, pero no se pudo asociar al incidente.',
-                en:
-                    '${p.basename(filePath)} was uploaded, but it could not be linked to the incident.',
-                ay:
-                    '${p.basename(filePath)} apkatawa, ukampis janiw incidenter mayachatanjamakiti.',
-                qu:
-                    '${p.basename(filePath)} wicharisqa karqan, ichaqa incidentewan mana tinkanachiyta atikurqanchu.',
-              ),
-            );
-          }
         }
 
         await _evidenceService.upsertCachedEvidence(
@@ -339,68 +174,38 @@ class EmergencyBackendService {
     );
   }
 
-  String _buildIncidentDescription(
-    String? locationUrl, {
-    required DateTime alertTriggeredAt,
+  String _buildEvidenceTitle({
+    required String evidenceType,
+    required DateTime triggeredAt,
   }) {
-    final appName = AppBrandingService.instance.displayName;
-    final formattedTimestamp = _formatAlertTimestamp(alertTriggeredAt);
-    if (locationUrl == null || locationUrl.trim().isEmpty) {
-      return _t(
-        es:
-            'Alerta SOS activada desde la app $appName. Fecha y hora: $formattedTimestamp.',
-        en:
-            'SOS alert activated from the $appName app. Date and time: $formattedTimestamp.',
-        ay:
-            '$appName app tuqit SOS alertax activatawa. Uru ukat hora: $formattedTimestamp.',
-        qu:
-            '$appName appmanta SOS alerta qallarichisqa karqan. Punchawwan horawan: $formattedTimestamp.',
-      );
-    }
-
-    return _t(
-      es:
-          'Alerta SOS activada desde la app $appName. Fecha y hora: $formattedTimestamp. Ubicacion reportada: $locationUrl',
-      en:
-          'SOS alert activated from the $appName app. Date and time: $formattedTimestamp. Reported location: $locationUrl',
-      ay:
-          '$appName app tuqit SOS alertax activatawa. Uru ukat hora: $formattedTimestamp. Yatiyata ubicacion: $locationUrl',
-      qu:
-          '$appName appmanta SOS alerta qallarichisqa karqan. Punchawwan horawan: $formattedTimestamp. Willasqa ubicacion: $locationUrl',
-    );
-  }
-
-  String _buildEvidenceTitle(String evidenceType) {
-    switch (evidenceType) {
-      case 'video':
-        return _t(
-          es: 'Video SOS',
-          en: 'SOS Video',
-          ay: 'SOS Video',
-          qu: 'SOS Video',
-        );
-      case 'audio':
-        return _t(
-          es: 'Audio SOS',
-          en: 'SOS Audio',
-          ay: 'SOS Audio',
-          qu: 'SOS Audio',
-        );
-      case 'imagen':
-        return _t(
-          es: 'Imagen SOS',
-          en: 'SOS Image',
-          ay: 'SOS Imagen',
-          qu: 'SOS Imagen',
-        );
-      default:
-        return _t(
-          es: 'Evidencia SOS',
-          en: 'SOS Evidence',
-          ay: 'SOS Evidencia',
-          qu: 'SOS Evidencia',
-        );
-    }
+    final timestamp = _formatAlertTimestamp(triggeredAt);
+    final typeLabel = switch (evidenceType) {
+      'video' => _t(
+        es: 'Video SOS',
+        en: 'SOS Video',
+        ay: 'SOS Video',
+        qu: 'SOS Video',
+      ),
+      'audio' => _t(
+        es: 'Audio SOS',
+        en: 'SOS Audio',
+        ay: 'SOS Audio',
+        qu: 'SOS Audio',
+      ),
+      'imagen' => _t(
+        es: 'Imagen SOS',
+        en: 'SOS Image',
+        ay: 'SOS Imagen',
+        qu: 'SOS Imagen',
+      ),
+      _ => _t(
+        es: 'Evidencia SOS',
+        en: 'SOS Evidence',
+        ay: 'SOS Evidencia',
+        qu: 'SOS Evidencia',
+      ),
+    };
+    return '$typeLabel - $timestamp';
   }
 
   String _buildEvidenceDescription({
@@ -533,48 +338,6 @@ class EmergencyBackendService {
     )} ${issues.first}';
   }
 
-  String _buildLocalIncidentFallbackMessage(ApiException error) {
-    final lowerMessage = error.message.toLowerCase();
-    final appName = AppBrandingService.instance.displayName;
-
-    if (lowerMessage.contains('no se pudo conectar con el servidor')) {
-      return _t(
-        es:
-            'No se pudo conectar con $appName, pero la alerta SOS se guardo localmente.',
-        en:
-            'Could not connect to $appName, but the SOS alert was saved locally.',
-        ay:
-            'Janiw $appName ukamp mayachasiyjamakiti, ukampis SOS alertax localan imatawa.',
-        qu:
-            '${appName}wan mana tinkanakuyta atikurqanchu, ichaqa SOS alertaqa localpim waqaychasqa karqan.',
-      );
-    }
-
-    if (lowerMessage.contains('perfil no encontrado')) {
-      return _t(
-        es:
-            'La cuenta esta autenticada, pero no tiene perfil en el backend. La alerta SOS quedo guardada localmente.',
-        en:
-            'The account is authenticated, but it does not have a backend profile. The SOS alert was saved locally.',
-        ay:
-            'Cuentax autenticatawa, ukampis backend ukanx janiw perfilani. SOS alertax localan imatawa.',
-        qu:
-            'Cuentaqa autenticada kashan, ichaqa backendpi perfilninta mana kanchu. SOS alertaqa localpim waqaychasqa karqan.',
-      );
-    }
-
-    return _t(
-      es:
-          'La alerta SOS se guardo localmente. $appName sincronizara el incidente cuando el servicio vuelva a responder.',
-      en:
-          'The SOS alert was saved locally. $appName will sync the incident when the service responds again.',
-      ay:
-          'SOS alertax localan imatawa. $appName ukax incidente sincronizaniwa serviciox wasitat kuttanipkani ukhaxa.',
-      qu:
-          'SOS alertaqa localpim waqaychasqa karqan. Servicio kutimuptinqa ${appName}qa incidenteta sincronizanan.',
-    );
-  }
-
   String _formatAlertTimestamp(DateTime value) {
     final local = value.toLocal();
     final day = local.day.toString().padLeft(2, '0');
@@ -584,45 +347,4 @@ class EmergencyBackendService {
     final minute = local.minute.toString().padLeft(2, '0');
     return '$day/$month/$year $hour:$minute';
   }
-}
-
-IncidentRecord? _extractIncidentDetail(Map<String, dynamic> response) {
-  final directData = response['data'];
-  if (directData is Map<String, dynamic>) {
-    return IncidentRecord.fromBackendJson(directData);
-  }
-
-  if (directData is Map) {
-    final normalized = Map<String, dynamic>.from(directData);
-    for (final key in const ['incident', 'item', 'row']) {
-      final nested = normalized[key];
-      if (nested is Map<String, dynamic>) {
-        return IncidentRecord.fromBackendJson(nested);
-      }
-      if (nested is Map) {
-        return IncidentRecord.fromBackendJson(Map<String, dynamic>.from(nested));
-      }
-    }
-    return IncidentRecord.fromBackendJson(normalized);
-  }
-
-  for (final key in const ['incident', 'item', 'row']) {
-    final nested = response[key];
-    if (nested is Map<String, dynamic>) {
-      return IncidentRecord.fromBackendJson(nested);
-    }
-    if (nested is Map) {
-      return IncidentRecord.fromBackendJson(Map<String, dynamic>.from(nested));
-    }
-  }
-
-  if (response['id'] != null) {
-    return IncidentRecord.fromBackendJson(response);
-  }
-
-  return null;
-}
-
-String _buildLocalIncidentId() {
-  return 'local-incident-${DateTime.now().microsecondsSinceEpoch}';
 }

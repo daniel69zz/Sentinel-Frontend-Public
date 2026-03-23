@@ -48,6 +48,7 @@ class ContactModel {
     'parentesco': relation.trim().isEmpty ? null : relation.trim(),
     'telefono': AuthIdentityMapper.normalizePhone(phone),
     'telefono_alternativo': _normalizeNullablePhone(alternativePhone),
+    'correo_electronico': normalizeNullableEmail(email),
     'prioridad': priority,
     'puede_recibir_alertas': canReceiveAlerts,
   };

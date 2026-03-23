@@ -29,6 +29,9 @@ class ContactsService {
     }
 
     try {
+      // Load cached contacts BEFORE overwriting — used as email fallback below.
+      final previousCache = await _loadCachedContacts(userId);
+
       final response = await _apiClient.getJson(
         '/contacts',
         accessToken: session.accessToken,
@@ -38,7 +41,7 @@ class ContactsService {
         return [];
       }
 
-      final contacts =
+      var contacts =
           data
               .map(
                 (item) =>
@@ -47,9 +50,11 @@ class ContactsService {
               .toList()
             ..sort((a, b) => a.priority.compareTo(b.priority));
 
-      final mergedContacts = await _mergeLocalContactEmails(userId, contacts);
-      await _saveCachedContacts(userId, mergedContacts);
-      return mergedContacts;
+      // Restore emails for contacts where the backend returned null.
+      contacts = await _mergeLocalEmailFallback(userId, contacts, previousCache);
+
+      await _saveCachedContacts(userId, contacts);
+      return contacts;
     } catch (_) {
       return _loadCachedContacts(userId);
     }
@@ -98,7 +103,6 @@ class ContactsService {
     );
 
     try {
-      await _upsertLocalEmail(userId, phone: normalizedPhone, email: email);
       await _apiClient.postJson(
         '/contacts',
         accessToken: session.accessToken,
@@ -113,6 +117,9 @@ class ContactsService {
           priority: contacts.length + 1,
         ).toBackendPayload(),
       );
+      if (email != null) {
+        await _upsertLocalEmail(userId, normalizedPhone, email);
+      }
       await _refreshCache(userId);
       return true;
     } catch (error) {
@@ -154,11 +161,7 @@ class ContactsService {
       (contact) => contact?.id == updated.id,
       orElse: () => null,
     );
-    if (previousContact != null) {
-      await _removeLocalEmailEntries(userId, previousContact);
-    }
     final normalizedContact = updated.copyWith(phone: normalizedPhone);
-    await _upsertLocalEmail(userId, contact: normalizedContact);
     await _upsertCachedContact(userId, normalizedContact);
 
     if (_isLocalId(normalizedContact.id)) {
@@ -175,12 +178,14 @@ class ContactsService {
         accessToken: session.accessToken,
         body: normalizedContact.toBackendPayload(),
       );
+      if (normalizedContact.email != null) {
+        await _upsertLocalEmail(userId, normalizedPhone, normalizedContact.email!);
+      }
       await _refreshCache(userId);
       return true;
     } catch (error) {
       if (!_shouldSaveLocally(error)) {
         if (previousContact != null) {
-          await _upsertLocalEmail(userId, contact: previousContact);
           await _upsertCachedContact(userId, previousContact);
         }
         return false;
@@ -205,9 +210,6 @@ class ContactsService {
       (contact) => contact?.id == contactId,
       orElse: () => null,
     );
-    if (removedContact != null) {
-      await _removeLocalEmailEntries(userId, removedContact);
-    }
     cachedContacts.removeWhere((contact) => contact.id == contactId);
     await _saveCachedContacts(userId, cachedContacts);
 
@@ -228,7 +230,6 @@ class ContactsService {
     } catch (error) {
       if (!_shouldSaveLocally(error)) {
         if (removedContact != null) {
-          await _upsertLocalEmail(userId, contact: removedContact);
           cachedContacts.insert(0, removedContact);
           await _saveCachedContacts(userId, cachedContacts);
         }
@@ -250,6 +251,8 @@ class ContactsService {
     }
 
     try {
+      final previousCache = await _loadCachedContacts(userId);
+
       final response = await _apiClient.getJson(
         '/contacts',
         accessToken: session.accessToken,
@@ -259,7 +262,7 @@ class ContactsService {
         return;
       }
 
-      final contacts =
+      var contacts =
           data
               .map(
                 (item) =>
@@ -268,137 +271,12 @@ class ContactsService {
               .toList()
             ..sort((a, b) => a.priority.compareTo(b.priority));
 
-      final mergedContacts = await _mergeLocalContactEmails(userId, contacts);
-      await _saveCachedContacts(userId, mergedContacts);
+      contacts = await _mergeLocalEmailFallback(userId, contacts, previousCache);
+
+      await _saveCachedContacts(userId, contacts);
     } catch (_) {
       // Keep the previous cache if refresh fails.
     }
-  }
-
-  Future<List<ContactModel>> _mergeLocalContactEmails(
-    String userId,
-    List<ContactModel> contacts,
-  ) async {
-    final localEmails = await _loadLocalEmails(userId);
-    if (localEmails.isEmpty) {
-      return contacts;
-    }
-
-    return contacts.map((contact) {
-      final email = _resolveLocalEmail(localEmails, contact);
-      if (email == null) {
-        return contact;
-      }
-
-      return contact.copyWith(email: email);
-    }).toList();
-  }
-
-  Future<Map<String, String>> _loadLocalEmails(String userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_emailCacheKey(userId));
-    if (raw == null || raw.trim().isEmpty) {
-      return <String, String>{};
-    }
-
-    try {
-      final decoded = Map<String, dynamic>.from(jsonDecode(raw) as Map);
-      return decoded.map(
-        (key, value) => MapEntry(key, readContactString(value)),
-      )..removeWhere((key, value) => value.trim().isEmpty);
-    } catch (_) {
-      return <String, String>{};
-    }
-  }
-
-  Future<void> _saveLocalEmails(
-    String userId,
-    Map<String, String> values,
-  ) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_emailCacheKey(userId), jsonEncode(values));
-  }
-
-  Future<void> _upsertLocalEmail(
-    String userId, {
-    ContactModel? contact,
-    String? phone,
-    String? email,
-  }) async {
-    final prefs = await _loadLocalEmails(userId);
-    final normalizedEmail = normalizeNullableEmail(email ?? contact?.email);
-    final keys = contact != null
-        ? _emailAliasesForContact(contact)
-        : _emailAliasesForPhone(phone);
-
-    if (keys.isEmpty) {
-      return;
-    }
-
-    for (final key in keys) {
-      if (normalizedEmail == null) {
-        prefs.remove(key);
-      } else {
-        prefs[key] = normalizedEmail;
-      }
-    }
-
-    await _saveLocalEmails(userId, prefs);
-  }
-
-  Future<void> _removeLocalEmailEntries(
-    String userId,
-    ContactModel contact,
-  ) async {
-    final emails = await _loadLocalEmails(userId);
-    final keys = _emailAliasesForContact(contact);
-    if (keys.isEmpty) {
-      return;
-    }
-
-    for (final key in keys) {
-      emails.remove(key);
-    }
-
-    await _saveLocalEmails(userId, emails);
-  }
-
-  String? _resolveLocalEmail(
-    Map<String, String> localEmails,
-    ContactModel contact,
-  ) {
-    for (final key in _emailAliasesForContact(contact)) {
-      final value = localEmails[key];
-      if (value != null && value.trim().isNotEmpty) {
-        return value;
-      }
-    }
-
-    return null;
-  }
-
-  List<String> _emailAliasesForContact(ContactModel contact) {
-    final aliases = <String>[];
-    final trimmedId = contact.id.trim();
-    if (trimmedId.isNotEmpty) {
-      aliases.add('id:$trimmedId');
-    }
-
-    final normalizedPhone = AuthIdentityMapper.normalizePhone(contact.phone);
-    if (normalizedPhone.isNotEmpty) {
-      aliases.add('phone:$normalizedPhone');
-    }
-
-    return aliases;
-  }
-
-  List<String> _emailAliasesForPhone(String? phone) {
-    final normalizedPhone = AuthIdentityMapper.normalizePhone(phone ?? '');
-    if (normalizedPhone.isEmpty) {
-      return const <String>[];
-    }
-
-    return <String>['phone:$normalizedPhone'];
   }
 
   Future<List<ContactModel>> _loadCachedContacts(String userId) async {
@@ -428,7 +306,6 @@ class ContactsService {
   }
 
   Future<void> _saveContactLocally(String userId, ContactModel contact) async {
-    await _upsertLocalEmail(userId, contact: contact);
     await _upsertCachedContact(userId, contact);
   }
 
@@ -463,5 +340,93 @@ class ContactsService {
 
   String _buildLocalContactId() {
     return 'local-contact-${DateTime.now().microsecondsSinceEpoch}';
+  }
+
+  // ---------------------------------------------------------------------------
+  // Local email fallback — keeps emails available even when the backend returns
+  // null for correo_electronico (e.g. for contacts created before the column
+  // existed, or when RLS doesn't expose it yet).
+  // ---------------------------------------------------------------------------
+
+  Future<List<ContactModel>> _mergeLocalEmailFallback(
+    String userId,
+    List<ContactModel> contacts,
+    List<ContactModel> previousCache,
+  ) async {
+    if (contacts.every((c) => c.email != null)) return contacts;
+
+    // Build lookup maps from the previous cache (already has emails stored).
+    final emailById = <String, String>{};
+    final emailByPhone = <String, String>{};
+    for (final c in previousCache) {
+      final email = c.email;
+      if (email == null || email.trim().isEmpty) continue;
+      if (c.id.trim().isNotEmpty) emailById[c.id.trim()] = email;
+      final phone = AuthIdentityMapper.normalizePhone(c.phone);
+      if (phone.isNotEmpty) emailByPhone[phone] = email;
+    }
+
+    // Also pull from the dedicated contact_emails_ key (older local storage).
+    final legacyEmails = await _loadLocalEmails(userId);
+
+    return contacts.map((contact) {
+      if (contact.email != null) return contact;
+
+      // Try previous cache by id then phone.
+      final cachedEmail =
+          emailById[contact.id.trim()] ??
+          emailByPhone[AuthIdentityMapper.normalizePhone(contact.phone)];
+      if (cachedEmail != null) return contact.copyWith(email: cachedEmail);
+
+      // Try legacy contact_emails_ map.
+      for (final key in _emailAliasesForContact(contact)) {
+        final legacyEmail = legacyEmails[key];
+        if (legacyEmail != null && legacyEmail.trim().isNotEmpty) {
+          return contact.copyWith(email: legacyEmail);
+        }
+      }
+
+      return contact;
+    }).toList();
+  }
+
+  Future<Map<String, String>> _loadLocalEmails(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_emailCacheKey(userId));
+    if (raw == null || raw.trim().isEmpty) return {};
+    try {
+      final decoded = Map<String, dynamic>.from(jsonDecode(raw) as Map);
+      return decoded
+          .map((k, v) => MapEntry(k, v?.toString() ?? ''))
+        ..removeWhere((_, v) => v.trim().isEmpty);
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<void> _upsertLocalEmail(
+    String userId,
+    String normalizedPhone,
+    String email,
+  ) async {
+    final trimmed = email.trim().toLowerCase();
+    if (trimmed.isEmpty) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final existing = await _loadLocalEmails(userId);
+
+    if (normalizedPhone.isNotEmpty) {
+      existing['phone:$normalizedPhone'] = trimmed;
+    }
+
+    await prefs.setString(_emailCacheKey(userId), jsonEncode(existing));
+  }
+
+  List<String> _emailAliasesForContact(ContactModel contact) {
+    final aliases = <String>[];
+    if (contact.id.trim().isNotEmpty) aliases.add('id:${contact.id.trim()}');
+    final phone = AuthIdentityMapper.normalizePhone(contact.phone);
+    if (phone.isNotEmpty) aliases.add('phone:$phone');
+    return aliases;
   }
 }
