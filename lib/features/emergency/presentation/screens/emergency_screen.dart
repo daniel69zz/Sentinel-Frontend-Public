@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/localization/app_language_service.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../../../../core/theme/app_design_theme.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_card.dart';
@@ -32,6 +33,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   bool _isRecording = false;
   bool _isSendingAlert = false;
   bool _isProcessingEvidence = false;
+  // ignore: unused_field
   String _captureStatus = AppLanguageService.instance.tr(
     'emergency.capture_recording_all',
   );
@@ -149,6 +151,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
         }
       }
 
+      var emailSent = false;
+
       if (uploadedEvidenceIds.isNotEmpty) {
         setState(() {
           _processingStatus = AppLanguageService.instance.tr(
@@ -165,8 +169,30 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
           hasAudio: stopResult.audioPath != null,
         );
 
+        emailSent = emailResult.success;
         if (mounted && emailResult.message != null) {
           _showSnackBar(emailResult.message!);
+        }
+      }
+
+      // Si no se pudo enviar por correo (o no habia correos), abre el menu
+      // para compartir las evidencias con los contactos que la usuaria elija.
+      if (hasEvidence && !emailSent) {
+        setState(() {
+          _processingStatus = AppLanguageService.instance.tr(
+            'emergency.processing_share_fallback',
+            fallback: 'Abriendo menu para compartir evidencia...',
+          );
+        });
+
+        final shareResult = await _alertService.shareEvidence(
+          stopResult: stopResult,
+          locationUrl: locationUrl,
+          alertTriggeredAt: previousAlertTriggeredAt,
+        );
+
+        if (mounted && shareResult.message != null) {
+          _showSnackBar(shareResult.message!);
         }
       }
     } finally {
@@ -680,6 +706,47 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                     floatPhase: 1.5,
                     onTap: _sendTextOnlyAlert,
                   ),
+                  const SizedBox(height: 10),
+                  _ActionCard(
+                    icon: Icons.folder_shared_outlined,
+                    iconColor: AppTheme.primary,
+                    title: context.tr(
+                      'emergency.evidence_shortcut_title',
+                      fallback: 'Ver mis evidencias guardadas',
+                    ),
+                    subtitle: context.tr(
+                      'emergency.evidence_shortcut_subtitle',
+                      fallback:
+                          'Accede rapido a los videos/fotos ocultos y comparte si es necesario.',
+                    ),
+                    floatPhase: 0.8,
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      AppRoutes.evidence,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _ActionCard(
+                    icon: Icons.info_outline_rounded,
+                    iconColor: AppTheme.warning,
+                    title: context.tr(
+                      'emergency.care72_title',
+                      fallback: 'Atencion en las primeras 72 horas',
+                    ),
+                    subtitle: context.tr(
+                      'emergency.care72_subtitle',
+                      fallback:
+                          'Puedes acudir a PAIF, hospitales municipales o FELCV. Si no tienes evidencias, igual puedes denunciar y pedir profilaxis/kit medico.',
+                    ),
+                    floatPhase: 1.0,
+                    onTap: () => _showSnackBar(
+                      context.tr(
+                        'emergency.care72_snackbar',
+                        fallback:
+                            'La denuncia no requiere evidencias para iniciarse. Las puedes adjuntar despues.',
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   _FloatingSectionBadge(
                     icon: Icons.favorite_outline_rounded,
@@ -1033,7 +1100,7 @@ class _EmergencyQuickActionCard extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(30),
           child: SizedBox(
-            height: 180,
+            height: 200,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -1098,20 +1165,20 @@ class _EmergencyQuickActionCard extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(16),
                   child: Row(
                     children: [
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _MapShareTag(icon: badgeIcon, label: badgeLabel),
-                            const Spacer(),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 220),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _MapShareTag(icon: badgeIcon, label: badgeLabel),
+                        const SizedBox(height: 10),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 220),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
                                     title,
@@ -1134,7 +1201,7 @@ class _EmergencyQuickActionCard extends StatelessWidget {
                                     const SizedBox(height: 8),
                                     Text(
                                       subtitle!,
-                                      maxLines: 2,
+                                      maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
                                       style: AppTheme.bodyMedium.copyWith(
                                         fontSize: 12,

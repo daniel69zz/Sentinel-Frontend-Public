@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 enum AppLanguage {
-  spanish(
-    code: 'es',
-    labelKey: 'languages.spanish',
-    chatbotName: 'Spanish',
-  );
+  spanish(code: 'es', labelKey: 'languages.spanish', chatbotName: 'Spanish'),
+  aymara(code: 'ay', labelKey: 'languages.aymara', chatbotName: 'Aymara'),
+  quechua(code: 'qu', labelKey: 'languages.quechua', chatbotName: 'Quechua');
 
   final String code;
   final String labelKey;
@@ -29,7 +27,7 @@ class AppLanguageService extends ChangeNotifier {
   static const List<Locale> supportedMaterialLocales = [Locale('es', 'BO')];
   static const Locale _materialLocale = Locale('es', 'BO');
 
-  final AppLanguage _language = AppLanguage.spanish;
+  AppLanguage _language = AppLanguage.spanish;
   Map<String, dynamic> _translations = <String, dynamic>{};
 
   AppLanguage get language => _language;
@@ -39,13 +37,25 @@ class AppLanguageService extends ChangeNotifier {
     _translations = await _loadTranslations();
   }
 
-  String pick({
-    required String es,
-    String? en,
-    String? ay,
-    String? qu,
-  }) {
-    return es;
+  Future<void> setLanguage(AppLanguage language) async {
+    _language = language;
+    _translations = await _loadTranslations();
+    notifyListeners();
+  }
+
+  String languageLabel(AppLanguage language) {
+    return tr(language.labelKey);
+  }
+
+  String pick({required String es, String? en, String? ay, String? qu}) {
+    switch (_language) {
+      case AppLanguage.spanish:
+        return es;
+      case AppLanguage.aymara:
+        return ay ?? es;
+      case AppLanguage.quechua:
+        return qu ?? es;
+    }
   }
 
   String tr(
@@ -53,10 +63,7 @@ class AppLanguageService extends ChangeNotifier {
     Map<String, String> params = const <String, String>{},
     String? fallback,
   }) {
-    final value =
-        _lookupValue(_translations, key) ??
-        fallback ??
-        key;
+    final value = _lookupValue(_translations, key) ?? fallback ?? key;
 
     if (value is! String) {
       return fallback ?? key;
@@ -67,7 +74,9 @@ class AppLanguageService extends ChangeNotifier {
 
   Future<Map<String, dynamic>> _loadTranslations() async {
     try {
-      final raw = await rootBundle.loadString('$_assetPathPrefix/es.json');
+      final raw = await rootBundle.loadString(
+        '$_assetPathPrefix/${_language.code}.json',
+      );
       final decoded = jsonDecode(raw);
       if (decoded is Map<String, dynamic>) {
         return decoded;
@@ -110,7 +119,7 @@ class AppLanguageService extends ChangeNotifier {
 /// app content.
 class AppLanguageScope extends InheritedNotifier<AppLanguageService> {
   AppLanguageScope({super.key, required super.child})
-      : super(notifier: AppLanguageService.instance);
+    : super(notifier: AppLanguageService.instance);
 
   /// Call in [build] to register a rebuild dependency without reading a string.
   static void watch(BuildContext context) =>
@@ -136,12 +145,7 @@ extension AppLanguageBuildContext on BuildContext {
     );
   }
 
-  String pick({
-    required String es,
-    String? en,
-    String? ay,
-    String? qu,
-  }) {
+  String pick({required String es, String? en, String? ay, String? qu}) {
     dependOnInheritedWidgetOfExactType<AppLanguageScope>();
     return AppLanguageService.instance.pick(es: es, en: en, ay: ay, qu: qu);
   }

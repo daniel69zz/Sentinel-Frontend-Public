@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -14,30 +17,8 @@ class EducationGamesScreen extends StatefulWidget {
 
 class _EducationGamesScreenState extends State<EducationGamesScreen> {
   final EducationPetService _petService = EducationPetService();
-
-  final List<_QuestionItem> _questions = const [
-    _QuestionItem(
-      question:
-          '¿Qué debes hacer si alguien te hace sentir incómoda o incómodo con contacto no deseado?',
-      options: [
-        'Quedarte callada o callado',
-        'Alejarte o hablar con una persona de confianza',
-        'Aceptar para evitar problemas',
-      ],
-      correctIndex: 1,
-    ),
-    _QuestionItem(
-      question: '¿La violencia sexual puede ocurrir sin consentimiento?',
-      options: ['Sí', 'No', 'Solo a veces'],
-      correctIndex: 0,
-    ),
-    _QuestionItem(
-      question:
-          '¿Hablar con una persona de confianza puede ayudarte ante una situación de riesgo?',
-      options: ['Sí', 'No', 'No sirve'],
-      correctIndex: 0,
-    ),
-  ];
+  List<_QuestionItem> _questionBank = const [];
+  List<_QuestionItem> _questions = const [];
 
   int _currentQuestionIndex = 0;
   int? _selectedOptionIndex;
@@ -46,8 +27,57 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
   bool _isApplyingReward = false;
   bool _quizFinished = false;
   EducationGameRewardResult? _reward;
+  int _roundsPlayed = 1;
+  bool _isLoading = true;
+  bool _showAnswer = false;
+  bool _lastAnswerCorrect = false;
+  final List<_AnswerSummary> _answersSummary = [];
 
   _QuestionItem get _currentQuestion => _questions[_currentQuestionIndex];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQuestions();
+  }
+
+  Future<void> _loadQuestions() async {
+    try {
+      final raw = await rootBundle.loadString('assets/data/education_quiz.json');
+      final list = jsonDecode(raw) as List<dynamic>;
+      final parsed = list
+          .map((e) => _QuestionItem.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      setState(() {
+        _questionBank = parsed;
+        _isLoading = false;
+        _startNewRound();
+      });
+    } catch (_) {
+      setState(() {
+        _questions = const [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _startNewRound() {
+    final bank = List<_QuestionItem>.from(_questionBank);
+    bank.shuffle();
+    final selected = bank.take(3).map((q) => q.shuffled()).toList();
+    setState(() {
+      _questions = selected;
+      _currentQuestionIndex = 0;
+      _selectedOptionIndex = null;
+      _correctAnswers = 0;
+      _isSubmitting = false;
+      _isApplyingReward = false;
+      _quizFinished = false;
+      _reward = null;
+      _showAnswer = false;
+      _answersSummary.clear();
+    });
+  }
 
   Future<void> _submitAnswer() async {
     if (_selectedOptionIndex == null || _isSubmitting) {
@@ -56,6 +86,7 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
 
     setState(() {
       _isSubmitting = true;
+      _showAnswer = false;
     });
 
     final isCorrect = _selectedOptionIndex == _currentQuestion.correctIndex;
@@ -64,21 +95,45 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
       _correctAnswers++;
     }
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 600));
 
     if (!mounted) return;
 
+    setState(() {
+      _showAnswer = true;
+      _lastAnswerCorrect = isCorrect;
+      _addAnswerSummary(isCorrect);
+    });
+
+    setState(() => _isSubmitting = false);
+  }
+
+  void _goToNext() async {
     final isLastQuestion = _currentQuestionIndex == _questions.length - 1;
 
     if (isLastQuestion) {
       await _applyRewardAndComplete();
-    } else {
-      setState(() {
-        _currentQuestionIndex++;
-        _selectedOptionIndex = null;
-        _isSubmitting = false;
-      });
+      return;
     }
+
+    setState(() {
+      _currentQuestionIndex++;
+      _selectedOptionIndex = null;
+      _isSubmitting = false;
+      _showAnswer = false;
+    });
+  }
+
+  void _addAnswerSummary(bool isCorrect) {
+    _answersSummary.add(
+      _AnswerSummary(
+        question: _currentQuestion.question,
+        selected: _currentQuestion.options[_selectedOptionIndex!],
+        correct: _currentQuestion.options[_currentQuestion.correctIndex],
+        isCorrect: isCorrect,
+        explanation: _currentQuestion.explanation,
+      ),
+    );
   }
 
   Future<void> _applyRewardAndComplete() async {
@@ -91,9 +146,13 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
     });
 
     try {
-      final reward = await _petService.rewardGame(
-        correctAnswers: _correctAnswers,
-      );
+      EducationGameRewardResult? reward;
+
+      if (_correctAnswers > 0) {
+        reward = await _petService.rewardGame(
+          correctAnswers: _correctAnswers,
+        );
+      }
 
       if (!mounted) return;
 
@@ -103,6 +162,20 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
         _isSubmitting = false;
         _isApplyingReward = false;
       });
+
+      if (_correctAnswers == 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.tr(
+                'education.games.no_reward',
+                fallback:
+                    'No hubo respuestas correctas. Intenta otra ronda para ganar recompensas.',
+              ),
+            ),
+          ),
+        );
+      }
     } catch (_) {
       if (!mounted) return;
 
@@ -120,15 +193,8 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
   }
 
   void _resetQuiz() {
-    setState(() {
-      _currentQuestionIndex = 0;
-      _selectedOptionIndex = null;
-      _correctAnswers = 0;
-      _isSubmitting = false;
-      _isApplyingReward = false;
-      _quizFinished = false;
-      _reward = null;
-    });
+    _roundsPlayed = (_roundsPlayed % 3) + 1;
+    _startNewRound();
   }
 
   @override
@@ -149,6 +215,22 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
   }
 
   Widget _buildQuizView() {
+    if (_isLoading || _questions.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 80),
+          child: _isLoading
+              ? const CircularProgressIndicator(color: AppTheme.primary)
+              : Text(
+                  context.tr(
+                    'education.games.load_error',
+                    fallback: 'No se pudieron cargar las preguntas.',
+                  ),
+                ),
+        ),
+      );
+    }
+
     final progress = (_currentQuestionIndex + 1) / _questions.length;
 
     return Column(
@@ -207,6 +289,23 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
               const SizedBox(height: 16),
               ...List.generate(_currentQuestion.options.length, (index) {
                 final isSelected = _selectedOptionIndex == index;
+                final isCorrect = _currentQuestion.correctIndex == index;
+                final showFeedback = _showAnswer;
+                Color borderColor = AppTheme.divider;
+                Color fillColor = AppTheme.cardBg;
+
+                if (showFeedback) {
+                  if (isCorrect) {
+                    borderColor = Colors.green;
+                    fillColor = Colors.green.withValues(alpha: 0.10);
+                  } else if (isSelected && !isCorrect) {
+                    borderColor = Colors.red;
+                    fillColor = Colors.red.withValues(alpha: 0.10);
+                  }
+                } else if (isSelected) {
+                  borderColor = AppTheme.primary;
+                  fillColor = AppTheme.primary.withValues(alpha: 0.12);
+                }
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -223,15 +322,9 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppTheme.primary.withValues(alpha: 0.12)
-                            : AppTheme.cardBg,
+                        color: fillColor,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppTheme.primary
-                              : AppTheme.divider,
-                        ),
+                        border: Border.all(color: borderColor),
                       ),
                       child: Text(
                         _currentQuestion.options[index],
@@ -242,25 +335,60 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
                 );
               }),
               const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: (_selectedOptionIndex == null || _isSubmitting)
-                      ? null
-                      : _submitAnswer,
-                  icon: _isSubmitting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.check_rounded),
-                  label: Text(
-                    _currentQuestionIndex == _questions.length - 1
-                        ? 'Finalizar'
-                        : 'Siguiente',
+              if (_showAnswer) ...[
+                Text(
+                  _lastAnswerCorrect
+                      ? '¡Correcto!'
+                      : 'Respuesta correcta: ${_currentQuestion.options[_currentQuestion.correctIndex]}',
+                  style: AppTheme.labelLarge.copyWith(
+                    color: _lastAnswerCorrect ? Colors.green : Colors.red,
                   ),
                 ),
+                const SizedBox(height: 6),
+                Text(
+                  _currentQuestion.explanation,
+                  style: AppTheme.bodyMedium,
+                ),
+                const SizedBox(height: 12),
+              ],
+              Row(
+                children: [
+                  if (_showAnswer)
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _isSubmitting
+                            ? null
+                            : () {
+                                setState(() {
+                                  _showAnswer = false;
+                                });
+                                _goToNext();
+                              },
+                        icon: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                        label: Text(
+                          _currentQuestionIndex == _questions.length - 1
+                              ? 'Ver resultados'
+                              : 'Siguiente',
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: (_selectedOptionIndex == null || _isSubmitting)
+                            ? null
+                            : _submitAnswer,
+                        icon: _isSubmitting
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.check_rounded),
+                        label: const Text('Responder'),
+                      ),
+                    ),
+                ],
               ),
             ],
           ),
@@ -297,6 +425,57 @@ class _EducationGamesScreenState extends State<EducationGamesScreen> {
           style: AppTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),
+        const SizedBox(height: 6),
+        Text(
+          'Ronda $_roundsPlayed de 3 recomendadas.',
+          style: AppTheme.bodyMedium,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+        if (_answersSummary.isNotEmpty)
+          CustomCard(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Resumen de respuestas', style: AppTheme.labelLarge),
+                const SizedBox(height: 10),
+                ..._answersSummary.map((a) {
+                  final color = a.isCorrect ? Colors.green : Colors.red;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          a.question,
+                          style: AppTheme.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tu respuesta: ${a.selected}',
+                          style:
+                              AppTheme.bodyMedium.copyWith(color: color),
+                        ),
+                        if (!a.isCorrect)
+                          Text(
+                            'Correcta: ${a.correct}',
+                            style: AppTheme.bodyMedium,
+                          ),
+                        const SizedBox(height: 4),
+                        Text(
+                          a.explanation,
+                          style: AppTheme.bodyMedium.copyWith(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
         const SizedBox(height: 24),
         if (_reward != null) ...[
           CustomCard(
@@ -402,10 +581,52 @@ class _QuestionItem {
   final String question;
   final List<String> options;
   final int correctIndex;
+  final String explanation;
 
   const _QuestionItem({
     required this.question,
     required this.options,
     required this.correctIndex,
+    required this.explanation,
+  });
+
+  factory _QuestionItem.fromJson(Map<String, dynamic> json) {
+    final options = (json['options'] as List).map((e) => e.toString()).toList();
+    return _QuestionItem(
+      question: json['question']?.toString() ?? '',
+      options: options,
+      correctIndex: (json['correctIndex'] as num).toInt(),
+      explanation: json['explanation']?.toString() ?? '',
+    );
+  }
+
+  _QuestionItem shuffled() {
+    final pairs = options.asMap().entries.toList();
+    pairs.shuffle();
+    final newOptions = pairs.map((e) => e.value).toList();
+    final newCorrectIndex =
+        pairs.indexWhere((entry) => entry.key == correctIndex);
+    return _QuestionItem(
+      question: question,
+      options: newOptions,
+      correctIndex: newCorrectIndex,
+      explanation: explanation,
+    );
+  }
+}
+
+class _AnswerSummary {
+  final String question;
+  final String selected;
+  final String correct;
+  final String explanation;
+  final bool isCorrect;
+
+  const _AnswerSummary({
+    required this.question,
+    required this.selected,
+    required this.correct,
+    required this.explanation,
+    required this.isCorrect,
   });
 }

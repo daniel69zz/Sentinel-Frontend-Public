@@ -40,8 +40,11 @@ flutter:
   uses-material-design: true
   assets:
     - assets/i18n/
+    - assets/data/
     - assets/images/
+    - assets/images/Mascota/
     - assets/images/infografias/
     - assets/images/emergency/
     - assets/images/garabato_chatbot/
     - assets/images/garabato_informacion/
+    - assets/images/logoIpas/

@@ -83,6 +83,9 @@ class ContactsService {
     }
 
     final contacts = await getContacts(userId);
+    if (contacts.length >= 1) {
+      return false;
+    }
     final exists = contacts.any(
       (contact) =>
           AuthIdentityMapper.normalizePhone(contact.phone) == normalizedPhone,

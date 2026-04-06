@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/services/permissions_warmup_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import 'contacts_screen.dart';
@@ -137,6 +138,9 @@ class _RegisterScreenState extends State<RegisterScreen>
       return;
     }
 
+    await _warmupPermissions();
+    if (!mounted) return;
+
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
@@ -144,6 +148,32 @@ class _RegisterScreenState extends State<RegisterScreen>
       ),
       (route) => false,
     );
+  }
+
+  Future<void> _warmupPermissions() async {
+    final result = await PermissionsWarmupService.instance
+        .requestCriticalPermissions(forcePrompt: true);
+    if (!mounted) return;
+    if (!result.allGranted) {
+      final missing = result.missing.join(', ');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'auth.permissions.missing',
+              fallback:
+                  'Activa los permisos de camara, microfono, almacenamiento y ubicacion para que las alertas SOS funcionen (faltan: $missing).',
+            ),
+          ),
+          action: SnackBarAction(
+            label: context.tr('auth.permissions.open_settings', fallback: 'Ajustes'),
+            textColor: AppTheme.surface,
+            onPressed: () =>
+                PermissionsWarmupService.instance.openSystemSettings(),
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -243,6 +273,40 @@ class _RegisterScreenState extends State<RegisterScreen>
                         Text(
                           context.tr('auth.register.subtitle'),
                           style: AppTheme.bodyMedium.copyWith(fontSize: 14),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.favorite, color: AppTheme.secondary, size: 16),
+                            const SizedBox(width: 6),
+                            Image.asset(
+                              'assets/images/logoIpas/IPAS_Logo.png',
+                              height: 32,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                context.tr(
+                                  'auth.register.support_ipas',
+                                  fallback: 'Con el apoyo de Ipas Bolivia',
+                                ),
+                                style: AppTheme.bodyMedium.copyWith(fontSize: 13),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          context.tr(
+                            'auth.register.data_minimal',
+                            fallback:
+                                'Usamos estos datos solo para contactarte y personalizar alertas. Puedes editarlos luego.',
+                          ),
+                          style: AppTheme.bodyMedium.copyWith(fontSize: 12),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 36),

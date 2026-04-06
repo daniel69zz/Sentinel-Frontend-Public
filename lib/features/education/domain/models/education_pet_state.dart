@@ -3,6 +3,7 @@ import '../../../../core/localization/app_language_service.dart';
 class EducationPetState {
   static const int xpPerLevel = 100;
   static const int xpPerMeal = 18;
+  static const int hungerWindowHours = 4;
 
   final String name;
   final int level;
@@ -39,66 +40,50 @@ class EducationPetState {
 
   bool get hasFood => foodBalance > 0;
 
-  double get progress {
-    final value = currentXp / xpPerLevel;
-    if (value < 0) {
-      return 0;
+  double get progress => (currentXp / xpPerLevel).clamp(0, 1);
+
+  Duration get timeSinceFed {
+    if (lastFedAtMillis == null) {
+      return const Duration(days: 999);
     }
-    if (value > 1) {
-      return 1;
-    }
-    return value;
+    final fed = DateTime.fromMillisecondsSinceEpoch(lastFedAtMillis!).toLocal();
+    return DateTime.now().toLocal().difference(fed);
   }
+
+  double get hungerPercent {
+    final hours = timeSinceFed.inMinutes / 60;
+    if (hours <= 0) return 100;
+    if (hours >= hungerWindowHours) return 0;
+    final remaining = (hungerWindowHours - hours) / hungerWindowHours;
+    return (remaining * 100).clamp(0, 100);
+  }
+
+  double get happinessPercent => hungerPercent;
+
+  bool get isHungry => hungerPercent <= 20;
 
   String get moodLabel {
     final l10n = AppLanguageService.instance;
-    if (!hasFood) {
-      return l10n.pick(
-        es: 'Esperando comida',
-        en: 'Waiting for food',
-      );
+    if (isHungry) {
+      return l10n.pick(es: 'Con hambre', en: 'Hungry');
     }
-    if (feedCount == 0) {
-      return l10n.pick(es: 'Curiosa', en: 'Curious');
+    if (hungerPercent < 60) {
+      return l10n.pick(es: 'Con poca energia', en: 'Low energy');
     }
-    if (progress >= 0.75) {
-      return l10n.pick(es: 'Motivada', en: 'Motivated');
-    }
-    if (progress >= 0.40) {
-      return l10n.pick(es: 'Activa', en: 'Active');
-    }
-    return l10n.pick(es: 'Con hambre', en: 'Hungry');
+    return l10n.pick(es: 'Tranquila', en: 'Calm');
   }
 
   String get statusMessage {
     final l10n = AppLanguageService.instance;
-    if (!hasFood) {
+    if (isHungry) {
       return l10n.pick(
-        es: '$name necesita comida del juego para seguir creciendo.',
-        en: '$name needs food from the game to keep growing.',
-      );
-    }
-    if (feedCount == 0) {
-      return l10n.pick(
-        es: '$name esta lista para aprender contigo.',
-        en: '$name is ready to learn with you.',
-      );
-    }
-    if (progress >= 0.75) {
-      return l10n.pick(
-        es: '$name esta con toda la energia para seguir.',
-        en: '$name has all the energy to keep going.',
-      );
-    }
-    if (progress >= 0.40) {
-      return l10n.pick(
-        es: '$name sigue creciendo con cada actividad.',
-        en: '$name keeps growing with every activity.',
+        es: '$name lleva mas de 4 horas sin comer. Dale comida del juego.',
+        en: '$name has been over 4 hours without food. Feed from the game.',
       );
     }
     return l10n.pick(
-      es: '$name necesita otra ayuda para subir mas rapido.',
-      en: '$name needs another boost to level up faster.',
+      es: '$name esta estable. Si pasan 4 horas sin comida tendra hambre.',
+      en: '$name is ok. After 4 hours without food she will get hungry.',
     );
   }
 

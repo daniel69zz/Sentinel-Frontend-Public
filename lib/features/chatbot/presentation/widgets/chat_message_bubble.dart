@@ -16,6 +16,7 @@ class ChatMessageBubble extends StatefulWidget {
   final bool isTyping;
   final bool animated;
   final VoidCallback? onAnimationComplete;
+  final bool showMascot;
 
   const ChatMessageBubble({
     super.key,
@@ -24,6 +25,7 @@ class ChatMessageBubble extends StatefulWidget {
     this.isTyping = false,
     this.animated = false,
     this.onAnimationComplete,
+    this.showMascot = true,
   });
 
   @override
@@ -128,7 +130,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          _MascotTalking(isAnimating: isTalking),
+          _MascotTalking(
+            isAnimating: isTalking,
+            showMascot: widget.showMascot,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: _BotBubble(
@@ -328,8 +333,9 @@ class _TypingDotsState extends State<_TypingDots>
 
 class _MascotTalking extends StatefulWidget {
   final bool isAnimating;
+  final bool showMascot;
 
-  const _MascotTalking({required this.isAnimating});
+  const _MascotTalking({required this.isAnimating, required this.showMascot});
 
   @override
   State<_MascotTalking> createState() => _MascotTalkingState();
@@ -376,6 +382,10 @@ class _MascotTalkingState extends State<_MascotTalking> {
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.showMascot) {
+      return const SizedBox(width: 60, height: 60);
+    }
+
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 120),
       transitionBuilder: (child, animation) =>

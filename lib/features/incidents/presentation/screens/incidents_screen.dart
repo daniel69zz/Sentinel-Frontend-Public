@@ -144,6 +144,16 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                         ),
                         style: AppTheme.bodyMedium,
                       ),
+                      const SizedBox(height: 10),
+                      StatusBanner(
+                        message: _t(
+                          es: 'Puedes denunciar aunque no tengas evidencias listas. Si la agresion fue sexual y estas dentro de 72 horas, acude a un centro de salud para profilaxis y pide apoyo a PAIF/FELCV.',
+                          en: 'You can report even without evidence ready. If the aggression was sexual and you are within 72 hours, go to a health center for care and ask PAIF/FELCV for support.',
+                          ay: 'Evidencianak utjkaniti jani ukxatasa jawst\'ayaÃ±awa. Sexual agresion utjkchi ukasti 72 ura ukanaqa salud centro ukar saram ukat PAIF/FELCV yanapa mayim.',
+                          qu: 'Evidenciakuna mana kuskan chaymantaqa denunciayta atinki. Waqyasqa sexual kasqa karqa ichaqa 72 horaspi kashaniytaq salud centruman ripuy profilaxispaq, PAIF/FELCV yanapakuqta mañakuy.',
+                        ),
+                        isWarning: false,
+                      ),
                       const SizedBox(height: 20),
                     ],
                     ActionPanelCard(

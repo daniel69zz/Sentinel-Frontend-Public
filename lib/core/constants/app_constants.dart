@@ -33,7 +33,20 @@ class AppConstants {
 
   // Assets
   static const String logoPath = 'assets/images/logo.png';
-  static const String mascotPath = 'assets/images/mascota.png';
+  static const String mascotPath = 'assets/images/Mascota/mascota_stage1.png';
+  static const List<String> mascotLevelPaths = [
+    'assets/images/Mascota/mascota_stage1.png',
+    'assets/images/Mascota/mascota_stage2.png',
+    'assets/images/Mascota/mascota_stage3.png',
+    'assets/images/Mascota/mascota_stage4.png',
+  ];
+
+  static String mascotForLevel(int level) {
+    if (level <= 1) return mascotLevelPaths[0];
+    if (level == 2) return mascotLevelPaths[1];
+    if (level == 3) return mascotLevelPaths[2];
+    return mascotLevelPaths.last;
+  }
 
   // Shared Preferences Keys
   static const String keyOnboarded = 'onboarded';

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/mascot_image.dart';
+import '../../../education/presentation/services/education_pet_service.dart';
 import '../services/chatbot_service.dart';
 import '../widgets/chat_message_bubble.dart';
 
@@ -17,6 +18,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ChatbotService _chatbotService = ChatbotService();
+  final EducationPetService _petService = EducationPetService();
   late final List<_ChatMessage> _messages = [
     _ChatMessage(
       text: AppLanguageService.instance.tr('chatbot.intro'),
@@ -25,6 +27,25 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   ];
 
   bool _isBotTyping = false;
+  bool _petEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPetPreference();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadPetPreference();
+  }
+
+  Future<void> _loadPetPreference() async {
+    final enabled = await _petService.isPetEnabled();
+    if (!mounted) return;
+    setState(() => _petEnabled = enabled);
+  }
 
   List<String> _quickPrompts(BuildContext context) {
     return [
@@ -65,29 +86,22 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       });
     } on ChatbotException catch (error) {
       if (!mounted) return;
-
-      setState(() {
-        _stopAnimatedBotMessages();
-        _messages.add(_ChatMessage(text: error.message, isUser: false, animated: true));
-        _isBotTyping = false;
-      });
+      setState(() => _isBotTyping = false);
+      _showError(error.message);
     } catch (_) {
       if (!mounted) return;
-
-      setState(() {
-        _stopAnimatedBotMessages();
-        _messages.add(
-          _ChatMessage(
-            text: context.tr('chatbot.errors.unexpected'),
-            isUser: false,
-            animated: true,
-          ),
-        );
-        _isBotTyping = false;
-      });
+      setState(() => _isBotTyping = false);
+      _showError(context.tr('chatbot.errors.unexpected'));
     }
 
     _scrollToBottom();
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   void _stopAnimatedBotMessages() {
@@ -202,8 +216,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     borderRadius: BorderRadius.circular(30),
                     child: Stack(
                       children: [
-                        const Positioned.fill(
-                          child: IgnorePointer(child: _ChatStageBackground()),
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: _ChatStageBackground(showMascot: _petEnabled),
+                          ),
                         ),
                         ListView.builder(
                           controller: _scrollController,
@@ -216,6 +232,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                 text: '',
                                 isUser: false,
                                 isTyping: true,
+                                showMascot: false,
                               );
                             }
 
@@ -225,6 +242,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                               text: message.text,
                               isUser: message.isUser,
                               animated: message.animated,
+                              showMascot: _petEnabled,
                               onAnimationComplete: message.animated
                                   ? () => _finishMessageAnimation(index)
                                   : null,
@@ -303,7 +321,9 @@ class _ChatMessage {
 }
 
 class _ChatStageBackground extends StatelessWidget {
-  const _ChatStageBackground();
+  final bool showMascot;
+
+  const _ChatStageBackground({this.showMascot = true});
 
   @override
   Widget build(BuildContext context) {
@@ -325,21 +345,22 @@ class _ChatStageBackground extends StatelessWidget {
               color: AppTheme.divider.withValues(alpha: 0.55),
             ),
           ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: Opacity(
-              opacity: 0.22,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 28),
-                child: const MascotImage(
-                  width: 96,
-                  height: 96,
-                  padding: EdgeInsets.all(12),
-                  semanticsLabel: 'Mascota de apoyo',
+          if (showMascot)
+            Align(
+              alignment: Alignment.topCenter,
+              child: Opacity(
+                opacity: 0.22,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 28),
+                  child: const MascotImage(
+                    width: 96,
+                    height: 96,
+                    padding: EdgeInsets.all(12),
+                    semanticsLabel: 'Mascota de apoyo',
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

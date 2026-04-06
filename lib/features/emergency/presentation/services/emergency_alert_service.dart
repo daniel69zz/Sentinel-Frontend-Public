@@ -500,6 +500,7 @@ class EmergencyAlertService {
     final contacts = await _contactsService.getContacts(user.id);
     final enabledContacts = contacts
         .where((contact) => contact.canReceiveAlerts)
+        .take(1)
         .toList();
 
     final contactNamesByPhone = <String, String>{};

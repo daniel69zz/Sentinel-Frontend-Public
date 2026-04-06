@@ -33,6 +33,7 @@ class EducationGameRewardResult {
 
 class EducationPetService {
   static const String _petStateKey = 'education_pet_state_v1';
+  static const String _petEnabledKey = 'education_pet_enabled';
   static const int _baseCoinsReward = 6;
   static const int _coinsPerCorrectAnswer = 4;
 
@@ -41,16 +42,28 @@ class EducationPetService {
     final rawState = prefs.getString(_petStateKey);
 
     if (rawState == null || rawState.trim().isEmpty) {
-      final initialState = EducationPetState.initial();
+      final nowMillis = DateTime.now().millisecondsSinceEpoch;
+      final initialState =
+          EducationPetState.initial().copyWith(lastFedAtMillis: nowMillis);
       await savePetState(initialState);
       return initialState;
     }
 
     try {
       final payload = Map<String, dynamic>.from(jsonDecode(rawState) as Map);
-      return EducationPetState.fromJson(payload);
+      final state = EducationPetState.fromJson(payload);
+      if (state.lastFedAtMillis == null) {
+        final hydrated = state.copyWith(
+          lastFedAtMillis: DateTime.now().millisecondsSinceEpoch,
+        );
+        await savePetState(hydrated);
+        return hydrated;
+      }
+      return state;
     } catch (_) {
-      final initialState = EducationPetState.initial();
+      final initialState = EducationPetState.initial().copyWith(
+        lastFedAtMillis: DateTime.now().millisecondsSinceEpoch,
+      );
       await savePetState(initialState);
       return initialState;
     }
@@ -121,5 +134,15 @@ class EducationPetService {
   Future<void> savePetState(EducationPetState state) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_petStateKey, jsonEncode(state.toJson()));
+  }
+
+  Future<bool> isPetEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_petEnabledKey) ?? true;
+  }
+
+  Future<void> setPetEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_petEnabledKey, enabled);
   }
 }

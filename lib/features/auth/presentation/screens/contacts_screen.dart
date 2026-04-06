@@ -28,6 +28,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
   bool _didPromptInitialForm = false;
 
   bool get _isBlockingSetup => widget.isInitialSetup && _contacts.isEmpty;
+  bool get _canAddMore => _contacts.isEmpty;
 
   @override
   void initState() {
@@ -61,6 +62,21 @@ class _ContactsScreenState extends State<ContactsScreen> {
   }
 
   Future<void> _openForm({ContactModel? contact}) async {
+    if (contact == null && !_canAddMore) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.tr(
+                'auth.contacts.limit_reached',
+                fallback: 'Solo puedes registrar un contacto de emergencia.',
+              ),
+            ),
+          ),
+        );
+      }
+      return;
+    }
     final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -143,12 +159,6 @@ class _ContactsScreenState extends State<ContactsScreen> {
                 ? context.tr('auth.contacts.first_contact_title')
                 : context.tr('auth.contacts.title'),
           ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add, color: AppTheme.primary),
-              onPressed: _openForm,
-            ),
-          ],
         ),
         body: _isLoading
             ? const Center(
@@ -172,7 +182,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
               ),
         floatingActionButton: _contacts.isNotEmpty
             ? FloatingActionButton(
-                onPressed: _openForm,
+                onPressed: _canAddMore ? _openForm : null,
                 backgroundColor: AppTheme.primary,
                 child: const Icon(Icons.add, color: AppTheme.surface),
               )

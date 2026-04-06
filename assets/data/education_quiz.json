@@ -1,0 +1,46 @@
+[
+  {
+    "question": "¿Qué debes hacer si alguien te hace sentir incómoda o incómodo con contacto no deseado?",
+    "options": [
+      "Quedarte callada o callado.",
+      "Alejarte o hablar con una persona de confianza.",
+      "Aceptar para evitar problemas."
+    ],
+    "correctIndex": 1,
+    "explanation": "Puedes irte, pedir ayuda y contarle a alguien de confianza. No tienes que tolerar contacto no deseado."
+  },
+  {
+    "question": "¿La violencia sexual puede ocurrir sin consentimiento?",
+    "options": ["Sí", "No", "Solo a veces"],
+    "correctIndex": 0,
+    "explanation": "Si no hay consentimiento, cualquier acto sexual es violencia sexual. Siempre puedes denunciarlo."
+  },
+  {
+    "question": "¿Hablar con una persona de confianza puede ayudarte ante una situación de riesgo?",
+    "options": ["Sí", "No", "No sirve"],
+    "correctIndex": 0,
+    "explanation": "Contarle a alguien cercano permite que busquen ayuda contigo y no afrontes el riesgo sola."
+  },
+  {
+    "question": "¿Puedes retirar tu consentimiento en cualquier momento?",
+    "options": ["Sí, siempre", "No, solo al inicio", "Depende de la otra persona"],
+    "correctIndex": 0,
+    "explanation": "El consentimiento puede retirarse en cualquier momento; si dices que no, debe respetarse."
+  },
+  {
+    "question": "Si recibes imágenes íntimas sin pedirlas, ¿qué es?",
+    "options": ["Acoso digital", "Algo normal en redes", "Un cumplido"],
+    "correctIndex": 0,
+    "explanation": "Enviar imágenes íntimas sin consentimiento es acoso; puedes bloquear y reportar."
+  },
+  {
+    "question": "Ante una agresión sexual reciente (menos de 72 horas), ¿qué acción es prioritaria?",
+    "options": [
+      "Ir a un centro de salud para profilaxis",
+      "Bañarse y cambiarse de ropa",
+      "Esperar a tener evidencias"
+    ],
+    "correctIndex": 0,
+    "explanation": "Acude a un centro de salud para profilaxis y atención; la denuncia no exige llevar evidencias."
+  }
+]

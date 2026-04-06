@@ -59,8 +59,8 @@ class _EducationPetCardState extends State<EducationPetCard>
   Widget build(BuildContext context) {
     final isBusy = widget.isLoading || widget.isFeeding;
     final canFeed = !isBusy && widget.petState.hasFood;
-    final hungerLevel = 100 - (widget.petState.foodBalance * 10).clamp(0, 100);
-    final happinessLevel = (widget.petState.progress * 100).toInt();
+    final hungerLevel = widget.petState.hungerPercent.toInt();
+    final happinessLevel = widget.petState.happinessPercent.toInt();
 
     return CustomCard(
       padding: const EdgeInsets.all(18),
@@ -117,36 +117,40 @@ class _EducationPetCardState extends State<EducationPetCard>
               ),
             ],
           ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              widget.petState.statusMessage,
+              style: AppTheme.bodyMedium.copyWith(
+                fontSize: 12,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+          ),
           const SizedBox(height: 20),
           // Mascota grande y central
           ScaleTransition(
             scale: _bounceAnimation,
-            child: Container(
-              width: 140,
-              height: 160,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryLight.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(
-                  color: AppTheme.primary.withValues(alpha: 0.3),
-                  width: 2,
-                ),
-              ),
+            child: SizedBox(
+              width: 160,
+              height: 170,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  const MascotImage(
-                    width: 120,
-                    height: 120,
-                    padding: EdgeInsets.all(10),
+                  MascotImage(
+                    width: 150,
+                    height: 150,
+                    padding: const EdgeInsets.all(4),
                     semanticsLabel: 'Mascota',
+                    level: widget.petState.level,
                   ),
                   Positioned(
-                    top: 10,
-                    right: 10,
+                    top: 8,
+                    right: 8,
                     child: Container(
                       padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppTheme.accent,
                         shape: BoxShape.circle,
                       ),
@@ -170,7 +174,7 @@ class _EducationPetCardState extends State<EducationPetCard>
                   icon: Icons.restaurant_rounded,
                   label: 'Hambre',
                   value: hungerLevel.toInt(),
-                  color: hungerLevel > 70 ? Colors.red : Colors.orange,
+                  color: hungerLevel < 35 ? Colors.red : Colors.green,
                 ),
               ),
               const SizedBox(width: 12),
@@ -179,7 +183,7 @@ class _EducationPetCardState extends State<EducationPetCard>
                   icon: Icons.sentiment_satisfied_rounded,
                   label: 'Felicidad',
                   value: happinessLevel,
-                  color: happinessLevel > 70 ? Colors.green : Colors.amber,
+                  color: happinessLevel < 35 ? Colors.orange : Colors.green,
                 ),
               ),
             ],

@@ -26,9 +26,23 @@ class _ProfileAboutScreenState extends State<ProfileAboutScreen> {
               Text(context.tr('profile.about_heading'), style: AppTheme.titleLarge),
               const SizedBox(height: 12),
               CustomCard(
-                child: Text(
-                  context.tr('profile.about_body'),
-                  style: AppTheme.bodyLarge,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.tr('profile.about_body'),
+                      style: AppTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      context.tr(
+                        'profile.about_extra',
+                        fallback:
+                            'Sentinel integra alertas SOS con video/ubicacion, biblioteca de evidencias oculta, directorio de centros de ayuda y un chatbot de contencion. Puedes registrar un contacto prioritario y compartir evidencias aun sin internet cuando vuelva la conexion.',
+                      ),
+                      style: AppTheme.bodyMedium,
+                    ),
+                  ],
                 ),
               ),
             ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/custom_card.dart';
 import '../../data/education_topics_catalog.dart';
 import '../../domain/models/education_pet_state.dart';
 import '../../domain/models/education_topic.dart';
@@ -26,6 +27,7 @@ class _EducationScreenState extends State<EducationScreen> {
   String _query = '';
   EducationPetState _petState = EducationPetState.initial();
   bool _isLoadingPet = true;
+  bool _petEnabled = true;
 
   @override
   void initState() {
@@ -42,6 +44,7 @@ class _EducationScreenState extends State<EducationScreen> {
   Future<void> _loadPetState() async {
     try {
       final petState = await _petService.loadPetState();
+      final enabled = await _petService.isPetEnabled();
 
       if (!mounted) {
         return;
@@ -50,6 +53,7 @@ class _EducationScreenState extends State<EducationScreen> {
       setState(() {
         _petState = petState;
         _isLoadingPet = false;
+        _petEnabled = enabled;
       });
     } catch (_) {
       if (!mounted) {
@@ -79,6 +83,12 @@ class _EducationScreenState extends State<EducationScreen> {
       return;
     }
 
+    await _loadPetState();
+  }
+
+  Future<void> _enablePet() async {
+    await _petService.setPetEnabled(true);
+    if (!mounted) return;
     await _loadPetState();
   }
 
@@ -113,12 +123,51 @@ class _EducationScreenState extends State<EducationScreen> {
                       ),
                       const SizedBox(height: 20),
                     ],
-                    EducationPetHubEntryCard(
-                      petState: _petState,
-                      isLoading: _isLoadingPet,
-                      onTap: _openCompanion,
-                    ),
-                    const SizedBox(height: 24),
+                    if (_petEnabled) ...[
+                      EducationPetHubEntryCard(
+                        petState: _petState,
+                        isLoading: _isLoadingPet,
+                        onTap: _openCompanion,
+                      ),
+                      const SizedBox(height: 24),
+                    ] else ...[
+                      CustomCard(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              context.tr(
+                                'education.pet_hidden_title',
+                                fallback: 'Mascota oculta',
+                              ),
+                              style: AppTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              context.tr(
+                                'education.pet_hidden_subtitle',
+                                fallback:
+                                    'Si prefieres una experiencia mas sobria puedes mantener la mascota apagada. Puedes activarla cuando quieras.',
+                              ),
+                              style: AppTheme.bodyMedium,
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton.icon(
+                              onPressed: _enablePet,
+                              icon: const Icon(Icons.pets_outlined),
+                              label: Text(
+                                context.tr(
+                                  'education.pet_hidden_enable',
+                                  fallback: 'Activar mascota',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                     Container(
                       decoration: BoxDecoration(
                         color: AppTheme.cardBg,

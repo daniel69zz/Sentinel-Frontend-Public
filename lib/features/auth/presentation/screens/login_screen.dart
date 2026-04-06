@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/localization/app_language_service.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/services/app_branding_service.dart';
+import '../../../../core/services/permissions_warmup_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
+import '../../../profile/presentation/screens/profile_about_screen.dart';
 import 'contacts_screen.dart';
 import '../services/auth_identity_mapper.dart';
 import '../services/auth_service.dart';
@@ -91,6 +93,8 @@ class _LoginScreenState extends State<LoginScreen>
       return;
     }
 
+    await _warmupPermissions();
+
     final hasContacts = await _contactsService.hasContacts(user.id);
     if (!mounted) {
       return;
@@ -109,6 +113,34 @@ class _LoginScreenState extends State<LoginScreen>
           builder: (_) => ContactsScreen(userId: user.id, isInitialSetup: true),
         ),
         (route) => false,
+      );
+    }
+  }
+
+  Future<void> _warmupPermissions() async {
+    final result = await PermissionsWarmupService.instance
+        .requestCriticalPermissions(forcePrompt: true);
+
+    if (!mounted) return;
+
+    if (!result.allGranted) {
+      final missing = result.missing.join(', ');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.tr(
+              'auth.permissions.missing',
+              fallback:
+                  'Activa los permisos de camara, microfono, almacenamiento y ubicacion para que las alertas SOS funcionen (faltan: $missing).',
+            ),
+          ),
+          action: SnackBarAction(
+            label: context.tr('auth.permissions.open_settings', fallback: 'Ajustes'),
+            textColor: AppTheme.surface,
+            onPressed: () =>
+                PermissionsWarmupService.instance.openSystemSettings(),
+          ),
+        ),
       );
     }
   }
@@ -200,6 +232,46 @@ class _LoginScreenState extends State<LoginScreen>
                           context.tr('auth.login.tagline'),
                           style: AppTheme.bodyMedium.copyWith(fontSize: 15),
                           textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.favorite, color: AppTheme.secondary, size: 16),
+                            const SizedBox(width: 6),
+                            Image.asset(
+                              'assets/images/logoIpas/IPAS_Logo.png',
+                              height: 32,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                context.tr(
+                                  'auth.login.support_ipas',
+                                  fallback: 'Con el apoyo de Ipas Bolivia',
+                                ),
+                                style: AppTheme.bodyMedium.copyWith(fontSize: 13),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ProfileAboutScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            context.tr(
+                              'auth.login.what_is_app',
+                              fallback: '¿Qué es esta aplicación? Ver descripción',
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 56),
                         Align(

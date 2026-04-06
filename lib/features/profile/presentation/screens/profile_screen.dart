@@ -10,9 +10,10 @@ import '../../../auth/presentation/models/contact_model.dart';
 import '../../../auth/presentation/screens/contacts_screen.dart';
 import '../../../auth/presentation/services/auth_service.dart';
 import '../../../auth/presentation/services/contacts_service.dart';
+import '../../../education/presentation/services/education_pet_service.dart';
 import '../models/profile_avatar_option.dart';
 import '../widgets/profile_avatar_badge.dart';
-import '../../../auth/presentation/screens/language_selection_screen.dart';
+import 'profile_permissions_screen.dart';
 import 'profile_about_screen.dart';
 import 'profile_appearance_screen.dart';
 
@@ -29,11 +30,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ContactsService _contactsService = ContactsService();
   final AuthService _authService = AuthService();
   final AppBrandingService _brandingService = AppBrandingService.instance;
+  final EducationPetService _petService = EducationPetService();
 
   UserModel? _user;
   List<ContactModel> _contacts = [];
   bool _isLoading = true;
   String _selectedAvatarId = ProfileAppearanceStore.avatarOptions.first.id;
+  bool _petEnabled = true;
 
   @override
   void initState() {
@@ -46,6 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final avatarId = await ProfileAppearanceStore.loadAvatarOptionId();
     final user = await _authService.getSession();
+    final petEnabled = await _petService.isPetEnabled();
     if (!mounted) return;
 
     if (user == null) {
@@ -54,6 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _user = null;
         _contacts = [];
         _isLoading = false;
+        _petEnabled = petEnabled;
       });
       return;
     }
@@ -66,6 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _user = user;
       _contacts = contacts;
       _isLoading = false;
+      _petEnabled = petEnabled;
     });
   }
 
@@ -88,15 +94,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadData();
   }
 
-  Future<void> _goToLanguage() async {
+  Future<void> _goToPermissions() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const LanguageSelectionScreen(isInitialSetup: false),
-      ),
+      MaterialPageRoute(builder: (_) => const ProfilePermissionsScreen()),
     );
     if (!mounted) return;
-    setState(() {});
+    _loadData();
   }
 
   Future<void> _goToAbout() async {
@@ -106,6 +110,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
     if (!mounted) return;
     setState(() {});
+  }
+
+  Future<void> _togglePet(bool value) async {
+    await _petService.setPetEnabled(value);
+    if (!mounted) return;
+    setState(() {
+      _petEnabled = value;
+    });
   }
 
   Future<void> _logout() async {
@@ -334,12 +346,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTap: _goToAppearance,
                     ),
                     _SettingTile(
-                      icon: Icons.language_rounded,
-                      title: context.tr('profile.language_title'),
-                      subtitle: AppLanguageService.instance.languageLabel(
-                        AppLanguageService.instance.language,
+                      icon: Icons.verified_user_outlined,
+                      title: context.tr('profile.permissions.title',
+                          fallback: 'Permisos de seguridad'),
+                      subtitle: context.tr(
+                        'profile.permissions.subtitle_short',
+                        fallback: 'Camara, microfono y ubicacion para alertas',
                       ),
-                      onTap: _goToLanguage,
+                      onTap: _goToPermissions,
+                    ),
+                    _SettingSwitchTile(
+                      icon: Icons.pets_outlined,
+                      title: context.tr(
+                        'profile.pet_toggle_title',
+                        fallback: 'Modo serio (ocultar mascota)',
+                      ),
+                      subtitle: context.tr(
+                        'profile.pet_toggle_subtitle',
+                        fallback: 'Oculta la mascota y su imagen en el chatbot.',
+                      ),
+                      value: _petEnabled,
+                      onChanged: _togglePet,
                     ),
                     _SettingTile(
                       icon: Icons.info_outline,
@@ -514,6 +541,61 @@ class _SettingTile extends StatelessWidget {
               Icons.arrow_forward_ios,
               size: 14,
               color: AppTheme.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingSwitchTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _SettingSwitchTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: CustomCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Icon(icon, color: AppTheme.textSecondary, size: 22),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: AppTheme.labelLarge),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: AppTheme.bodyMedium.copyWith(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              thumbColor: WidgetStateProperty.all<Color>(AppTheme.primary),
+              trackColor: WidgetStateProperty.resolveWith<Color?>(
+                (states) => states.contains(WidgetState.selected)
+                    ? AppTheme.primary.withValues(alpha: 0.35)
+                    : null,
+              ),
             ),
           ],
         ),

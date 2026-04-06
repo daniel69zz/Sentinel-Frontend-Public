@@ -46,11 +46,12 @@ class EducationPetHubEntryCard extends StatelessWidget {
               SizedBox(
                 width: 52,
                 height: 52,
-                child: const MascotImage(
-                  width: 36,
-                  height: 36,
-                  padding: EdgeInsets.all(8),
+                child: MascotImage(
+                  width: 48,
+                  height: 48,
+                  padding: const EdgeInsets.all(4),
                   semanticsLabel: 'Mascota',
+                  level: petState.level,
                 ),
               ),
               const SizedBox(width: 12),

@@ -8,6 +8,7 @@ class MascotImage extends StatelessWidget {
   final BoxFit fit;
   final EdgeInsetsGeometry padding;
   final String? semanticsLabel;
+  final int? level;
 
   const MascotImage({
     super.key,
@@ -16,14 +17,19 @@ class MascotImage extends StatelessWidget {
     this.fit = BoxFit.contain,
     this.padding = EdgeInsets.zero,
     this.semanticsLabel,
+    this.level,
   });
 
   @override
   Widget build(BuildContext context) {
+    final path = level == null
+        ? AppConstants.mascotPath
+        : AppConstants.mascotForLevel(level!);
+
     return Padding(
       padding: padding,
       child: Image.asset(
-        AppConstants.mascotPath,
+        path,
         width: width,
         height: height,
         fit: fit,
