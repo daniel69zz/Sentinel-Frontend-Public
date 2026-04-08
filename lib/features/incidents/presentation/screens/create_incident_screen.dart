@@ -242,7 +242,17 @@ class _CreateIncidentScreenState extends State<CreateIncidentScreen> {
                   prefixIcon: const Icon(Icons.location_on_outlined),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
+              StatusBanner(
+                message: _t(
+                  es: 'Si no tienes evidencias, aun asi puedes efectuar tu denuncia. No es necesario adjuntar archivos para continuar.',
+                  en: 'Even if you don\'t have evidence, you can still file your report. Attaching files is not required to continue.',
+                  ay: 'Evidencianak janiw utjkchiti ukxatasa jawst\'ayañawa. Archivonaka yapxatañax janiw wakisiti sarantañatakixa.',
+                  qu: 'Evidenciakuna mana kaptin chaymantapas denunciaykita ruwankimanmi. Archivokuna yapaqa mana necesariochu qatipananpaq.',
+                ),
+                isWarning: false,
+              ),
+              const SizedBox(height: 20),
               CustomButton(
                 text: _t(
                   es: 'Guardar incidente',

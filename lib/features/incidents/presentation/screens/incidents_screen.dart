@@ -156,6 +156,16 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                       ),
                       const SizedBox(height: 20),
                     ],
+                    StatusBanner(
+                      message: _t(
+                        es: 'Si no tienes evidencias, aun asi puedes efectuar tu denuncia. No es necesario adjuntar archivos para registrar un incidente.',
+                        en: 'Even if you don\'t have evidence, you can still file your report. Attaching files is not required to register an incident.',
+                        ay: 'Evidencianak janiw utjkchiti ukxatasa jawst\'ayañawa. Archivonaka yapxatañax janiw wakisiti incidente qillqantañatakixa.',
+                        qu: 'Evidenciakuna mana kaptin chaymantapas denunciaykita ruwankimanmi. Archivokuna yapaqa mana necesariochu incidenteta qillqanapaq.',
+                      ),
+                      isWarning: false,
+                    ),
+                    const SizedBox(height: 16),
                     ActionPanelCard(
                       icon: Icons.note_add_rounded,
                       accentColor: AppTheme.warning,
@@ -166,8 +176,8 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                         qu: 'Musuq incidenteta qillqay',
                       ),
                       subtitle: _t(
-                        es: 'Crea el caso primero y organiza su contexto. Las evidencias se agregan despues, solo cuando decidas vincularlas.',
-                        en: 'Create the case first and organize its context. Evidence is added later only when you decide to link it.',
+                        es: 'Crea el caso primero y organiza su contexto. Las evidencias se agregan despues, solo si decides vincularlas.',
+                        en: 'Create the case first and organize its context. Evidence is added later only if you decide to link it.',
                         ay: 'Nayraqata caso luram ukat contextop wakicht\'am. Evidencianakax qhipatwa yapxatata, mayachañ munasakixa.',
                         qu: 'Ñawpaqta kasota ruway hinaspa contextonta allichay. Evidenciakunaqa qhipamanmi yapasqa kanqa, tinkichiyta munaspallayki chayqa.',
                       ),

@@ -26,11 +26,13 @@ class _HomeScreenState extends State<HomeScreen> {
   static const int _sectionCount = 6;
 
   late int _currentIndex;
+  final Set<int> _visitedIndices = {};
 
   @override
   void initState() {
     super.initState();
     _currentIndex = _normalizeIndex(widget.initialIndex);
+    _visitedIndices.add(_currentIndex);
   }
 
   @override
@@ -38,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initialIndex != widget.initialIndex) {
       _currentIndex = _normalizeIndex(widget.initialIndex);
+      _visitedIndices.add(_currentIndex);
     }
   }
 
@@ -50,23 +53,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateTo(int index) {
-    setState(() => _currentIndex = _normalizeIndex(index));
+    setState(() {
+      _currentIndex = _normalizeIndex(index);
+      _visitedIndices.add(_currentIndex);
+    });
+  }
+
+  Widget _buildScreen(int index) {
+    const builders = <int, Widget>{
+      0: EmergencyScreen(isEmbedded: true),
+      1: EvidenceLibraryScreen(isEmbedded: true),
+      2: IncidentsScreen(isEmbedded: true),
+      3: EducationScreen(isEmbedded: true),
+      4: DirectoryScreen(isEmbedded: true),
+      5: ProfileScreen(isEmbedded: true),
+    };
+    return builders[index] ?? const SizedBox.shrink();
   }
 
   @override
   Widget build(BuildContext context) {
-    const screens = <Widget>[
-      EmergencyScreen(isEmbedded: true),
-      EvidenceLibraryScreen(isEmbedded: true),
-      IncidentsScreen(isEmbedded: true),
-      EducationScreen(isEmbedded: true),
-      DirectoryScreen(isEmbedded: true),
-      ProfileScreen(isEmbedded: true),
-    ];
-
     return Scaffold(
       extendBody: true,
-      body: IndexedStack(index: _currentIndex, children: screens),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: List.generate(_sectionCount, (index) {
+          if (_visitedIndices.contains(index)) {
+            return _buildScreen(index);
+          }
+          return const SizedBox.shrink();
+        }),
+      ),
       floatingActionButton: AppFloatMotion(
         amplitude: 3.1,
         phase: math.pi / 4,

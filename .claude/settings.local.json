@@ -7,7 +7,9 @@
       "WebFetch(domain:api.github.com)",
       "Read(//c/Users/HP/flutter/bin/**)",
       "Read(//c/src/flutter/bin/**)",
-      "Read(//c/Users/HP/**)"
+      "Read(//c/Users/HP/**)",
+      "Bash(flutter analyze:*)",
+      "Bash(dart analyze:*)"
     ]
   }
 }

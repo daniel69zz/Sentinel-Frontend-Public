@@ -7,10 +7,14 @@ class AppDesignMotion extends StatefulWidget {
 
   const AppDesignMotion({super.key, required this.child});
 
+  /// Returns the shared animation controller without creating a dependency
+  /// on the InheritedWidget, so the caller is NOT rebuilt every frame.
+  /// Only [AppFloatMotion] should listen to this animation directly via
+  /// its own [AnimatedBuilder].
   static Animation<double>? maybeOf(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<_AppDesignMotionScope>()
-        ?.animation;
+    final scope =
+        context.getInheritedWidgetOfExactType<_AppDesignMotionScope>();
+    return scope?.animation;
   }
 
   @override
@@ -42,13 +46,16 @@ class _AppDesignMotionState extends State<AppDesignMotion>
   }
 }
 
-class _AppDesignMotionScope extends InheritedNotifier<Animation<double>> {
-  const _AppDesignMotionScope({
-    required Animation<double> animation,
-    required super.child,
-  }) : super(notifier: animation);
+class _AppDesignMotionScope extends InheritedWidget {
+  final Animation<double> animation;
 
-  Animation<double> get animation => notifier!;
+  const _AppDesignMotionScope({
+    required this.animation,
+    required super.child,
+  });
+
+  @override
+  bool updateShouldNotify(_AppDesignMotionScope oldWidget) => false;
 }
 
 class AppFloatMotion extends StatelessWidget {
@@ -74,14 +81,16 @@ class AppFloatMotion extends StatelessWidget {
       return child;
     }
 
-    return AnimatedBuilder(
-      animation: animation,
-      child: child,
-      builder: (context, child) {
-        final angle = (animation.value * math.pi * 2) + phase;
-        final offsetY = math.sin(angle) * amplitude;
-        return Transform.translate(offset: Offset(0, offsetY), child: child);
-      },
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: animation,
+        child: child,
+        builder: (context, child) {
+          final angle = (animation.value * math.pi * 2) + phase;
+          final offsetY = math.sin(angle) * amplitude;
+          return Transform.translate(offset: Offset(0, offsetY), child: child);
+        },
+      ),
     );
   }
 }
